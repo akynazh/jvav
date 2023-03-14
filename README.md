@@ -1,5 +1,7 @@
 # Jvav
 
+Useful tools for Jav.
+
 ## INSTALL
 
 ```
@@ -8,8 +10,16 @@ pip install jvav
 
 ## LIB
 
+- DmmUtil
+- JavLibUtil
+- JavBusUtil
+- AvgleUtil
+- MagnetUtil
+- SukebeiUtil
+- WikiUtil
+
 ```py
-# a sample for DmmUtil
+# A sample for DmmUtil
 from jvav import utils
 
 PROXY_ADDR = 'http://127.0.0.1:7890'
