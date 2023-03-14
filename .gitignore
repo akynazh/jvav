@@ -2,3 +2,7 @@ __pycache__
 .vscode
 /dist
 jvav.egg-info
+# for jvav.exe
+*.spec
+/jvav/dist
+/jvav/build

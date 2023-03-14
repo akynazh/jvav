@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 import os
-import utils
+from jvav import utils
 import argparse
 
 
@@ -104,6 +104,8 @@ class ArgsParser:
             self.parser.print_help()
 
 
+# python -m jvav.cmd
+# pyinstaller --onefile cmd.py --name jvav # to build an exe named jvav.exe
 if __name__ == '__main__':
     parser = ArgsParser()
     parser.parse()
