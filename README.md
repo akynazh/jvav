@@ -17,6 +17,7 @@ pip install jvav -U
 - MagnetUtil
 - SukebeiUtil
 - WikiUtil
+- TransUtil
 
 ```py
 # A sample for DmmUtil

@@ -8,7 +8,7 @@ with open("README.md", encoding="utf-8") as f:
     readme = f.read()
 
 setup(name="Jvav",
-      version='1.1.2',
+      version='1.1.5',
       description="Useful tools for Jav.",
       long_description=readme,
       long_description_content_type="text/markdown",
@@ -38,7 +38,6 @@ setup(name="Jvav",
           ],
       })
 '''
-python -m build
-twine upload dist/*
+python -m build && twine upload dist/*
 pip install jvav -U -i https://pypi.org/simple
 '''
