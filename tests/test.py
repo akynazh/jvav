@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-from jvav import utils
+import jvav
 import unittest
 
 # PROXY_ADDR = ''
@@ -22,14 +22,14 @@ def assert_res(res):
 
 
 class JavLibUtilTest(unittest.TestCase):
-    util = utils.JavLibUtil(proxy_addr=PROXY_ADDR, max_rank_page=20)
+    util = jvav.JavLibUtil(proxy_addr=PROXY_ADDR, max_rank_page=20)
 
     def test_get_random_id_from_rank(self):
         assert_code(*JavLibUtilTest.util.get_random_id_from_rank(1))
 
 
 class DmmUtilTest(unittest.TestCase):
-    util = utils.DmmUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.DmmUtil(proxy_addr=PROXY_ADDR)
 
     def test_get_pv_by_id(self):
         assert_code(*DmmUtilTest.util.get_pv_by_id('ipx-365'))
@@ -52,9 +52,9 @@ class DmmUtilTest(unittest.TestCase):
 
 # python -m unittest discover -s tests -k JavBusUtilTest
 class JavBusUtilTest(unittest.TestCase):
-    util = utils.JavBusUtil(proxy_addr=PROXY_ADDR,
-                            max_home_page_count=100,
-                            max_new_avs_count=10)
+    util = jvav.JavBusUtil(proxy_addr=PROXY_ADDR,
+                           max_home_page_count=100,
+                           max_new_avs_count=10)
 
     # python -m unittest discover -s tests -k test_get_max_page
     def test_get_max_page(self):
@@ -97,7 +97,7 @@ class JavBusUtilTest(unittest.TestCase):
 
 
 class AvgleUtilTest(unittest.TestCase):
-    util = utils.AvgleUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.AvgleUtil(proxy_addr=PROXY_ADDR)
 
     def test_get_video_by_id(self):
         assert_code(*AvgleUtilTest.util.get_video_by_id('ipx-369'))
@@ -110,7 +110,7 @@ class AvgleUtilTest(unittest.TestCase):
 
 
 class MagnetUtilTest(unittest.TestCase):
-    util = utils.MagnetUtil()
+    util = jvav.MagnetUtil()
     magnets = [
         {
             'link': '#',  # 链接
@@ -146,7 +146,7 @@ class MagnetUtilTest(unittest.TestCase):
 
 
 class SukebeiUtilTest(unittest.TestCase):
-    util = utils.SukebeiUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.SukebeiUtil(proxy_addr=PROXY_ADDR)
 
     def test_get_av_by_id(self):
         assert_code(*SukebeiUtilTest.util.get_av_by_id(
@@ -154,7 +154,7 @@ class SukebeiUtilTest(unittest.TestCase):
 
 
 class WikiUtilTest(unittest.TestCase):
-    util = utils.WikiUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.WikiUtil(proxy_addr=PROXY_ADDR)
 
     def test_get_wiki_page_by_lang(self):
         assert_res(

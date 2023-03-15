@@ -149,7 +149,9 @@ class JavLibUtil(BaseUtil):
 
     def __init__(self, proxy_addr='', path_root='', max_rank_page=25):
         '''初始化
-
+        
+        :param str proxy_addr: 代理服务器地址, 默认为 ''
+        :param str path_root: 存放日志等文件的目录位置, 默认为 '~/.jvav'
         :param int max_rank_page: 排行榜的最大页数, 默认为 25 页
         '''
         super().__init__(proxy_addr, path_root)
@@ -351,7 +353,9 @@ class JavBusUtil(BaseUtil):
                  max_home_page_count=100,
                  max_new_avs_count=8):
         '''初始化
-
+        
+        :param str proxy_addr: 代理服务器地址, 默认为 ''
+        :param str path_root: 存放日志等文件的目录位置, 默认为 '~/.jvav'
         :param int max_home_page_count: 主页最大爬取页数, 默认为 100 页
         :param int max_new_avs_count: 获取最新 AV 数量, 默认为 8 部
         '''

@@ -5,7 +5,7 @@ Useful tools for Jav.
 ## INSTALL
 
 ```
-pip install jvav
+pip install jvav -U
 ```
 
 ## LIB
@@ -20,11 +20,11 @@ pip install jvav
 
 ```py
 # A sample for DmmUtil
-from jvav import utils
+import jvav
 
 PROXY_ADDR = 'http://127.0.0.1:7890'
 
-util = utils.DmmUtil(proxy_addr=PROXY_ADDR)
+util = jvav.DmmUtil(proxy_addr=PROXY_ADDR)
 util.get_pv_by_id('ipx-365')
 util.get_nice_avs_by_star_name('小倉由菜')
 util.get_score_by_id('ipx-365')
@@ -35,6 +35,7 @@ util.get_all_top_stars()
 ## CMD
 
 ```
+$ jvav -h
 usage: cmd.py [-h] [-av1 AV1] [-av2 AV2] [-nc] [-uc] [-sr SR] [-srn SRN] [-pv1 PV1] [-pv2 PV2] [-tp] [-p PROXY]
 
 options:

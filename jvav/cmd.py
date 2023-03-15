@@ -1,10 +1,11 @@
 # -*- coding: UTF-8 -*-
 import os
-from jvav import utils
 import argparse
+import langdetect
+import jvav
 
 
-class ArgsParser:
+class JvavArgsParser:
 
     def __init__(self):
         parser = argparse.ArgumentParser()
@@ -57,7 +58,7 @@ class ArgsParser:
         :param any res: 结果
         '''
         if code != 200:
-            print('操作失败, 请重试')
+            print(f'{code}: 操作失败')
             return
         print(res)
 
@@ -78,35 +79,48 @@ class ArgsParser:
         if args.proxy == '' and env_proxy:
             args.proxy = env_proxy
         if args.av1 != '':
-            self.handle_code(*utils.JavBusUtil(
+            self.handle_code(*jvav.JavBusUtil(
                 proxy_addr=args.proxy).get_av_by_id(
                     id=args.av1, is_nice=args.nc, is_uncensored=args.uc))
         elif args.av2 != '':
-            self.handle_code(*utils.SukebeiUtil(
+            self.handle_code(*jvav.SukebeiUtil(
                 proxy_addr=args.proxy).get_av_by_id(
                     id=args.av2, is_nice=args.nc, is_uncensored=args.uc))
         elif args.tp:
-            self.handle_code(*utils.DmmUtil(
+            self.handle_code(*jvav.DmmUtil(
                 proxy_addr=args.proxy).get_top_stars(1))
-        elif args.sr != '':
-            self.handle_code(*utils.DmmUtil(
-                proxy_addr=args.proxy).get_nice_avs_by_star_name(args.sr))
-        elif args.srn != '':
-            self.handle_code(*utils.JavBusUtil(
-                proxy_addr=args.proxy).get_new_ids_by_star_name(args.srn))
+        elif args.sr != '' or args.srn != '':
+            star_name = args.sr if args.sr != '' else args.srn
+            flag_srn = True if args.srn != '' else False
+            if langdetect.detect(star_name) != 'ja':  # zh
+                wiki_json = jvav.WikiUtil(
+                    proxy_addr=args.proxy).get_wiki_page_by_lang(
+                        topic=star_name, from_lang='zh', to_lang='ja')
+                if wiki_json and wiki_json['lang'] == 'ja':
+                    star_name = wiki_json['title']
+            if not flag_srn:
+                self.handle_code(*jvav.DmmUtil(
+                    proxy_addr=args.proxy).get_nice_avs_by_star_name(args.sr))
+            else:
+                self.handle_code(*jvav.JavBusUtil(
+                    proxy_addr=args.proxy).get_new_ids_by_star_name(args.srn))
         elif args.pv1 != '':
-            self.handle_code(*utils.DmmUtil(
+            self.handle_code(*jvav.DmmUtil(
                 proxy_addr=args.proxy).get_pv_by_id(args.pv1))
         elif args.pv2 != '':
-            self.handle_code(*utils.AvgleUtil(
+            self.handle_code(*jvav.AvgleUtil(
                 proxy_addr=args.proxy).get_pv_by_id(args.pv2))
         else:
             self.parser.print_help()
 
 
-# python -m jvav.cmd
-# pyinstaller --onefile cmd.py --name jvav # to build an exe named jvav.exe
-if __name__ == '__main__':
-    parser = ArgsParser()
+def main():
+    parser = JvavArgsParser()
     parser.parse()
     parser.exec()
+
+
+# pyinstaller --onefile cmd.py --name jvav # to build an exe named jvav.exe
+# python -m java.cmd
+if __name__ == '__main__':
+    main()
