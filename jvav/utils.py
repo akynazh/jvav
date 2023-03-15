@@ -9,6 +9,7 @@ import wikipediaapi
 import concurrent.futures
 from bs4 import BeautifulSoup
 from anti_useragent import UserAgent
+from deep_translator import GoogleTranslator
 
 
 class Logger:
@@ -943,3 +944,21 @@ class WikiUtil(BaseUtil):
         except Exception as e:
             self.log.error(e)
             return
+
+
+class TransUtil(BaseUtil):
+
+    def trans(self, text: str, from_lang='auto', to_lang='zh-CN') -> str:
+        '''翻译
+
+        :param str text: 要翻译的文本
+        :param str from_lang: 原文语言码, defaults to 'auto'
+        :param str to_lang: 目标语言码, defaults to 'zh-CN'
+        :return str: 翻译结果，如果失败则为 None
+        '''
+        try:
+            return GoogleTranslator(source=from_lang,
+                                    target=to_lang,
+                                    proxies=self.proxy_json).translate(text)
+        except Exception as e:
+            self.log.error(e)

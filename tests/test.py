@@ -163,5 +163,16 @@ class WikiUtilTest(unittest.TestCase):
                                                     to_lang='zh'))
 
 
+class TransUtilTest(unittest.TestCase):
+    util = jvav.TransUtil(proxy_addr=PROXY_ADDR)
+
+    def test_trans(self):
+        assert_res(
+            TransUtilTest.util.trans(
+                text='催淫洗脳されたスレンダー美乳妻は嫌がりながらも淫乱ビッチになっていた 美谷朱里',
+                from_lang='ja',
+                to_lang='zh-CN'))
+
+
 if __name__ == '__main__':
     unittest.main()
