@@ -14,6 +14,7 @@ wikipedia-api = "==0.5.8"
 
 [dev-packages]
 black = "*"
+build = "*"
 
 [requires]
 python_version = "3.7"
