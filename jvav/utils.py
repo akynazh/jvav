@@ -13,45 +13,14 @@ from anti_useragent import UserAgent
 from deep_translator import GoogleTranslator
 
 
-class Logger:
-    def __init__(self, log_level: int, path_log_file: str):
-        """初始化日志记录器
-
-        :param int log_level: 记录级别
-        :param str path_log_file: 日志文件位置
-        """
-        self.logger = logging.getLogger()
-        self.logger.addHandler(self.get_file_handler(path_log_file))
-        self.logger.addHandler(logging.StreamHandler())
-        self.logger.setLevel(log_level)
-
-    def get_file_handler(self, file):
-        file_handler = logging.FileHandler(file)
-        file_handler.setFormatter(
-            logging.Formatter("[%(asctime)s] %(levelname)s: %(message)s")
-        )
-        return file_handler
-
-
 class BaseUtil:
-    def __init__(self, proxy_addr="", path_root=""):
+    def __init__(self, proxy_addr=""):
         """初始化
 
         :param str proxy_addr: 代理服务器地址, 默认为 ''
-        :param str path_root: 存放日志等文件的目录位置, 默认为 '~/.jvav'
         """
-        if path_root != "":
-            self.path_root = path_root
-        else:
-            self.path_root = os.path.expanduser("~") + "/.jvav"
-        if not os.path.exists(self.path_root):
-            os.makedirs(self.path_root)
 
-        self.path_log_file = f"{self.path_root}/log.txt"
-        self.log = Logger(
-            log_level=logging.INFO, path_log_file=self.path_log_file
-        ).logger
-        self.path_cfg = f"{self.path_root}/cfg.yaml"
+        self.log = logging.getLogger(__name__)
         self.proxy_addr = ""
         if proxy_addr != "":
             self.proxy_addr = proxy_addr
@@ -150,14 +119,17 @@ class JavLibUtil(BaseUtil):
         BASE_URL_NEW_ENTRIES,
     ]
 
-    def __init__(self, proxy_addr="", path_root="", max_rank_page=25):
+    def __init__(
+        self,
+        proxy_addr="",
+        max_rank_page=25,
+    ):
         """初始化
 
         :param str proxy_addr: 代理服务器地址, 默认为 ''
-        :param str path_root: 存放日志等文件的目录位置, 默认为 '~/.jvav'
         :param int max_rank_page: 排行榜的最大页数, 默认为 25 页
         """
-        super().__init__(proxy_addr, path_root)
+        super().__init__(proxy_addr)
         self.max_rank_page = max_rank_page
 
     def get_random_id_from_rank(self, list_type: int) -> typing.Tuple[int, str]:
@@ -350,16 +322,18 @@ class JavBusUtil(BaseUtil):
     BASE_URL_MAGNET = f"{BASE_URL}/ajax/uncledatoolsbyajax.php?lang=zh"
 
     def __init__(
-        self, proxy_addr="", path_root="", max_home_page_count=100, max_new_avs_count=8
+        self,
+        proxy_addr="",
+        max_home_page_count=100,
+        max_new_avs_count=8,
     ):
         """初始化
 
         :param str proxy_addr: 代理服务器地址, 默认为 ''
-        :param str path_root: 存放日志等文件的目录位置, 默认为 '~/.jvav'
         :param int max_home_page_count: 主页最大爬取页数, 默认为 100 页
         :param int max_new_avs_count: 获取最新 AV 数量, 默认为 8 部
         """
-        super().__init__(proxy_addr, path_root)
+        super().__init__(proxy_addr)
         self.max_home_page_count = max_home_page_count
         self.max_new_avs_count = max_new_avs_count
 
@@ -554,6 +528,7 @@ class JavBusUtil(BaseUtil):
             'tags': '',    # 标签
             'stars': [],   # 演员
             'magnets': [], # 磁链
+            'url': '',     # 地址
         }
         磁链格式:
         {
@@ -579,8 +554,10 @@ class JavBusUtil(BaseUtil):
             "tags": "",
             "stars": [],
             "magnets": [],
+            "url": "",
         }
         url = f"{JavBusUtil.BASE_URL}/{id}"
+        av["url"] = url
         code, resp = self.send_req(url)
         if code != 200:
             return code, None
@@ -821,6 +798,7 @@ class SukebeiUtil(BaseUtil):
             'tags': '',    # 标签 | sukebei 不支持
             'stars': [],   # 演员 | sukebei 不支持
             'magnets': [], # 磁链
+            'url': '',     # 地址
         }
         磁链格式:
         {
@@ -845,6 +823,7 @@ class SukebeiUtil(BaseUtil):
             "tags": "",
             "stars": [],
             "magnets": [],
+            "url": "",
         }
         # 查找av
         url = f"{SukebeiUtil.BASE_URL}?q={id}"
@@ -852,6 +831,7 @@ class SukebeiUtil(BaseUtil):
         if code != 200:
             return code, None
         try:
+            av["url"] = url
             soup = self.get_soup(resp)
             torrent_list = soup.find(class_="torrent-list")
             trs = torrent_list.tbody.find_all("tr")

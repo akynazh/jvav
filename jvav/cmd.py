@@ -1,8 +1,36 @@
 # -*- coding: UTF-8 -*-
 import os
+import logging
 import argparse
 import langdetect
 import jvav
+
+PATH_ROOT = os.path.expanduser("~") + "/.jvav"
+if not os.path.exists(PATH_ROOT):
+    os.makedirs(PATH_ROOT)
+
+
+class Logger:
+    def __init__(self, log_level: int, path_log_file: str):
+        """初始化日志记录器
+
+        :param int log_level: 记录级别
+        :param str path_log_file: 日志文件位置
+        """
+        self.logger = logging.getLogger()
+        self.logger.addHandler(self.get_file_handler(path_log_file))
+        self.logger.addHandler(logging.StreamHandler())
+        self.logger.setLevel(log_level)
+
+    def get_file_handler(self, file):
+        file_handler = logging.FileHandler(file)
+        file_handler.setFormatter(
+            logging.Formatter("[%(asctime)s] %(levelname)s: %(message)s")
+        )
+        return file_handler
+
+
+LOG = Logger(logging.INFO, f"{PATH_ROOT}/log.txt").logger
 
 
 class JvavArgsParser:
@@ -43,9 +71,9 @@ class JvavArgsParser:
         :param any res: 结果
         """
         if code != 200:
-            print(f"{code}: 操作失败")
+            LOG.error(f"{code}: 操作失败")
             return
-        print(res)
+        LOG.info(res)
 
     def parse(self):
         """解析命令行参数"""
