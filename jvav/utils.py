@@ -904,6 +904,8 @@ class SukebeiUtil(BaseUtil):
 
 class WikiUtil(BaseUtil):
     logging.getLogger('wikipediaapi').setLevel(logging.ERROR)
+    BASE_URL_JAPAN_WIKI = 'https://ja.wikipedia.org/wiki'
+    BASE_URL_CHINA_WIKI = 'https://zh.wikipedia.org/wiki'
 
     def get_wiki_page_by_lang(self, topic: str, from_lang: str,
                               to_lang: str) -> dict:
