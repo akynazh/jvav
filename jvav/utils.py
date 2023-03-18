@@ -118,6 +118,12 @@ class JavLibUtil(BaseUtil):
         BASE_URL_NEW_RELEASE_ALL,
         BASE_URL_NEW_ENTRIES,
     ]
+    # search
+    BASE_URL_SEARCH_AV = BASE_URL + "/cn/vl_searchbyid.php?keyword="
+    # comment
+    BASE_URL_COMMENT = BASE_URL + "/cn/videocomments.php?v="
+    # review 最佳评论
+    BASE_URL_REVIEW = BASE_URL + "/cn/videoreviews.php?v="
 
     def __init__(
         self,
@@ -158,6 +164,44 @@ class JavLibUtil(BaseUtil):
         except Exception as e:
             self.log.error(f"JavLibUtil: 从排行榜随机获取番号: {e}")
             return 404, None
+
+    def get_comments_by_id(self, id: str, timeout=3) -> typing.Tuple[int, list]:
+        """根据番号获取评论 (最佳评论, 最多 5 条)
+
+        :param str id: 番号
+        :param int timeout: 超时时间(秒), 默认为 3
+        :return typing.Tuple[int, list]: 状态码和评论列表
+        """
+        url = JavLibUtil.BASE_URL_SEARCH_AV + id
+        code, resp = self.send_req(url=url, timeout=timeout)
+        if code != 200:
+            return code, None
+        javlib_av_id = ""
+        if resp.url == url:
+            try:
+                soup = self.get_soup(resp)
+                videos = soup.find_all(class_="video")
+                video_href = videos[0].a["href"]
+                javlib_av_id = video_href[video_href.find("v=") + 2 :]
+            except Exception as e:
+                self.log.error(f"JavLibUtil: 根据番号 {id} 获取评论失败: {e}")
+                return 404, None
+        else:
+            r_url = resp.url
+            javlib_av_id = r_url[r_url.find("v=") + 2 :]
+        comment_url = JavLibUtil.BASE_URL_REVIEW + javlib_av_id
+        code, resp = self.send_req(url=comment_url, timeout=timeout)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            comment_tags = soup.find_all(class_="t")
+            comments = []
+            for c in comment_tags:
+                comments.append(c.text)
+            return 200, comments[:5]
+        except Exception as e:
+            self.log.error(f"JavLibUtil: 根据番号 {id} 获取评论失败: {e}")
 
 
 class DmmUtil(BaseUtil):
