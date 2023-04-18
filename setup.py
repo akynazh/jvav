@@ -8,7 +8,7 @@ with open("README.md", encoding="utf-8") as f:
     readme = f.read()
 
 setup(name="Jvav",
-      version='1.2.9',
+      version='1.2.10',
       description="Useful tools for Jav.",
       long_description=readme,
       long_description_content_type="text/markdown",

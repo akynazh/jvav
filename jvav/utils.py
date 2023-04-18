@@ -124,19 +124,50 @@ class JavLibUtil(BaseUtil):
     BASE_URL_COMMENT = BASE_URL + "/cn/videocomments.php?v="
     # review 最佳评论
     BASE_URL_REVIEW = BASE_URL + "/cn/videoreviews.php?v="
+    # 排行榜最大页数
+    MAX_RANK_PAGE = 25
 
     def __init__(
         self,
         proxy_addr="",
-        max_rank_page=25,
+        max_rank_page=MAX_RANK_PAGE,
     ):
         """初始化
 
         :param str proxy_addr: 代理服务器地址, 默认为 ''
-        :param int max_rank_page: 排行榜的最大页数, 默认为 25 页
+        :param int max_rank_page: 排行榜的最大页数, 默认为 JavLibUtil.MAX_RANK_PAGE 页
         """
         super().__init__(proxy_addr)
         self.max_rank_page = max_rank_page
+
+    def get_random_ids_from_rank_by_page(
+        self, page: int, list_type: int, timeout=3
+    ) -> typing.Tuple[int, str]:
+        """从排行榜某页中获取该页番号列表
+
+        :param int page: 第几页
+        :param int list_type: 排行榜类型 0 nice | 1 new
+        :param int timeout: 超时时间(秒), 默认为 3
+        :return typing.Tuple[int, list]: 状态码和番号列表
+        """
+        if list_type == 0:
+            url = random.choice(JavLibUtil.URLS_NICE)
+        elif list_type == 1:
+            url = random.choice(JavLibUtil.URLS_NEW)
+        code, resp = self.send_req(url=url + str(page), timeout=timeout)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            tag_ids = soup.find_all(class_="id")
+            ids = [tag.text for tag in tag_ids]
+            if len(ids) > 0:
+                return 200, ids
+            else:
+                return 404, None
+        except Exception as e:
+            self.log.error(f"JavLibUtil: 从排行榜某页中获取该页番号列表: {e}")
+            return 404, None
 
     def get_random_id_from_rank(
         self, list_type: int, timeout=3
@@ -147,23 +178,14 @@ class JavLibUtil(BaseUtil):
         :param int timeout: 超时时间(秒), 默认为 3
         :return typing.Tuple[int, str]: 状态码和番号
         """
-        if list_type == 0:
-            url = random.choice(JavLibUtil.URLS_NICE)
-        elif list_type == 1:
-            url = random.choice(JavLibUtil.URLS_NEW)
         page = random.randint(1, self.max_rank_page)
-        code, resp = self.send_req(url=url + str(page), timeout=timeout)
+        code, ids = self.get_random_ids_from_rank_by_page(
+            page=page, list_type=list_type, timeout=timeout
+        )
         if code != 200:
             return code, None
-        try:
-            soup = self.get_soup(resp)
-            tag_ids = soup.find_all(class_="id")
-            ids = [tag.text for tag in tag_ids]
-            if len(ids) > 0:
-                return 200, random.choice(ids)
-        except Exception as e:
-            self.log.error(f"JavLibUtil: 从排行榜随机获取番号: {e}")
-            return 404, None
+        else:
+            return 200, random.choice(ids)
 
     def get_comments_by_id(self, id: str, timeout=3) -> typing.Tuple[int, list]:
         """根据番号获取评论 (最佳评论, 最多 5 条)
