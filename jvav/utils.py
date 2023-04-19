@@ -593,8 +593,6 @@ class JavBusUtil(BaseUtil):
             soup = self.get_soup(resp)
             star = soup.find(class_="avatar-box text-center")
             star_id = star["href"].split("star/")[1]
-            print(star_id)
-            print(star)
             res_star_name = star.find("img")["title"]
             return 200, {"star_id": star_id, "star_name": res_star_name}
         except Exception as e:
