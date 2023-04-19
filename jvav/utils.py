@@ -300,7 +300,7 @@ class DmmUtil(BaseUtil):
                     id = f"{id_pre}-{id_num}"
                     avs.append({"rate": float(rate), "id": id})
                 except Exception as e:
-                    self.log.error(f"DmmUtil: 根据演员名字 {star_name} 获取高分番号列表, 遍历列表: {e}")
+                    pass
             if avs == []:
                 return 404, None
             avs = list(filter(lambda av: av["rate"] >= 4.0, avs))
