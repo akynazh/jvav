@@ -101,7 +101,7 @@ class JavBusUtilTest(unittest.TestCase):
         assert_code(*JavBusUtilTest.util.get_samples_by_id(id="ipx-365"))
 
     def test_check_star_exists(self):
-        assert_code(*JavBusUtilTest.util.check_star_exists(star_name="三上悠亜"))
+        assert_code(*JavBusUtilTest.util.check_star_exists(star_name="三上"))
 
     def test_get_av_by_id(self):
         assert_code(

@@ -572,12 +572,17 @@ class JavBusUtil(BaseUtil):
             self.log.error(f"JavBusUtil: 根据番号 {id} 获取截图: {e}")
             return 404, None
 
-    def check_star_exists(self, star_name: str, timeout=3) -> typing.Tuple[int, str]:
-        """根据演员名称确认该演员在 javbus 是否存在, 如果存在则返回演员 id
+    def check_star_exists(self, star_name: str, timeout=3) -> typing.Tuple[int, dict]:
+        """根据演员名称确认该演员在 javbus 是否存在, 如果存在则返回演员 id 和演员名称
 
         :param str star_name: 演员名称
         :param int timeout: 超时时间(秒), 默认为 3
-        :return tuple[int, str]: 状态码和演员 id
+        :return tuple[int, dict]: 状态码, 演员 id 和演员名称
+        dict 格式:
+        {
+            "star_id": star_id,
+            "star_name": star_name
+        }
         """
         code, resp = self.send_req(
             url=f"{JavBusUtil.BASE_URL_SEARCH_STAR}/{star_name}", timeout=timeout
@@ -587,11 +592,13 @@ class JavBusUtil(BaseUtil):
         try:
             soup = self.get_soup(resp)
             star = soup.find(class_="avatar-box text-center")
-            return 200, star["href"].split("star/")[1]
+            star_id = star["href"].split("star/")[1]
+            print(star_id)
+            print(star)
+            res_star_name = star.find("img")["title"]
+            return 200, {"star_id": star_id, "star_name": res_star_name}
         except Exception as e:
-            self.log.error(
-                f"JavBusUtil: 根据演员名称 {star_name} 确认该演员在 javbus 是否存在, 如果存在则返回演员 id: {e}"
-            )
+            self.log.error(f"JavBusUtil: 根据演员名称 {star_name} 确认该演员在 javbus 是否存在: {e}")
             return 404, None
 
     def get_av_by_id(
