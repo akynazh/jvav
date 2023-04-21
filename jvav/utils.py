@@ -935,8 +935,11 @@ class SukebeiUtil(BaseUtil):
             "magnets": [],
             "url": "",
         }
+        qid = id.lower()
+        if qid.find("fc2") != -1:
+            qid = qid.replace("-", " ")
         # 查找av
-        url = f"{SukebeiUtil.BASE_URL}?q={id}"
+        url = f"{SukebeiUtil.BASE_URL}?q={qid}"
         code, resp = self.send_req(url=url, timeout=timeout)
         if code != 200:
             return code, None

@@ -168,7 +168,7 @@ class SukebeiUtilTest(unittest.TestCase):
     def test_get_av_by_id(self):
         assert_code(
             *SukebeiUtilTest.util.get_av_by_id(
-                "ipx-365", is_nice=True, is_uncensored=False, magnet_max_count=3
+                "fc2-3237415", is_nice=True, is_uncensored=False, magnet_max_count=3
             )
         )
 
