@@ -670,8 +670,13 @@ class JavBusUtil(BaseUtil):
                     av["title"] = big_image.img["title"]
             paras = soup.find(class_="col-md-3 info").find_all("p")
             for i, p in enumerate(paras):
+                # 获取識別碼
+                if p.text.find("識別碼:") != -1:
+                    av["id"] = "".join(
+                        p.text.replace("識別碼:", "").replace('"', "").split()
+                    )
                 # 获取发行日期
-                if p.text.find("發行日期:") != -1:
+                elif p.text.find("發行日期:") != -1:
                     av["date"] = "".join(
                         p.text.replace("發行日期:", "").replace('"', "").split()
                     )
