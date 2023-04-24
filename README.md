@@ -53,3 +53,11 @@ options:
   -p PROXY, --proxy PROXY
                         后接代理服务器地址, 默认读取环境变量 http_proxy 的值
 ```
+
+## TODO
+
+以下是一些待实现的功能, 期待各位贡献代码哦~
+
+- [ ] 将查询成功的结果缓存本地
+- [ ] 支持 javdb.com
+- [ ] 支持 db.msin.jp
