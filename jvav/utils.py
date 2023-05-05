@@ -95,6 +95,40 @@ class BaseUtil:
         return BeautifulSoup(resp.text, "lxml")
 
 
+class JavDbUtil(BaseUtil):
+    BASE_URL = "https://javdb.com"
+    BASE_URL_SEARCH = "https://javdb.com/search?q="
+
+    def get_ids_from_page(self, url: str) -> typing.Tuple[int, list]:
+        """从某个页面获取番号列表
+
+        :param str url: 某个页面
+        :return typing.Tuple[int, list]: 状态码和番号列表
+        """
+        code, resp = self.send_req(url=url)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            items = soup.find_all(class_="item")
+            ids = []
+            for item in items:
+                ids.append(item.find(class_="video-title").strong.text)
+            return 200, ids
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 从某个页面获取番号列表: {e}")
+            return 404, None
+
+    def get_ids_by_tag(self, tag: str) -> typing.Tuple[int, list]:
+        """根据标签获取番号列表
+
+        :param str tag: 标签
+        :return typing.Tuple[int, list]: 状态码和番号列表
+        """
+        url = f"{JavDbUtil.BASE_URL_SEARCH}{tag}"
+        return self.get_ids_from_page(url)
+
+
 class JavLibUtil(BaseUtil):
     BASE_URL = "https://www.javlibrary.com"
     # nice

@@ -21,6 +21,18 @@ def assert_res(res):
     print(res)
 
 
+class JavDbUtilTest(unittest.TestCase):
+    util = jvav.JavDbUtil(proxy_addr=PROXY_ADDR)
+
+    def test_get_ids_from_page(self):
+        assert_code(
+            *JavDbUtilTest.util.get_ids_from_page("https://javdb.com/search?q=中出")
+        )
+
+    def test_get_ids_by_tag(self):
+        assert_code(*JavDbUtilTest.util.get_ids_by_tag("出轨"))
+
+
 class JavLibUtilTest(unittest.TestCase):
     util = jvav.JavLibUtil(proxy_addr=PROXY_ADDR, max_rank_page=20)
 
