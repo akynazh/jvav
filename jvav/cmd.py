@@ -36,6 +36,8 @@ LOG = Logger(logging.INFO, f"{PATH_ROOT}/log.txt").logger
 class JvavArgsParser:
     def __init__(self):
         parser = argparse.ArgumentParser()
+        # 查看版本号
+        parser.add_argument("-v", "--version", action="store_true", help="查看版本号")
         # 搜索番号
         parser.add_argument("-av1", type=str, default="", help="后接番号，通过 JavBus 搜索该番号")
         parser.add_argument("-av2", type=str, default="", help="后接番号，通过 Sukebei 搜索该番号")
@@ -87,6 +89,9 @@ class JvavArgsParser:
             return
         args = self.args
         env_proxy = os.getenv("http_proxy")
+        if args.version:
+            print(f"jvav-{jvav.VERSION}")
+            return
         if args.proxy == "" and env_proxy:
             args.proxy = env_proxy
         if args.av1 != "":

@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 import re
-import os
 import lxml
 import random
 import typing
