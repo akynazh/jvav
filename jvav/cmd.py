@@ -46,6 +46,8 @@ class JvavArgsParser:
         # 搜索演员
         parser.add_argument("-sr", type=str, default="", help="后接演员名字, 根据演员名字获取高分番号列表")
         parser.add_argument("-srn", type=str, default="", help="后接演员名字, 根据演员名字获取最新番号列表")
+        # 根据关键字搜索番号
+        parser.add_argument("-tg", type=str, default="", help="后接关键字, 根据关键字搜索番号列表")
         # 获取预览视频
         parser.add_argument(
             "-pv1", type=str, default="", help="后接番号, 通过 DMM 获取番号对应预览视频"
@@ -136,6 +138,10 @@ class JvavArgsParser:
         elif args.pv2 != "":
             self.handle_code(
                 *jvav.AvgleUtil(proxy_addr=args.proxy).get_pv_by_id(args.pv2)
+            )
+        elif args.tg != "":
+            self.handle_code(
+                *jvav.JavDbUtil(proxy_addr=args.proxy).get_ids_by_tag(args.tg)
             )
         else:
             self.parser.print_help()
