@@ -395,6 +395,7 @@ class JavBusUtil(BaseUtil):
     BASE_URL_SEARCH_BY_STAR_ID = f"{BASE_URL}/star"
     BASE_URL_SEARCH_STAR = f"{BASE_URL}/searchstar"
     BASE_URL_MAGNET = f"{BASE_URL}/ajax/uncledatoolsbyajax.php?lang=zh"
+    BASE_URL_GENRE = f"{BASE_URL}/genre"
 
     def __init__(
         self,
@@ -411,6 +412,47 @@ class JavBusUtil(BaseUtil):
         super().__init__(proxy_addr)
         self.max_home_page_count = max_home_page_count
         self.max_new_avs_count = max_new_avs_count
+
+    def get_all_genres(self) -> typing.Tuple[int, list]:
+        """获取所有类别
+
+        :return typing.Tuple[int, list]: 状态码和类别列表
+        """
+        code, resp = self.send_req(url=JavBusUtil.BASE_URL_GENRE)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            boxes = soup.find_all(class_="row genre-box")
+            genres = []
+            for box in boxes:
+                tags = box.find_all("a")
+                for tag in tags:
+                    genres.append({tag.text: tag["href"]})
+            return 200, genres
+        except Exception as e:
+            self.log.error(f"JavBusUtil: 获取所有标签失败: {e}")
+            return 404, None
+
+    def get_id_by_genre_id(self, genre: str) -> typing.Tuple[int, str]:
+        """通过类别编号获取一个番号
+
+        :param str genre: 类别编号
+        :return typing.Tuple[int, str]: 状态码和番号
+        """
+        return self.get_id_from_page(
+            base_page_url=f"{JavBusUtil.BASE_URL_GENRE}/{genre}"
+        )
+
+    def get_id_by_genre_name(self, genre: str) -> typing.Tuple[int, str]:
+        """通过类别编号获取一个番号
+
+        :param str genre: 类别名称
+        :return typing.Tuple[int, str]: 状态码和番号
+        """
+        return self.get_id_from_page(
+            base_page_url=f"{JavBusUtil.BASE_URL_GENRE}/{genre}"
+        )
 
     def get_max_page(self, url: str, timeout=3) -> typing.Tuple[int, int]:
         """获取最大页数(只适用于不超过 10 页的页面)

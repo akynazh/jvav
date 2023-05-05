@@ -62,6 +62,12 @@ class JavBusUtilTest(unittest.TestCase):
         proxy_addr=PROXY_ADDR, max_home_page_count=100, max_new_avs_count=10
     )
 
+    def test_get_all_genres(self):
+        assert_code(*JavBusUtilTest.util.get_all_genres())
+
+    def test_get_id_by_genre_id(self):
+        assert_code(*JavBusUtilTest.util.get_id_by_genre_id("3s"))
+
     # python -m unittest discover -s tests -k test_get_max_page
     def test_get_max_page(self):
         assert_code(

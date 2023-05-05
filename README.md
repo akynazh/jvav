@@ -23,13 +23,9 @@ pip install jvav -U
 # A sample for DmmUtil
 import jvav
 
-PROXY_ADDR = 'http://127.0.0.1:7890'
-
-util = jvav.DmmUtil(proxy_addr=PROXY_ADDR)
-util.get_pv_by_id('ipx-365')
+util = jvav.DmmUtil(proxy_addr='http://127.0.0.1:7890')
 util.get_nice_avs_by_star_name('小倉由菜')
-util.get_score_by_id('ipx-365')
-util.get_top_stars(1)
+util.get_score_by_id('cawd-441')
 util.get_all_top_stars()
 ```
 
