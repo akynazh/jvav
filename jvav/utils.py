@@ -428,7 +428,7 @@ class JavBusUtil(BaseUtil):
             for box in boxes:
                 tags = box.find_all("a")
                 for tag in tags:
-                    genres.append({tag.text: tag["href"]})
+                    genres.append({tag.text: tag["href"][tag["href"].rfind("/") + 1 :]})
             return 200, genres
         except Exception as e:
             self.log.error(f"JavBusUtil: 获取所有标签失败: {e}")
