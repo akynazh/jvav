@@ -53,12 +53,11 @@ class BaseUtil:
         return UserAgent().random
 
     def send_req(
-        self, url: str, timeout=3, headers={}, proxies={}
+        self, url: str, headers={}, proxies={}
     ) -> typing.Tuple[int, requests.Response]:
         """发送请求
 
         :param str url: 地址
-        :param int timeout: 超时时间(秒), 默认为 3
         :param dict headers: 请求头, 默认使用随机请求头
         :param dict proxies: 代理字典, 默认使用类初始化时指定的代理进行配置
         :return tuple[int, requests.Response] 状态码和请求返回值
@@ -75,7 +74,6 @@ class BaseUtil:
             resp = requests.get(
                 url,
                 proxies=proxies,
-                timeout=timeout,
                 headers=headers,
             )
             if resp.status_code != 200:
@@ -176,20 +174,19 @@ class JavLibUtil(BaseUtil):
         self.max_rank_page = max_rank_page
 
     def get_random_ids_from_rank_by_page(
-        self, page: int, list_type: int, timeout=3
+        self, page: int, list_type: int
     ) -> typing.Tuple[int, str]:
         """从排行榜某页中获取该页番号列表
 
         :param int page: 第几页
         :param int list_type: 排行榜类型 0 nice | 1 new
-        :param int timeout: 超时时间(秒), 默认为 3
         :return typing.Tuple[int, list]: 状态码和番号列表
         """
         if list_type == 0:
             url = random.choice(JavLibUtil.URLS_NICE)
         elif list_type == 1:
             url = random.choice(JavLibUtil.URLS_NEW)
-        code, resp = self.send_req(url=url + str(page), timeout=timeout)
+        code, resp = self.send_req(url=url + str(page))
         if code != 200:
             return code, None
         try:
@@ -204,33 +201,29 @@ class JavLibUtil(BaseUtil):
             self.log.error(f"JavLibUtil: 从排行榜某页中获取该页番号列表: {e}")
             return 404, None
 
-    def get_random_id_from_rank(
-        self, list_type: int, timeout=3
-    ) -> typing.Tuple[int, str]:
+    def get_random_id_from_rank(self, list_type: int) -> typing.Tuple[int, str]:
         """从排行榜中随机获取番号
 
         :param int list_type: 排行榜类型 0 nice | 1 new
-        :param int timeout: 超时时间(秒), 默认为 3
         :return typing.Tuple[int, str]: 状态码和番号
         """
         page = random.randint(1, self.max_rank_page)
         code, ids = self.get_random_ids_from_rank_by_page(
-            page=page, list_type=list_type, timeout=timeout
+            page=page, list_type=list_type
         )
         if code != 200:
             return code, None
         else:
             return 200, random.choice(ids)
 
-    def get_comments_by_id(self, id: str, timeout=3) -> typing.Tuple[int, list]:
+    def get_comments_by_id(self, id: str) -> typing.Tuple[int, list]:
         """根据番号获取评论 (最佳评论, 最多 5 条)
 
         :param str id: 番号
-        :param int timeout: 超时时间(秒), 默认为 3
         :return typing.Tuple[int, list]: 状态码和评论列表
         """
         url = JavLibUtil.BASE_URL_SEARCH_AV + id
-        code, resp = self.send_req(url=url, timeout=timeout)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         javlib_av_id = ""
@@ -247,7 +240,7 @@ class JavLibUtil(BaseUtil):
             r_url = resp.url
             javlib_av_id = r_url[r_url.find("v=") + 2 :]
         comment_url = JavLibUtil.BASE_URL_REVIEW + javlib_av_id
-        code, resp = self.send_req(url=comment_url, timeout=timeout)
+        code, resp = self.send_req(url=comment_url)
         if code != 200:
             return code, None
         try:
@@ -269,11 +262,10 @@ class DmmUtil(BaseUtil):
     )
     BASE_URL_TOP_STARS = BASE_URL + "/digital/videoa/-/ranking/=/type=actress"
 
-    def get_pv_by_id(self, id: str, timeout=3) -> typing.Tuple[int, str]:
+    def get_pv_by_id(self, id: str) -> typing.Tuple[int, str]:
         """根据番号从 DMM 获取预览视频地址
 
         :param str id: 番号
-        :param int timeout: 超时时间(秒), 默认为 3
         :return tuple[int, str]: 状态码和预览视频地址
         """
         # 搜索番号
@@ -282,7 +274,7 @@ class DmmUtil(BaseUtil):
             "cookie": "age_check_done=1;",
             "user-agent": self.ua_mobile(),  # 手机端页面更方便爬取
         }
-        code, resp = self.send_req(url=url, headers=headers, timeout=timeout)
+        code, resp = self.send_req(url=url, headers=headers)
         if code != 200:
             return code, None
         try:
@@ -293,13 +285,10 @@ class DmmUtil(BaseUtil):
             self.log.error(f"DmmUtil: 根据番号 {id} 从 DMM 获取预览视频地址: {e}")
             return 404, None
 
-    def get_nice_avs_by_star_name(
-        self, star_name: str, timeout=5
-    ) -> typing.Tuple[int, list]:
+    def get_nice_avs_by_star_name(self, star_name: str) -> typing.Tuple[int, list]:
         """根据演员名字获取高分番号列表
 
         :param str star_name: 演员名字
-        :param int timeout: 超时时间(秒), 默认为 5
         :return typing.Tuple[int, list]: 状态码和番号列表
         番号列表单个对象结构:
         {
@@ -313,7 +302,7 @@ class DmmUtil(BaseUtil):
             "cookie": "age_check_done=1;",
             "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
         }
-        code, resp = self.send_req(url=url, headers=headers, timeout=timeout)
+        code, resp = self.send_req(url=url, headers=headers)
         if code != 200:
             return code, resp
         try:
@@ -346,11 +335,10 @@ class DmmUtil(BaseUtil):
             self.log.error(f"DmmUtil: 根据演员名字 {star_name} 获取高分番号列表: {e}")
             return 404, None
 
-    def get_score_by_id(self, id: str, timeout=3) -> typing.Tuple[int, str]:
+    def get_score_by_id(self, id: str) -> typing.Tuple[int, str]:
         """根据番号返回评分
 
         :param str id: 番号
-        :param int timeout: 超时时间(秒), 默认为 3
         :return tuple[int, str]: 状态码和评分
         """
         # 搜索番号
@@ -359,7 +347,7 @@ class DmmUtil(BaseUtil):
             "cookie": "age_check_done=1;",
             "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
         }
-        code, resp = self.send_req(url=url, headers=headers, timeout=timeout)
+        code, resp = self.send_req(url=url, headers=headers)
         if code != 200:
             return code, resp
         try:
@@ -378,11 +366,10 @@ class DmmUtil(BaseUtil):
         """
         return src.replace("_sm_", "_dmb_")
 
-    def get_top_stars(self, page=1, timeout=3) -> typing.Tuple[int, list]:
+    def get_top_stars(self, page=1) -> typing.Tuple[int, list]:
         """根据页数获取明星排行榜某页中的明星列表
 
         :param int page: 页数, 共 5 页, 每页 20 位, 共 100 位,  defaults to 1
-        :param int timeout: 超时时间(秒), 默认为 3
         :return tuple[int, list]: 状态码和明星列表
         """
         url = DmmUtil.BASE_URL_TOP_STARS + f"/page={page}/"
@@ -390,7 +377,7 @@ class DmmUtil(BaseUtil):
             "cookie": "age_check_done=1;",
             "user-agent": self.ua_desktop(),
         }
-        code, resp = self.send_req(url=url, headers=headers, timeout=timeout)
+        code, resp = self.send_req(url=url, headers=headers)
         if code != 200:
             return code, None
         try:
@@ -489,14 +476,13 @@ class JavBusUtil(BaseUtil):
             base_page_url=f"{JavBusUtil.BASE_URL_GENRE}/{genre}"
         )
 
-    def get_max_page(self, url: str, timeout=3) -> typing.Tuple[int, int]:
+    def get_max_page(self, url: str) -> typing.Tuple[int, int]:
         """获取最大页数(只适用于不超过 10 页的页面)
 
         :param str url: 页面地址
-        :param int timeout: 超时时间(秒), 默认为 3
         :return tuple[int, int]: 状态码和最大页数
         """
-        code, resp = self.send_req(url, timeout=timeout)
+        code, resp = self.send_req(url)
         if code != 200:
             return code, None
         try:
@@ -511,14 +497,11 @@ class JavBusUtil(BaseUtil):
             self.log.error(f"JavBusUtil: 从 {url} 获取最大页数: {e}")
             return 404, None
 
-    def get_ids_from_page(
-        self, base_page_url: str, page=-1, timeout=3
-    ) -> typing.Tuple[int, list]:
+    def get_ids_from_page(self, base_page_url: str, page=-1) -> typing.Tuple[int, list]:
         """从 av 列表页面获取该页面全部番号
 
         :param str base_page: 基础页地址, 也是第一页地址
         :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
-        :param int timeout: 超时时间(秒), 默认为 3
         :return tuple[int, str]: 状态码和番号列表
         """
         url = ""
@@ -529,7 +512,7 @@ class JavBusUtil(BaseUtil):
             if code != 200:
                 return code, None
             url = f"{base_page_url}/{random.randint(1, max_page)}"
-        code, resp = self.send_req(url=url, timeout=timeout)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         try:
@@ -622,16 +605,15 @@ class JavBusUtil(BaseUtil):
             return code, None
         return 200, ids[: self.max_new_avs_count]
 
-    def get_samples_by_id(self, id: str, timeout=3) -> typing.Tuple[int, list]:
+    def get_samples_by_id(self, id: str) -> typing.Tuple[int, list]:
         """根据番号获取截图
 
         :param str id: 番号
-        :param int timeout: 超时时间(秒), 默认为 3
         :return tuple[int, list]: 状态码和截图列表
         """
         samples = []
         url = f"{JavBusUtil.BASE_URL}/{id}"
-        code, resp = self.send_req(url=url, timeout=timeout)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         try:
@@ -649,11 +631,10 @@ class JavBusUtil(BaseUtil):
             self.log.error(f"JavBusUtil: 根据番号 {id} 获取截图: {e}")
             return 404, None
 
-    def check_star_exists(self, star_name: str, timeout=3) -> typing.Tuple[int, dict]:
+    def check_star_exists(self, star_name: str) -> typing.Tuple[int, dict]:
         """根据演员名称确认该演员在 javbus 是否存在, 如果存在则返回演员 id 和演员名称
 
         :param str star_name: 演员名称
-        :param int timeout: 超时时间(秒), 默认为 3
         :return tuple[int, dict]: 状态码, 演员 id 和演员名称
         dict 格式:
         {
@@ -661,9 +642,7 @@ class JavBusUtil(BaseUtil):
             "star_name": star_name
         }
         """
-        code, resp = self.send_req(
-            url=f"{JavBusUtil.BASE_URL_SEARCH_STAR}/{star_name}", timeout=timeout
-        )
+        code, resp = self.send_req(url=f"{JavBusUtil.BASE_URL_SEARCH_STAR}/{star_name}")
         if code != 200:
             return code, None
         try:
@@ -682,7 +661,6 @@ class JavBusUtil(BaseUtil):
         is_nice: bool,
         is_uncensored: bool,
         magnet_max_count=10,
-        timeout=3,
     ) -> typing.Tuple[int, dict]:
         """通过 javbus 获取番号对应 av
 
@@ -690,7 +668,6 @@ class JavBusUtil(BaseUtil):
         :param bool is_nice: 是否过滤出高清, 有字幕磁链
         :param bool is_uncensored: 是否过滤出无码磁链
         :param int magnet_max_count: 过滤后磁链的最大数目, 默认为 10
-        :param int timeout: 超时时间(秒), 默认为 3
         :return tuple[int, dict]: 状态码和 av
         av格式:
         {
@@ -731,7 +708,7 @@ class JavBusUtil(BaseUtil):
         }
         url = f"{JavBusUtil.BASE_URL}/{id}"
         av["url"] = url
-        code, resp = self.send_req(url=url, timeout=timeout)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         soup = self.get_soup(resp)
@@ -795,7 +772,7 @@ class JavBusUtil(BaseUtil):
             "referer": f"{JavBusUtil.BASE_URL}/{id}",
         }
         # 发送请求获取含磁链页
-        code, resp = self.send_req(url=url, headers=headers, timeout=timeout)
+        code, resp = self.send_req(url=url, headers=headers)
         # 如果不存在磁链或请求失败则直接返回
         if code != 200:
             return 200, av
@@ -851,10 +828,9 @@ class JavBusUtil(BaseUtil):
 class AvgleUtil(BaseUtil):
     BASE_URL = "https://api.avgle.com"
 
-    def get_video_by_id(self, id: str, timeout=3) -> typing.Tuple[int, dict]:
+    def get_video_by_id(self, id: str) -> typing.Tuple[int, dict]:
         """根据番号从 avgle 获取视频
         :param str id: 番号
-        :param int timeout: 超时时间(秒), 默认为 3
         :return tuple[int, dict]: 状态码, 视频链接
         视频链接：
         {
@@ -866,7 +842,7 @@ class AvgleUtil(BaseUtil):
         limit = 3
         url = f"{AvgleUtil.BASE_URL}/v1/jav/{id}/{page}?limit={limit}"
         res = {"fv": "", "pv": ""}
-        code, resp = self.send_req(url=url, timeout=timeout)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         if resp.json()["success"]:
@@ -966,7 +942,6 @@ class SukebeiUtil(BaseUtil):
         is_nice: bool,
         is_uncensored: bool,
         magnet_max_count=10,
-        timeout=3,
     ) -> typing.Tuple[int, dict]:
         """通过 sukebei 获取番号对应 av
 
@@ -974,7 +949,6 @@ class SukebeiUtil(BaseUtil):
         :param bool is_nice: 是否过滤出高清, 有字幕磁链
         :param bool is_uncensored: 是否过滤出无码磁链
         :param int magnet_max_count: 过滤后磁链的最大数目, 默认为 10
-        :param int timeout: 超时时间(秒), 默认为 3
         :return tuple[int, dict]: 状态码和 av
         av格式:
         {
@@ -1017,7 +991,7 @@ class SukebeiUtil(BaseUtil):
             qid = qid.replace("-", " ")
         # 查找av
         url = f"{SukebeiUtil.BASE_URL}?q={qid}"
-        code, resp = self.send_req(url=url, timeout=timeout)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         try:
@@ -1066,6 +1040,45 @@ class SukebeiUtil(BaseUtil):
             self.log.error(f"SukebeiUtil: 通过 sukebei 获取番号 {id} 对应 av: {e}")
             return 404, None
         return 200, av
+
+    def search_av_by_tag(self, tag: str) -> typing.Tuple[int, list]:
+        """根据关键字搜索影片
+
+        :param str tag: 关键字
+        :return typing.Tuple[int, list]: 状态码和影片列表
+        影片列表单位结构:
+        {
+            "title": "",
+            "magnet": "",
+        }
+        """
+        url = f"{SukebeiUtil.BASE_URL}?q={tag}"
+        code, resp = self.send_req(url=url)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            torrent_list = soup.find(class_="torrent-list")
+            trs = torrent_list.tbody.find_all("tr")
+            avs = []
+            for tr in trs:
+                av = {
+                    "title": "",
+                    "magnet": "",
+                }
+                tds = tr.find_all("td")
+                for j, td in enumerate(tds):
+                    if j == 1:  # 获取标题
+                        av["title"] = td.a.text
+                    if j == 2:  # 获取磁链
+                        av["magnet"] = td.find_all("a")[-1]["href"]
+                avs.append(av)
+            if avs == []:
+                return 404, None
+            return 200, avs
+        except Exception as e:
+            self.log.error(f"SukebeiUtil: 根据关键字{tag}搜索影片: {e}")
+            return 404, None
 
 
 class WikiUtil(BaseUtil):

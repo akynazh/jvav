@@ -190,6 +190,9 @@ class SukebeiUtilTest(unittest.TestCase):
             )
         )
 
+    def test_search_av_by_tag(self):
+        assert_code(*SukebeiUtilTest.util.search_av_by_tag("出轨"))
+
 
 class WikiUtilTest(unittest.TestCase):
     util = jvav.WikiUtil(proxy_addr=PROXY_ADDR)
