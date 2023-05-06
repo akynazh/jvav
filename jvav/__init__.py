@@ -12,7 +12,7 @@ from jvav.utils import (
     JavDbUtil,
 )
 
-__version__ = "1.2.21"
+__version__ = "1.2.22"
 
 VERSION = __version__
 

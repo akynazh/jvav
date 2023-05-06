@@ -114,6 +114,8 @@ class JavDbUtil(BaseUtil):
             ids = []
             for item in items:
                 ids.append(item.find(class_="video-title").strong.text)
+            if ids == []:
+                return 404, None
             return 200, ids
         except Exception as e:
             self.log.error(f"JavDbUtil: 从某个页面获取番号列表: {e}")
