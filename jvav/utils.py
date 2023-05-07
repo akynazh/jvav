@@ -249,9 +249,12 @@ class JavLibUtil(BaseUtil):
             comments = []
             for c in comment_tags:
                 comments.append(c.text)
+            if comments == []:
+                return 404, None
             return 200, comments[:5]
         except Exception as e:
             self.log.error(f"JavLibUtil: 根据番号 {id} 获取评论失败: {e}")
+            return 404, None
 
 
 class DmmUtil(BaseUtil):
@@ -383,6 +386,8 @@ class DmmUtil(BaseUtil):
         try:
             soup = self.get_soup(resp)
             res = soup.find_all(class_="data")
+            if not res or len(res) == 0:
+                return 404, None
             return 200, [obj.p.a.text for obj in res]
         except Exception as e:
             self.log.error(f"DmmUtil: 获取明星排行榜第 {page} 页中的明星列表: {e}")
@@ -407,7 +412,10 @@ class DmmUtil(BaseUtil):
                 results[futures[future]] = res
             stars = []
             for i in range(1, 6):
-                stars += results[i]
+                if results[i] != None:
+                    stars += results[i]
+            if stars == []:
+                return 404, None
             return 200, stars
 
 
@@ -451,6 +459,8 @@ class JavBusUtil(BaseUtil):
                 tags = box.find_all("a")
                 for tag in tags:
                     genres.append({tag.text: tag["href"][tag["href"].rfind("/") + 1 :]})
+            if genres == []:
+                return 404, None
             return 200, genres
         except Exception as e:
             self.log.error(f"JavBusUtil: 获取所有标签失败: {e}")
@@ -523,9 +533,9 @@ class JavBusUtil(BaseUtil):
                 id_link = tag["href"]
                 id = id_link[id_link.rfind("/") + 1 :]
                 ids.append(id)
-            if ids != []:
-                return 200, ids
-            return 404, None
+            if ids == []:
+                return 404, None
+            return 200, ids
         except Exception as e:
             self.log.error(f"JavBusUtil: 从 av 列表页面 {base_page_url} 获取该页面全部番号: {e}")
             return 404, None

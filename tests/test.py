@@ -43,7 +43,7 @@ class JavLibUtilTest(unittest.TestCase):
         assert_code(*JavLibUtilTest.util.get_random_ids_from_rank_by_page(2, 0, 4))
 
     def test_get_comments_by_id(self):
-        assert_code(*JavLibUtilTest.util.get_comments_by_id(id="SSIS-586"))
+        assert_code(*JavLibUtilTest.util.get_comments_by_id(id="IPX-186"))
 
 
 class DmmUtilTest(unittest.TestCase):
