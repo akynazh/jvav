@@ -193,6 +193,11 @@ class SukebeiUtilTest(unittest.TestCase):
     def test_search_av_by_tag(self):
         assert_code(*SukebeiUtilTest.util.search_av_by_tag("出轨"))
 
+    def test_get_av_by_url(self):
+        assert_code(
+            *SukebeiUtilTest.util.get_av_by_url("https://sukebei.nyaa.si/view/3873249")
+        )
+
 
 class WikiUtilTest(unittest.TestCase):
     util = jvav.WikiUtil(proxy_addr=PROXY_ADDR)

@@ -92,6 +92,15 @@ class BaseUtil:
         """
         return BeautifulSoup(resp.text, "lxml")
 
+    @staticmethod
+    def write_html(resp: requests.Response):
+        """将 html 代码写到 tmp.html
+
+        :param requests.Response resp
+        """
+        with open(f"./tmp.html", "w") as f:
+            f.write(resp.text)
+
 
 class JavDbUtil(BaseUtil):
     BASE_URL = "https://javdb.com"
@@ -1059,7 +1068,7 @@ class SukebeiUtil(BaseUtil):
         影片列表单位结构:
         {
             "title": "",
-            "magnet": "",
+            "loc": "", # /view/{num}
         }
         """
         url = f"{SukebeiUtil.BASE_URL}?q={tag}"
@@ -1074,20 +1083,51 @@ class SukebeiUtil(BaseUtil):
             for tr in trs:
                 av = {
                     "title": "",
-                    "magnet": "",
+                    "loc": "",
                 }
                 tds = tr.find_all("td")
-                for j, td in enumerate(tds):
-                    if j == 1:  # 获取标题
-                        av["title"] = td.a.text
-                    if j == 2:  # 获取磁链
-                        av["magnet"] = td.find_all("a")[-1]["href"]
+                av["title"] = tds[1].a["title"]
+                av["loc"] = tds[1].a["href"]
                 avs.append(av)
             if avs == []:
                 return 404, None
             return 200, avs
         except Exception as e:
             self.log.error(f"SukebeiUtil: 根据关键字{tag}搜索影片: {e}")
+            return 404, None
+
+    def get_av_by_url(self, url: str) -> typing.Tuple[int, dict]:
+        """根据地址获取 av
+
+        :param str url: 地址
+        :return typing.Tuple[int, dict]: 状态码和资源
+        资源结构:
+        {
+            "url": "",
+            "title": "",
+            "img": [],
+            "magnet": "",
+        }
+        """
+        code, resp = self.send_req(url=url)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            av = {
+                "url": url,
+                "title": "",
+                "img": [],
+                "magnet": "",
+            }
+            av["title"] = soup.find(class_="panel-title").text
+            av["magnet"] = soup.find(class_="card-footer-item")["href"]
+            tag_desc = soup.find(id="torrent-description").text
+            imgs = re.compile(r"\((.*?)\)").findall(tag_desc)
+            av["img"] = [img for img in imgs]
+            return 200, av
+        except Exception as e:
+            self.log.error(f"SukebeiUtil: 根据地址 {url} 获取 av: {e}")
             return 404, None
 
 
