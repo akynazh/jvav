@@ -757,7 +757,7 @@ class JavBusUtil(BaseUtil):
                 elif p.text.find("類別:") != -1:
                     tags = paras[i + 1].find_all("a")
                     for tag in tags:
-                        av["tags"] += "".join(tag.text.split()) + " "
+                        av["tags"] += f"#{''.join(tag.text.split())} "
                     av["tags"] = av["tags"].strip()
                 # 获取演员
                 elif i == len(paras) - 1:
