@@ -38,25 +38,25 @@ usage: cmd.py [-h] [-v] [-av1 AV1] [-av2 AV2] [-nc] [-uc] [-sr SR] [-srn SRN]
 
 optional arguments:
   -h, --help            show this help message and exit
-  -v, --version         查看版本号
-  -av1 AV1              后接番号，通过 JavBus 搜索该番号
-  -av2 AV2              后接番号，通过 Sukebei 搜索该番号
-  -nc                   过滤出高清有字幕磁链
-  -uc                   过滤出无码磁链
-  -sr SR                后接演员名字, 根据演员名字获取高分番号列表
-  -srn SRN              后接演员名字, 根据演员名字获取最新番号列表
-  -tg TG                后接关键字, 根据关键字搜索番号列表
-  -pv1 PV1              后接番号, 通过 DMM 获取番号对应预览视频
-  -pv2 PV2              后接番号, 通过 Avgle 获取番号对应预览视频
-  -tp                   获取 DMM 女优排行榜前 25 位
+  -v, --version         View the version number
+  -av1 AV1              Followed by a code, search for the code on JavBus
+  -av2 AV2              Followed by a code, search for the code on Sukebei
+  -nc                   Filter out high-definition torrents with subtitles
+  -uc                   Filter out uncensored torrents
+  -sr SR                Followed by an actress name, get a list of high-rated codes based on the actress name
+  -srn SRN              Followed by an actress name, get a list of the latest codes based on the actress name
+  -tg TG                Followed by a keyword, search for codes based on the keyword
+  -pv1 PV1              Followed by a code, get the preview video corresponding to the code from DMM
+  -pv2 PV2              Followed by a code, get the preview video corresponding to the code from Avgle
+  -tp                   Get the top 25 ranking of DMM actresses
   -p PROXY, --proxy PROXY
-                        后接代理服务器地址, 默认读取环境变量 http_proxy 的值
+                        Followed by the proxy server address, by default reads the value of the http_proxy environment variable.
 ```
 
 ## TODO
 
-以下是一些待实现的功能, 期待各位贡献代码哦~
+The following are some functions to be implemented, and I look forward to your contribution~ 
 
-- [ ] 将查询成功的结果缓存本地
-- [ ] 支持 javdb.com
-- [ ] 支持 db.msin.jp
+- [ ] cache the successful query results locally
+- [ ] support javdb.com
+- [ ] support db.msin.jp
