@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 import os
+import sys
 import logging
 import argparse
 import langdetect
@@ -19,7 +20,7 @@ class Logger:
         """
         self.logger = logging.getLogger()
         self.logger.addHandler(self.get_file_handler(path_log_file))
-        self.logger.addHandler(logging.StreamHandler())
+        self.logger.addHandler(logging.StreamHandler(sys.stdout))
         self.logger.setLevel(log_level)
 
     def get_file_handler(self, file):
@@ -36,34 +37,30 @@ LOG = Logger(logging.INFO, f"{PATH_ROOT}/log.txt").logger
 class JvavArgsParser:
     def __init__(self):
         parser = argparse.ArgumentParser()
-        # 查看版本号
-        parser.add_argument("-v", "--version", action="store_true", help="查看版本号")
-        # 搜索番号
-        parser.add_argument("-av1", type=str, default="", help="后接番号，通过 JavBus 搜索该番号")
-        parser.add_argument("-av2", type=str, default="", help="后接番号，通过 Sukebei 搜索该番号")
-        parser.add_argument("-nc", action="store_true", help="过滤出高清有字幕磁链")
-        parser.add_argument("-uc", action="store_true", help="过滤出无码磁链")
-        # 搜索演员
-        parser.add_argument("-sr", type=str, default="", help="后接演员名字, 根据演员名字获取高分番号列表")
-        parser.add_argument("-srn", type=str, default="", help="后接演员名字, 根据演员名字获取最新番号列表")
-        # 根据关键字搜索番号
-        parser.add_argument("-tg", type=str, default="", help="后接关键字, 根据关键字搜索番号列表")
-        # 获取预览视频
-        parser.add_argument(
-            "-pv1", type=str, default="", help="后接番号, 通过 DMM 获取番号对应预览视频"
-        )
-        parser.add_argument(
-            "-pv2", type=str, default="", help="后接番号, 通过 Avgle 获取番号对应预览视频"
-        )
-        # 获取排行榜
-        parser.add_argument("-tp", action="store_true", help="获取 DMM 女优排行榜前 25 位")
-        # 配置代理
+        # Check version
+        parser.add_argument("-v", "--version", action="store_true", help="Check version")
+        # Search number
+        parser.add_argument("-av1", type=str, default="", help="Followed by a code, search this code on JavBus")
+        parser.add_argument("-av2", type=str, default="", help="Followed by a code, search this code on Sukebei")
+        parser.add_argument("-nc", action="store_true", help="Filter out high-definition subtitles magnet links")
+        parser.add_argument("-uc", action="store_true", help="Filter out uncoded magnet links")
+        # Search actor
+        parser.add_argument("-sr", type=str, default="", help="Followed by an actress name, get a list of high-rated codes based on the actress name")
+        parser.add_argument("-srn", type=str, default="", help="Followed by an actress name, get a list of the most recent codes based on the actress name")
+        # Search number by keyword
+        parser.add_argument("-tg", type=str, default="", help="Followed by a keyword, search for codes based on the keyword")
+        # Get preview video
+        parser.add_argument("-pv1", type=str, default="", help="Followed by a code, get the corresponding preview video of the code on DMM")
+        parser.add_argument("-pv2", type=str, default="", help="Follow a code, get the corresponding preview video of the code on Avgle")
+        # Get leaderboard
+        parser.add_argument("-tp", action="store_true", help="Get the top 25 ranking of DMM actresses")
+        # Configure proxy
         parser.add_argument(
             "-p",
             "--proxy",
             type=str,
             default="",
-            help="后接代理服务器地址, 默认读取环境变量 http_proxy 的值",
+            help="Followed by a proxy server address (by default reads the value of the environment variable http_proxy)",
         )
         self.parser = parser
         self.args = None
