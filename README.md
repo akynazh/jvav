@@ -11,6 +11,7 @@ pip install jvav -U
 ## LIB
 
 - DmmUtil
+- JavDbUtil
 - JavLibUtil
 - JavBusUtil
 - AvgleUtil

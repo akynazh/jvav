@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import os
 import sys
+import json
 import logging
 import argparse
 import langdetect
@@ -38,22 +39,67 @@ class JvavArgsParser:
     def __init__(self):
         parser = argparse.ArgumentParser()
         # Check version
-        parser.add_argument("-v", "--version", action="store_true", help="Check version")
+        parser.add_argument(
+            "-v", "--version", action="store_true", help="Check version"
+        )
         # Search number
-        parser.add_argument("-av1", type=str, default="", help="Followed by a code, search this code on JavBus")
-        parser.add_argument("-av2", type=str, default="", help="Followed by a code, search this code on Sukebei")
-        parser.add_argument("-nc", action="store_true", help="Filter out high-definition subtitles magnet links")
-        parser.add_argument("-uc", action="store_true", help="Filter out uncoded magnet links")
+        parser.add_argument(
+            "-av1",
+            type=str,
+            default="",
+            help="Followed by a code, search this code on JavBus",
+        )
+        parser.add_argument(
+            "-av2",
+            type=str,
+            default="",
+            help="Followed by a code, search this code on Sukebei",
+        )
+        parser.add_argument(
+            "-nc",
+            action="store_true",
+            help="Filter out high-definition subtitles magnet links",
+        )
+        parser.add_argument(
+            "-uc", action="store_true", help="Filter out uncoded magnet links"
+        )
         # Search actor
-        parser.add_argument("-sr", type=str, default="", help="Followed by an actress name, get a list of high-rated codes based on the actress name")
-        parser.add_argument("-srn", type=str, default="", help="Followed by an actress name, get a list of the most recent codes based on the actress name")
+        parser.add_argument(
+            "-sr",
+            type=str,
+            default="",
+            help="Followed by an actress name, get a list of high-rated codes based on the actress name",
+        )
+        parser.add_argument(
+            "-srn",
+            type=str,
+            default="",
+            help="Followed by an actress name, get a list of the most recent codes based on the actress name",
+        )
         # Search number by keyword
-        parser.add_argument("-tg", type=str, default="", help="Followed by a keyword, search for codes based on the keyword")
+        parser.add_argument(
+            "-tg",
+            type=str,
+            default="",
+            help="Followed by a keyword, search for codes based on the keyword",
+        )
         # Get preview video
-        parser.add_argument("-pv1", type=str, default="", help="Followed by a code, get the corresponding preview video of the code on DMM")
-        parser.add_argument("-pv2", type=str, default="", help="Follow a code, get the corresponding preview video of the code on Avgle")
+        parser.add_argument(
+            "-pv1",
+            type=str,
+            default="",
+            help="Followed by a code, get the corresponding preview video of the code on DMM",
+        )
+        parser.add_argument(
+            "-pv2",
+            type=str,
+            default="",
+            help="Follow a code, get the corresponding preview video of the code on Avgle",
+        )
         # Get leaderboard
-        parser.add_argument("-tp", action="store_true", help="Get the top 25 ranking of DMM actresses")
+        parser.add_argument(
+            "-tp", action="store_true", help="Get the top 25 ranking of DMM actresses"
+        )
         # Configure proxy
         parser.add_argument(
             "-p",
@@ -72,9 +118,9 @@ class JvavArgsParser:
         :param any res: 结果
         """
         if code != 200:
-            LOG.error(f"{code}: 操作失败")
+            LOG.error(code)
             return
-        LOG.info(res)
+        LOG.info(json.dumps(res, indent=4, ensure_ascii=False))
 
     def parse(self):
         """解析命令行参数"""
