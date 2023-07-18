@@ -6,3 +6,4 @@ jvav.egg-info
 *.spec
 /jvav/dist
 /jvav/build
+.DS_Store
