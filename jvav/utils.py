@@ -1261,7 +1261,6 @@ class SjsUtil(BaseUtil):
         if code != 200:
             return code, None
         try:
-            self.write_html(resp)
             soup = self.get_soup(resp)
             nex_ranklist_box = soup.find(class_="nex_ranklist_box")  # 最新帖子
             nex_rank_cosimg = soup.find(class_="nex_rank_cosimg")  # cos视图榜

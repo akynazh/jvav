@@ -13,7 +13,7 @@ from jvav.utils import (
     SjsUtil,
 )
 
-__version__ = "1.2.33"
+__version__ = "1.2.34"
 
 VERSION = __version__
 
