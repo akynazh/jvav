@@ -143,10 +143,12 @@ class JavLibUtil(BaseUtil):
     # nice
     BASE_URL_BEST_RATED_LAST_MONTH = BASE_URL + "/cn/vl_bestrated.php?mode=1&page="
     BASE_URL_BEST_RATED_ALL = BASE_URL + "/cn/vl_bestrated.php?mode=2&page="
-    BASE_URL_MOST_WANTED_LAST_MONTH = BASE_URL + "/cn/vl_mostwanted.php?&mode=1&page="
+    BASE_URL_MOST_WANTED_LAST_MONTH = BASE_URL + \
+        "/cn/vl_mostwanted.php?&mode=1&page="
     BASE_URL_MOST_WANTED_ALL = BASE_URL + "/cn/vl_mostwanted.php?&mode=2&page="
     # new
-    BASE_URL_NEW_RELEASE_HAVE_COMMENT = BASE_URL + "/cn/vl_newrelease.php?&mode=1&page="
+    BASE_URL_NEW_RELEASE_HAVE_COMMENT = BASE_URL + \
+        "/cn/vl_newrelease.php?&mode=1&page="
     BASE_URL_NEW_RELEASE_ALL = BASE_URL + "/cn/vl_newrelease.php?&mode=2&page="
     BASE_URL_NEW_ENTRIES = BASE_URL + "/cn/vl_newentries.php?page="
     URLS_NICE = [
@@ -241,13 +243,13 @@ class JavLibUtil(BaseUtil):
                 soup = self.get_soup(resp)
                 videos = soup.find_all(class_="video")
                 video_href = videos[0].a["href"]
-                javlib_av_id = video_href[video_href.find("v=") + 2 :]
+                javlib_av_id = video_href[video_href.find("v=") + 2:]
             except Exception as e:
                 self.log.error(f"JavLibUtil: 根据番号 {id} 获取评论失败: {e}")
                 return 404, None
         else:
             r_url = resp.url
-            javlib_av_id = r_url[r_url.find("v=") + 2 :]
+            javlib_av_id = r_url[r_url.find("v=") + 2:]
         comment_url = JavLibUtil.BASE_URL_REVIEW + javlib_av_id
         code, resp = self.send_req(url=comment_url)
         if code != 200:
@@ -467,7 +469,8 @@ class JavBusUtil(BaseUtil):
             for box in boxes:
                 tags = box.find_all("a")
                 for tag in tags:
-                    genres.append({tag.text: tag["href"][tag["href"].rfind("/") + 1 :]})
+                    genres.append(
+                        {tag.text: tag["href"][tag["href"].rfind("/") + 1:]})
             if genres == []:
                 return 404, None
             return 200, genres
@@ -540,13 +543,14 @@ class JavBusUtil(BaseUtil):
             tags = soup.find_all(class_="movie-box")
             for tag in tags:
                 id_link = tag["href"]
-                id = id_link[id_link.rfind("/") + 1 :]
+                id = id_link[id_link.rfind("/") + 1:]
                 ids.append(id)
             if ids == []:
                 return 404, None
             return 200, ids
         except Exception as e:
-            self.log.error(f"JavBusUtil: 从 av 列表页面 {base_page_url} 获取该页面全部番号: {e}")
+            self.log.error(
+                f"JavBusUtil: 从 av 列表页面 {base_page_url} 获取该页面全部番号: {e}")
             return 404, None
 
     def get_id_from_page(self, base_page_url: str, page=-1) -> typing.Tuple[int, str]:
@@ -661,7 +665,8 @@ class JavBusUtil(BaseUtil):
             "star_name": star_name
         }
         """
-        code, resp = self.send_req(url=f"{JavBusUtil.BASE_URL_SEARCH_STAR}/{star_name}")
+        code, resp = self.send_req(
+            url=f"{JavBusUtil.BASE_URL_SEARCH_STAR}/{star_name}")
         if code != 200:
             return code, None
         try:
@@ -671,7 +676,8 @@ class JavBusUtil(BaseUtil):
             res_star_name = star.find("img")["title"]
             return 200, {"star_id": star_id, "star_name": res_star_name}
         except Exception as e:
-            self.log.error(f"JavBusUtil: 根据演员名称 {star_name} 确认该演员在 javbus 是否存在: {e}")
+            self.log.error(
+                f"JavBusUtil: 根据演员名称 {star_name} 确认该演员在 javbus 是否存在: {e}")
             return 404, None
 
     def get_av_by_id(
@@ -939,7 +945,8 @@ class MagnetUtil:
         # 统一单位为 MB
         for magnet in magnets:
             magnet["size_no_unit"] = -1
-            size = magnet["size"].lower().replace("gib", "gb").replace("mib", "mb")
+            size = magnet["size"].lower().replace(
+                "gib", "gb").replace("mib", "mb")
             gb_idx = size.find("gb")
             mb_idx = size.find("mb")
             if gb_idx != -1:  # 单位为 GB
@@ -948,7 +955,8 @@ class MagnetUtil:
                 magnet["size_no_unit"] = float(size[:mb_idx])
         magnets = list(filter(lambda m: m["size_no_unit"] != -1, magnets))
         # 根据 size_no_unit 大小排序
-        magnets = sorted(magnets, key=lambda m: m["size_no_unit"], reverse=True)
+        magnets = sorted(
+            magnets, key=lambda m: m["size_no_unit"], reverse=True)
         return magnets
 
 
@@ -1150,7 +1158,8 @@ class WikiUtil(BaseUtil):
         }
         """
         try:
-            wiki = wikipediaapi.Wikipedia(language=from_lang, proxies=self.proxy_json)
+            wiki = wikipediaapi.Wikipedia(
+                language=from_lang, proxies=self.proxy_json)
             page = wiki.page(title=topic)
             # links = page.links
             # for k in links.keys():
@@ -1188,3 +1197,97 @@ class TransUtil(BaseUtil):
             ).translate(text)
         except Exception as e:
             self.log.error(f"TransUtil: 翻译: {e}")
+
+
+class SjsUtil(BaseUtil):
+    BASE_URL = "https://xsijishe.com"
+    BASE_URL_RANK = BASE_URL + "/portal.php?mod=list&catid=2"
+
+    def get_rank_by_nex(self, nex) -> list:
+        """根据标签元素 nex 获取司机社排行榜
+
+        :return 排行榜列表
+        """
+        dd_list = nex.find_all("dd")
+        rank_list = []
+        for dd in dd_list:
+            try:
+                img = dd.find("img")["src"]
+                url = dd.find("h5").a["href"]
+                title = dd.find("h5").a.text
+                rank_list.append({
+                    "img": img,
+                    "url": f"{SjsUtil.BASE_URL}/{url}",
+                    "title": title
+                })
+            except Exception:
+                pass
+        return rank_list
+
+    def get_rank_by_nex_for_cosimg(self, nex) -> list:
+        """根据标签元素 nex 获取司机社排行榜 (cosimg)
+
+        :return 排行榜列表
+        """
+        dd_list = nex.find_all("dd")
+        rank_list = []
+        for dd in dd_list:
+            try:
+                img = dd.find("img")["src"]
+                url = dd.find("a")["href"]
+                title = dd.find("h5").text
+                rank_list.append({
+                    "img": img,
+                    "url": f"{SjsUtil.BASE_URL}/{url}",
+                    "title": title
+                })
+            except Exception:
+                pass
+        return rank_list
+
+    def get_rank(self, rank_type=1) -> typing.Tuple[int, list]:
+        """获取司机社排行榜
+
+        :param int rank_type: 排行榜类型 1.最新帖子 2.cos视图榜 3.动漫阅读榜 4.论坛帖子排行 5.热门出处悬赏
+        :return typing.Tuple[int, list]: 状态码和排行榜列表
+        列表单位结构:
+        {
+            "img": "",
+            "url": "",
+            "title": ""
+        }
+        """
+        code, resp = self.send_req(url=SjsUtil.BASE_URL_RANK)
+        if code != 200:
+            return code, None
+        try:
+            self.write_html(resp)
+            soup = self.get_soup(resp)
+            nex_ranklist_box = soup.find(class_="nex_ranklist_box")  # 最新帖子
+            nex_rank_cosimg = soup.find(class_="nex_rank_cosimg")  # cos视图榜
+            nex_mangalist = soup.find(class_="nex_mangalist")  # 动漫阅读榜
+            nex_threadbox = soup.find(class_="nex_threadbox")  # 论坛帖子排行
+            nex_artbox = soup.find(class_="nex_artbox")  # 热门出处悬赏
+            if rank_type == 1:
+                nex = nex_ranklist_box
+            elif rank_type == 2:
+                nex = nex_rank_cosimg
+            elif rank_type == 3:
+                nex = nex_mangalist
+            elif rank_type == 4:
+                nex = nex_threadbox
+            elif rank_type == 5:
+                nex = nex_artbox
+            else:
+                nex = nex_ranklist_box
+            if nex:
+                if rank_type == 2:
+                    rank_list = self.get_rank_by_nex_for_cosimg(nex)
+                else:
+                    rank_list = self.get_rank_by_nex(nex)
+                return 200, rank_list
+            else:
+                return 404, None
+        except Exception as e:
+            self.log.error(f"SjsUtil: 获取司机社排行榜失败: {e}")
+            return 404, None

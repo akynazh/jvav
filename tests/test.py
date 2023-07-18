@@ -21,6 +21,13 @@ def assert_res(res):
     print(res)
 
 
+class SjsUtilTest(unittest.TestCase):
+    util = jvav.SjsUtil(proxy_addr=PROXY_ADDR)
+
+    def test_get_rank(self):
+        assert_code(*SjsUtilTest.util.get_rank(2))
+
+
 class JavDbUtilTest(unittest.TestCase):
     util = jvav.JavDbUtil(proxy_addr=PROXY_ADDR)
 
@@ -40,7 +47,8 @@ class JavLibUtilTest(unittest.TestCase):
         assert_code(*JavLibUtilTest.util.get_random_id_from_rank(1))
 
     def test_get_random_ids_from_rank_by_page(self):
-        assert_code(*JavLibUtilTest.util.get_random_ids_from_rank_by_page(2, 0, 4))
+        assert_code(
+            *JavLibUtilTest.util.get_random_ids_from_rank_by_page(2, 0, 4))
 
     def test_get_comments_by_id(self):
         assert_code(*JavLibUtilTest.util.get_comments_by_id(id="IPX-186"))
@@ -107,7 +115,8 @@ class JavBusUtilTest(unittest.TestCase):
         assert_code(*JavBusUtilTest.util.get_id_by_star_name(star_name="三上悠亜"))
 
     def test_get_new_ids_by_star_name(self):
-        assert_code(*JavBusUtilTest.util.get_new_ids_by_star_name(star_name="三上悠亜"))
+        assert_code(
+            *JavBusUtilTest.util.get_new_ids_by_star_name(star_name="三上悠亜"))
 
     def test_get_id_by_star_id(self):
         assert_code(*JavBusUtilTest.util.get_id_by_star_id(star_id="okq"))

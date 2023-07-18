@@ -152,7 +152,8 @@ class JvavArgsParser:
                 )
             )
         elif args.tp:
-            self.handle_code(*jvav.DmmUtil(proxy_addr=args.proxy).get_top_stars(1))
+            self.handle_code(
+                *jvav.DmmUtil(proxy_addr=args.proxy).get_top_stars(1))
         elif args.sr != "" or args.srn != "":
             star_name = args.sr if args.sr != "" else args.srn
             flag_srn = True if args.srn != "" else False
