@@ -53,13 +53,15 @@ class BaseUtil:
         return UserAgent().random
 
     def send_req(
-        self, url: str, headers={}, proxies={}
+        self, url: str, headers={}, proxies={}, m=0, **args
     ) -> typing.Tuple[int, requests.Response]:
         """发送请求
 
         :param str url: 地址
         :param dict headers: 请求头, 默认使用随机请求头
         :param dict proxies: 代理字典, 默认使用类初始化时指定的代理进行配置
+        :param int m: 请求方法, 默认为 get(0), 其他为 post(1), delete(2), put(3)
+        :param dict args: 其他 requests 参数
         :return tuple[int, requests.Response] 状态码和请求返回值
         关于状态码:
         200: 成功
@@ -71,11 +73,34 @@ class BaseUtil:
         if proxies == {}:
             proxies = self.proxy_json
         try:
-            resp = requests.get(
-                url,
-                proxies=proxies,
-                headers=headers,
-            )
+            if m == 0:
+                resp = requests.get(
+                    url,
+                    proxies=proxies,
+                    headers=headers,
+                    **args
+                )
+            elif m == 1:
+                resp = requests.post(
+                    url,
+                    proxies=proxies,
+                    headers=headers,
+                    **args
+                )
+            elif m == 2:
+                resp = requests.delete(
+                    url,
+                    proxies=proxies,
+                    headers=headers,
+                    **args
+                )
+            elif m == 3:
+                resp = requests.put(
+                    url,
+                    proxies=proxies,
+                    headers=headers,
+                    **args
+                )
             if resp.status_code != 200:
                 return 404, None
             return 200, resp

@@ -21,6 +21,36 @@ def assert_res(res):
     print(res)
 
 
+class BaseUtilTest(unittest.TestCase):
+    util = jvav.BaseUtil(proxy_addr=PROXY_ADDR)
+
+    def test_1(self):
+        headers = {
+            "authority": "api.cbbee0.com",
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5",
+            "content-type": "application/json;charset=UTF-8",
+            "origin": "http://www.fpie2.com",
+            "referer": "http://www.fpie2.com/",
+            "sec-ch-ua": '"Not.A/Brand";v="8", "Chromium";v="114", "Microsoft Edge";v="114"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"macOS"',
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.82",
+        }
+        data = '{"conditions":"ipx-828","field":0,"target":1,"sort":1,"userToken":"","hm":"008-api","device_id":""}'
+        assert_code(
+            *BaseUtilTest.util.send_req(
+                url="https://api.cbbee0.com/v1_2/articleSearch",
+                m=1,
+                headers=headers,
+                data=data,
+            )
+        )
+
+
 class SjsUtilTest(unittest.TestCase):
     util = jvav.SjsUtil(proxy_addr=PROXY_ADDR)
 
@@ -47,8 +77,7 @@ class JavLibUtilTest(unittest.TestCase):
         assert_code(*JavLibUtilTest.util.get_random_id_from_rank(1))
 
     def test_get_random_ids_from_rank_by_page(self):
-        assert_code(
-            *JavLibUtilTest.util.get_random_ids_from_rank_by_page(2, 0, 4))
+        assert_code(*JavLibUtilTest.util.get_random_ids_from_rank_by_page(2, 0, 4))
 
     def test_get_comments_by_id(self):
         assert_code(*JavLibUtilTest.util.get_comments_by_id(id="IPX-186"))
@@ -115,8 +144,7 @@ class JavBusUtilTest(unittest.TestCase):
         assert_code(*JavBusUtilTest.util.get_id_by_star_name(star_name="三上悠亜"))
 
     def test_get_new_ids_by_star_name(self):
-        assert_code(
-            *JavBusUtilTest.util.get_new_ids_by_star_name(star_name="三上悠亜"))
+        assert_code(*JavBusUtilTest.util.get_new_ids_by_star_name(star_name="三上悠亜"))
 
     def test_get_id_by_star_id(self):
         assert_code(*JavBusUtilTest.util.get_id_by_star_id(star_id="okq"))
