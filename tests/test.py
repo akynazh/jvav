@@ -21,6 +21,13 @@ def assert_res(res):
     print(res)
 
 
+class SgpUtilTest(unittest.TestCase):
+    util = jvav.SgpUtil(proxy_addr=PROXY_ADDR)
+
+    def test_get_video_by_av_id(self):
+        assert_code(*SgpUtilTest.util.get_video_by_av_id("ipx-828"))
+
+
 class BaseUtilTest(unittest.TestCase):
     util = jvav.BaseUtil(proxy_addr=PROXY_ADDR)
 

@@ -1,5 +1,7 @@
 # -*- coding: UTF-8 -*-
 import re
+from typing import Tuple, List
+
 import lxml
 import random
 import typing
@@ -53,7 +55,7 @@ class BaseUtil:
         return UserAgent().random
 
     def send_req(
-        self, url: str, headers={}, proxies={}, m=0, **args
+            self, url: str, headers={}, proxies={}, m=0, **args
     ) -> typing.Tuple[int, requests.Response]:
         """发送请求
 
@@ -169,11 +171,11 @@ class JavLibUtil(BaseUtil):
     BASE_URL_BEST_RATED_LAST_MONTH = BASE_URL + "/cn/vl_bestrated.php?mode=1&page="
     BASE_URL_BEST_RATED_ALL = BASE_URL + "/cn/vl_bestrated.php?mode=2&page="
     BASE_URL_MOST_WANTED_LAST_MONTH = BASE_URL + \
-        "/cn/vl_mostwanted.php?&mode=1&page="
+                                      "/cn/vl_mostwanted.php?&mode=1&page="
     BASE_URL_MOST_WANTED_ALL = BASE_URL + "/cn/vl_mostwanted.php?&mode=2&page="
     # new
     BASE_URL_NEW_RELEASE_HAVE_COMMENT = BASE_URL + \
-        "/cn/vl_newrelease.php?&mode=1&page="
+                                        "/cn/vl_newrelease.php?&mode=1&page="
     BASE_URL_NEW_RELEASE_ALL = BASE_URL + "/cn/vl_newrelease.php?&mode=2&page="
     BASE_URL_NEW_ENTRIES = BASE_URL + "/cn/vl_newentries.php?page="
     URLS_NICE = [
@@ -197,9 +199,9 @@ class JavLibUtil(BaseUtil):
     MAX_RANK_PAGE = 25
 
     def __init__(
-        self,
-        proxy_addr="",
-        max_rank_page=MAX_RANK_PAGE,
+            self,
+            proxy_addr="",
+            max_rank_page=MAX_RANK_PAGE,
     ):
         """初始化
 
@@ -210,7 +212,7 @@ class JavLibUtil(BaseUtil):
         self.max_rank_page = max_rank_page
 
     def get_random_ids_from_rank_by_page(
-        self, page: int, list_type: int
+            self, page: int, list_type: int
     ) -> typing.Tuple[int, str]:
         """从排行榜某页中获取该页番号列表
 
@@ -297,7 +299,7 @@ class DmmUtil(BaseUtil):
     BASE_URL = "https://www.dmm.co.jp"
     BASE_URL_SEARCH_AV = BASE_URL + "/search/=/searchstr="
     BASE_URL_SEARCH_STAR = (
-        BASE_URL + "/digital/videoa/-/list/search/=/device=tv/sort=ranking/?searchstr="
+            BASE_URL + "/digital/videoa/-/list/search/=/device=tv/sort=ranking/?searchstr="
     )
     BASE_URL_TOP_STARS = BASE_URL + "/digital/videoa/-/ranking/=/type=actress"
 
@@ -464,10 +466,10 @@ class JavBusUtil(BaseUtil):
     BASE_URL_GENRE = f"{BASE_URL}/genre"
 
     def __init__(
-        self,
-        proxy_addr="",
-        max_home_page_count=100,
-        max_new_avs_count=8,
+            self,
+            proxy_addr="",
+            max_home_page_count=100,
+            max_new_avs_count=8,
     ):
         """初始化
 
@@ -706,11 +708,11 @@ class JavBusUtil(BaseUtil):
             return 404, None
 
     def get_av_by_id(
-        self,
-        id: str,
-        is_nice: bool,
-        is_uncensored: bool,
-        magnet_max_count=10,
+            self,
+            id: str,
+            is_nice: bool,
+            is_uncensored: bool,
+            magnet_max_count=10,
     ) -> typing.Tuple[int, dict]:
         """通过 javbus 获取番号对应 av
 
@@ -838,10 +840,10 @@ class JavBusUtil(BaseUtil):
                         magnet["link"] = td.a["href"]
                         magnet_title = td.a.text.strip().lower()
                         if (
-                            "uncensor" in magnet_title
-                            or "無修正" in magnet_title
-                            or "无修正" in magnet_title
-                            or "无码" in magnet_title
+                                "uncensor" in magnet_title
+                                or "無修正" in magnet_title
+                                or "无修正" in magnet_title
+                                or "无码" in magnet_title
                         ):
                             magnet["uc"] = "1"
                         links = td.find_all("a")
@@ -989,11 +991,11 @@ class SukebeiUtil(BaseUtil):
     BASE_URL = "https://sukebei.nyaa.si"
 
     def get_av_by_id(
-        self,
-        id: str,
-        is_nice: bool,
-        is_uncensored: bool,
-        magnet_max_count=10,
+            self,
+            id: str,
+            is_nice: bool,
+            is_uncensored: bool,
+            magnet_max_count=10,
     ) -> typing.Tuple[int, dict]:
         """通过 sukebei 获取番号对应 av
 
@@ -1064,10 +1066,10 @@ class SukebeiUtil(BaseUtil):
                     if j == 1:  # 获取标题
                         title = td.a.text
                         if (
-                            "uncensor" in title
-                            or "無修正" in title
-                            or "无修正" in title
-                            or "无码" in title
+                                "uncensor" in title
+                                or "無修正" in title
+                                or "无修正" in title
+                                or "无码" in title
                         ):
                             magnet["uc"] = "1"
                         if i == 0:
@@ -1315,3 +1317,45 @@ class SjsUtil(BaseUtil):
         except Exception as e:
             self.log.error(f"SjsUtil: 获取司机社排行榜失败: {e}")
             return 404, None
+
+
+class SgpUtil(BaseUtil):
+    BASE_URL = "http://www.fpie2.com"
+    BASE_URL_SEARCH = "https://api.cbbee0.com/v1_2/articleSearch"
+    BASE_URL_DETAIL = f"{BASE_URL}/play-details/1/"
+
+    def get_video_by_av_id(self, av_id: str) -> tuple[int, None] | tuple[int, str]:
+        headers = {
+            'authority': 'api.cbbee0.com',
+            'accept': 'application/json, text/plain, */*',
+            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5',
+            'content-type': 'application/json;charset=UTF-8',
+            'origin': SgpUtil.BASE_URL,
+            'referer': SgpUtil.BASE_URL + '/',
+            'sec-ch-ua': '"Not.A/Brand";v="8", "Chromium";v="114", "Microsoft Edge";v="114"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"macOS"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'cross-site',
+            'user-agent': self.ua(),
+        }
+        data = '{"conditions": "' + av_id + '", "field": 0, "target": 1, "sort": 1, "userToken": "", "hm": "008-api", "device_id": ""}'
+
+        code, resp = self.send_req(url=SgpUtil.BASE_URL_SEARCH, headers=headers, m=1, data=data)
+        if code != 200:
+            return code, None
+        res = resp.json()
+        if not res["data"]:
+            return 200, None
+        else:
+            library_id = res["data"][0]["library_id"]
+            code, resp = self.send_req(url=f"{SgpUtil.BASE_URL_DETAIL}{library_id}", headers=headers)
+            if code != 200:
+                return code, None
+            soup = self.get_soup(resp)
+            try:
+                suffix = soup.find("iframe")["src"]
+                return 200, f'{SgpUtil.BASE_URL}{suffix}'
+            except Exception:
+                return 404, None

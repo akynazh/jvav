@@ -11,9 +11,10 @@ from jvav.utils import (
     TransUtil,
     JavDbUtil,
     SjsUtil,
+    SgpUtil,
 )
 
-__version__ = "1.2.35"
+__version__ = "1.3.0"
 
 VERSION = __version__
 
@@ -30,4 +31,5 @@ __all__ = [
     TransUtil,
     JavDbUtil,
     SjsUtil,
+    SgpUtil
 ]
