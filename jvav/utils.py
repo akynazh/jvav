@@ -1,16 +1,15 @@
 # -*- coding: UTF-8 -*-
-import re
-from typing import Tuple, List
-
-import lxml
-import random
-import typing
+import concurrent.futures
 import logging
+import random
+import re
+import typing
+import lxml
+
 import requests
 import wikipediaapi
-import concurrent.futures
-from bs4 import BeautifulSoup
 from anti_useragent import UserAgent
+from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
 
 
@@ -1356,6 +1355,16 @@ class SgpUtil(BaseUtil):
             soup = self.get_soup(resp)
             try:
                 suffix = soup.find("iframe")["src"]
-                return 200, f'{SgpUtil.BASE_URL}{suffix}'
+                video_addr = f'{SgpUtil.BASE_URL}{suffix}'
+                video_content = soup.find('div', {'class': 'content'})
+                # md = html2text.html2text(content.encode_contents().decode("utf-8"))
+                res = f"""解说视频地址: {video_addr}
+                
+                解说内容:
+                
+                {video_content}
+                
+                解说视频地址: {video_addr}"""
+                return 200, res
             except Exception:
                 return 404, None
