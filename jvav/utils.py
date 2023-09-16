@@ -1323,7 +1323,7 @@ class SgpUtil(BaseUtil):
     BASE_URL_SEARCH = "https://api.cbbee0.com/v1_2/articleSearch"
     BASE_URL_DETAIL = f"{BASE_URL}/play-details/1/"
 
-    def get_video_by_av_id(self, av_id: str) -> tuple[int, None] | tuple[int, str]:
+    def get_video_by_av_id(self, av_id: str) -> typing.Tuple[int, str]:
         headers = {
             'authority': 'api.cbbee0.com',
             'accept': 'application/json, text/plain, */*',
