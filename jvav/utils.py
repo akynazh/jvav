@@ -365,33 +365,35 @@ class JavDbUtil(BaseUtil):
             }
             soup = self._get_soup(resp)
             # 获取元信息
-            av["title_cn"] = soup.find("strong", {"class": "current-title"}).text.strip()
-            av["title"] = soup.find("span", {"class": "origin-title"}).text.strip()
+            title_cn = soup.find("strong", {"class": "current-title"})
+            title = soup.find("span", {"class": "origin-title"})
+            av["title_cn"] = title_cn.text.strip() if title_cn else ""
+            av["title"] = title.text.strip() if title else ""
             av["img"] = soup.find("div", {"class": "column column-video-cover"}).find("img")["src"]
             # 由于nav栏会因为实际信息不同而导致行数不同，所以只能用循环的方式检索信息
             metainfos = soup.find("nav", {"class": "panel movie-panel-info"}).find_all("div", {"class": "panel-block"})
             for info in metainfos:  # 遍历nav栏所有信息
                 text = unicodedata.normalize("NFKD", re.sub("[\n ]", "", info.text))
                 if re.search("番號:.+", text):
-                    av["id"] = re.search("(番號: )(.+)", text).group(2)
+                    av["id"] = re.search("(番號: )(.+)", text).group(2).strip()
                 elif re.search("日期:.+", text):
-                    av["date"] = re.search("(日期: )(.+)", text).group(2)
+                    av["date"] = re.search("(日期: )(.+)", text).group(2).strip()
                 elif re.search("\d+(分鍾)", text):
                     av["duration"] = int(re.search("(\d+)(分鍾)", text).group(1))
                 elif re.search("片商:.+", text):
-                    av["producer"] = re.search("(片商: )(.+)", text).group(2)
+                    av["producer"] = re.search("(片商: )(.+)", text).group(2).strip()
                 elif re.search("發行:.+", text):
-                    av["publisher"] = re.search("(發行: )(.+)", text).group(2)
+                    av["publisher"] = re.search("(發行: )(.+)", text).group(2).strip()
                 elif re.search("系列:.+", text):
-                    av["series"] = re.search("(系列: )(.+)", text).group(2)
+                    av["series"] = re.search("(系列: )(.+)", text).group(2).strip()
                 elif re.search("類別:.+", text):
                     av["tags"] = re.search("(類別: )(.+)", text).group(2).split(", ")
                 elif re.search("評分:.+", text):
-                    av["scores"] = re.search("(評分: +)(\d+\.*\d*)(分.+)", text).group(2)
+                    av["scores"] = re.search("(評分: +)(\d+\.*\d*)(分.+)", text).group(2).strip()
                 elif re.search("演員:.+", text):
                     actor_info = info.find_all(("a", "strong"))[1:]
                     for a in range(len(actor_info) // 2):
-                        actor = {"name": actor_info[a * 2].text,
+                        actor = {"name": actor_info[a * 2].text.strip(),
                                  "id": actor_info[a * 2]["href"].split("/")[-1],
                                  "sex": "女" if actor_info[a * 2 + 1].text.endswith("♀") else "男"}
                         if not (sex_limit and actor['sex'] == '男'):
@@ -456,14 +458,20 @@ class JavDbUtil(BaseUtil):
         :return tuple[int, dict]: 状态码和 av
         av格式:
         {
-            'id': '',      # 番号
-            'title': '',   # 标题
-            'img': '',     # 封面地址
-            'date': '',    # 发行日期
-            'tags': '',    # 标签
-            'stars': [],   # 演员
-            'magnets': [], # 磁链
-            'url': '',     # 地址
+            'id': '',       # 番号
+            'date': '',     # 发行日期
+            'title': '',    # 标题
+            'title_cn': '', # 中文标题
+            'img': '',      # 封面地址
+            'duration': '', # 时长(单位: 分钟)
+            'producer': '', # 片商
+            'publisher': '',# 发行商
+            'series': '',   # 系列
+            'scores': '',   # 评分
+            'tags': [],     # 标签
+            'stars': [],    # 演员
+            'magnets': [],  # 磁链
+            'url': '',      # 地址
         }
         磁链格式:
         {
@@ -478,6 +486,7 @@ class JavDbUtil(BaseUtil):
         {
             'name': '', # 演员名称
             'id': ''    # 演员编号
+            'sex': ''   # 演员性别
         }
         """
         code, j_id = self.get_javdb_id_by_id(id)
