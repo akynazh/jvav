@@ -134,15 +134,8 @@ class JavDbUtil(BaseUtil):
     BASE_URL_VIDEO = BASE_URL + "/v/"
     BASE_URL_ACTOR = BASE_URL + "/actors/"
 
-    def __init__(self, proxy_addr=""):
-        """
-        初始化
-        :param proxy_addr: 代理服务器地址，使用本机软件科学上网的话，格式通常为'http://127.0.0.1:{port}'
-        """
-        super().__init__(proxy_addr)
-
     # 转换ID为JavDB ID
-    def get_javdb_id_by_id(self, id: str) -> tuple[int, None] | tuple[int, typing.Any]:
+    def get_javdb_id_by_id(self, id: str) -> typing.Tuple[int, None] | typing.Tuple[int, typing.Any]:
         """
         通过番号获取JavDB内部ID(实际是靠搜索实现的)
         :param id: 番号
@@ -163,7 +156,7 @@ class JavDbUtil(BaseUtil):
             return 404, None
 
     # 公共方法，获取页面的ID或JavDB ID
-    def get_ids_from_page(self, url: str) -> tuple[int, None] | tuple[int, list[typing.Any]]:
+    def get_ids_from_page(self, url: str) -> typing.Tuple[int, None] | typing.Tuple[int, list[typing.Any]]:
         """从页面url获取番号列表
 
         :param str url: 首页/搜索页
@@ -183,7 +176,7 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 从页面获取番号列表: {e}")
             return 404, None
 
-    def get_javdb_ids_from_page(self, url: str) -> tuple[int, None] | tuple[int, list[typing.Any]]:
+    def get_javdb_ids_from_page(self, url: str) -> typing.Tuple[int, None] | typing.Tuple[int, list[typing.Any]]:
         """
         从页面url获取JavDB的ID列表
         :param url: 首页/搜索页
@@ -204,7 +197,7 @@ class JavDbUtil(BaseUtil):
             return 404, None
 
     # 从首页获取ID或JavDB ID
-    def get_id_from_home(self) -> tuple[int, None] | tuple[int, typing.Any]:
+    def get_id_from_home(self) -> typing.Tuple[int, None] | typing.Tuple[int, typing.Any]:
         """从主页获取一个番号(随机选取)
         :return typing.Tuple[int, str]: 状态码和番号
         """
@@ -214,7 +207,7 @@ class JavDbUtil(BaseUtil):
         else:
             return 200, random.choice(resp)
 
-    def get_javdb_id_from_home(self) -> tuple[int, None] | tuple[int, typing.Any]:
+    def get_javdb_id_from_home(self) -> typing.Tuple[int, None] | typing.Tuple[int, typing.Any]:
         """从主页获取一个JavDB内部ID(随机选取)
         :return typing.Tuple[int, str]: 状态码和JavDB内部ID
         """
@@ -224,7 +217,7 @@ class JavDbUtil(BaseUtil):
         else:
             return 200, random.choice(resp)
 
-    def get_ids_from_home(self) -> tuple[int, None] | tuple[int, list]:
+    def get_ids_from_home(self) -> typing.Tuple[int, None] | typing.Tuple[int, list]:
         """从主页获取全部番号
         :return typing.Tuple[int, list]: 状态码和番号列表
         """
@@ -234,7 +227,7 @@ class JavDbUtil(BaseUtil):
         else:
             return 200, resp
 
-    def get_javdb_ids_from_home(self) -> tuple[int, None] | tuple[int, list]:
+    def get_javdb_ids_from_home(self) -> typing.Tuple[int, None] | typing.Tuple[int, list]:
         """从主页获取全部JavDB内部ID
         :return typing.Tuple[int, list]: 状态码和JavDB内部ID列表
         """
@@ -263,7 +256,7 @@ class JavDbUtil(BaseUtil):
         url = f"{JavDbUtil.BASE_URL_SEARCH}{tag}"
         return self.get_javdb_ids_from_page(url)
 
-    def get_cover_by_id(self, id: str) -> tuple[int, None] | tuple[int, str]:
+    def get_cover_by_id(self, id: str) -> typing.Tuple[int, None] | typing.Tuple[int, str]:
         """根据番号获取封面
         :param str id: 番号
         """
@@ -282,7 +275,7 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 通过番号获取封面: {e}")
             return 404, None
 
-    def get_cover_by_javdb_id(self, javdb_id: str) -> tuple[int, None] | tuple[int, str]:
+    def get_cover_by_javdb_id(self, javdb_id: str) -> typing.Tuple[int, None] | typing.Tuple[int, str]:
         code, resp = self.send_req(url=JavDbUtil.BASE_URL_VIDEO + javdb_id)
         if code != 200:
             return code, None
@@ -302,14 +295,14 @@ class JavDbUtil(BaseUtil):
             is_nice: bool,
             is_uncensored: bool,
             sex_limit: bool = False,
-            magnet_max_count=10, ) -> tuple[int, None] | tuple[int, dict]:
+            magnet_max_count=10, ) -> typing.Tuple[int, None] | typing.Tuple[int, dict]:
         """通过JavDB ID 获取av
         :param javdb_id: JavDB内部ID
         :param bool is_nice: 是否过滤出高清，有字幕磁链
         :param bool is_uncensored: 是否过滤出无码磁链
         :param bool sex_limit: 是否只获取女优信息
         :param int magnet_max_count: 过滤后磁链的最大数目, 默认为 10
-        :return tuple[int, dict]: 状态码和 av
+        :return typing.Tuple[int, dict]: 状态码和 av
         av格式:
         {
             'id': '',       # 番号
@@ -448,14 +441,14 @@ class JavDbUtil(BaseUtil):
             is_uncensored: bool,
             sex_limit: bool = False,
             magnet_max_count=10,
-    ) -> tuple[int, None] | tuple[int, dict]:
+    ) -> typing.Tuple[int, None] | typing.Tuple[int, dict]:
         """通过 javdb 获取番号对应 av
 
         :param str id: 番号
         :param bool is_nice: 是否过滤出高清，有字幕磁链
         :param bool is_uncensored: 是否过滤出无码磁链
         :param int magnet_max_count: 过滤后磁链的最大数目, 默认为 10
-        :return tuple[int, dict]: 状态码和 av
+        :return typing.Tuple[int, dict]: 状态码和 av
         av格式:
         {
             'id': '',       # 番号
