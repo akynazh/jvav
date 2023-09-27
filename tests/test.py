@@ -49,7 +49,7 @@ class BaseUtilTest(unittest.TestCase):
         }
         data = '{"conditions":"ipx-828","field":0,"target":1,"sort":1,"userToken":"","hm":"008-api","device_id":""}'
         assert_code(
-            *BaseUtilTest.util._send_req(
+            *BaseUtilTest.util.send_req(
                 url="https://api.cbbee0.com/v1_2/articleSearch",
                 m=1,
                 headers=headers,
