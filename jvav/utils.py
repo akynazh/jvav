@@ -53,7 +53,7 @@ class BaseUtil:
         """
         return UserAgent().random
 
-    def _send_req(
+    def send_req(
             self, url: str, headers={}, proxies={}, m=0, **args
     ) -> typing.Tuple[int, requests.Response]:
         """发送请求
@@ -110,7 +110,7 @@ class BaseUtil:
             return 502, None
 
     @staticmethod
-    def _get_soup(resp: requests.Response) -> BeautifulSoup:
+    def get_soup(resp: requests.Response) -> BeautifulSoup:
         """从请求结果得到 soup
 
         :param requests.Response resp: 请求结果
@@ -130,9 +130,9 @@ class BaseUtil:
 
 class JavDbUtil(BaseUtil):
     BASE_URL = "https://javdb.com"
-    BASE_URL_SEARCH = "https://javdb.com/search?q="
-    BASE_URL_VIDEO = "https://javdb.com/v/"
-    BASE_URL_ACTOR = "https://javdb.com/actors/"
+    BASE_URL_SEARCH = BASE_URL + "/search?q="
+    BASE_URL_VIDEO = BASE_URL + "/v/"
+    BASE_URL_ACTOR = BASE_URL + "/actors/"
 
     def __init__(self, proxy_addr=""):
         """
@@ -147,11 +147,11 @@ class JavDbUtil(BaseUtil):
         通过番号获取JavDB内部ID(实际是靠搜索实现的)
         :param id: 番号
         """
-        code, resp = self._send_req(url=JavDbUtil.BASE_URL_SEARCH + id)
+        code, resp = self.send_req(url=JavDbUtil.BASE_URL_SEARCH + id)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             items = soup.find_all(class_="item")
             for item in items:
                 if item.find(class_="video-title").strong.text.strip() == id.upper():
@@ -169,11 +169,11 @@ class JavDbUtil(BaseUtil):
         :param str url: 首页/搜索页
         :return typing.Tuple[int, list]: 状态码和番号列表
         """
-        code, resp = self._send_req(url=url)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             items = soup.find_all(class_="item")
             ids = [item.find(class_="video-title").strong.text.strip() for item in items]
             if not ids:
@@ -189,11 +189,11 @@ class JavDbUtil(BaseUtil):
         :param url: 首页/搜索页
         :return: typing.Tuple[int, list]: 状态码和JavDB的ID列表
         """
-        code, resp = self._send_req(url=url)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             items = soup.find_all(class_="item")
             ids = [item.find("a")["href"].split("/")[-1] for item in items]
             if not ids:
@@ -267,11 +267,11 @@ class JavDbUtil(BaseUtil):
         """根据番号获取封面
         :param str id: 番号
         """
-        code, resp = self._send_req(url=JavDbUtil.BASE_URL_SEARCH + id)
+        code, resp = self.send_req(url=JavDbUtil.BASE_URL_SEARCH + id)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             items = soup.find_all(class_="item")
             for item in items:
                 if item.find(class_="video-title").strong.text.strip() == id.upper():
@@ -283,11 +283,11 @@ class JavDbUtil(BaseUtil):
             return 404, None
 
     def get_cover_by_javdb_id(self, javdb_id: str) -> tuple[int, None] | tuple[int, str]:
-        code, resp = self._send_req(url=JavDbUtil.BASE_URL_VIDEO + javdb_id)
+        code, resp = self.send_req(url=JavDbUtil.BASE_URL_VIDEO + javdb_id)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             cover = soup.find(class_="column column-video-cover")
             if not cover:
                 return 404, None
@@ -343,7 +343,7 @@ class JavDbUtil(BaseUtil):
             'sex': ''   # 演员性别
         }
         """
-        code, resp = self._send_req(url=JavDbUtil.BASE_URL_VIDEO + javdb_id)
+        code, resp = self.send_req(url=JavDbUtil.BASE_URL_VIDEO + javdb_id)
         if code != 200:
             return code, None
         try:
@@ -363,7 +363,7 @@ class JavDbUtil(BaseUtil):
                 "magnets": [],
                 "url": JavDbUtil.BASE_URL_VIDEO + javdb_id
             }
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             # 获取元信息
             title_cn = soup.find("strong", {"class": "current-title"})
             title = soup.find("span", {"class": "origin-title"})
@@ -553,11 +553,11 @@ class JavLibUtil(BaseUtil):
             url = random.choice(JavLibUtil.URLS_NICE)
         elif list_type == 1:
             url = random.choice(JavLibUtil.URLS_NEW)
-        code, resp = self._send_req(url=url + str(page))
+        code, resp = self.send_req(url=url + str(page))
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             tag_ids = soup.find_all(class_="id")
             ids = [tag.text for tag in tag_ids]
             if len(ids) > 0:
@@ -590,13 +590,13 @@ class JavLibUtil(BaseUtil):
         :return typing.Tuple[int, list]: 状态码和评论列表
         """
         url = JavLibUtil.BASE_URL_SEARCH_AV + id
-        code, resp = self._send_req(url=url)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         javlib_av_id = ""
         if resp.url == url:
             try:
-                soup = self._get_soup(resp)
+                soup = self.get_soup(resp)
                 videos = soup.find_all(class_="video")
                 video_href = videos[0].a["href"]
                 javlib_av_id = video_href[video_href.find("v=") + 2:]
@@ -607,11 +607,11 @@ class JavLibUtil(BaseUtil):
             r_url = resp.url
             javlib_av_id = r_url[r_url.find("v=") + 2:]
         comment_url = JavLibUtil.BASE_URL_REVIEW + javlib_av_id
-        code, resp = self._send_req(url=comment_url)
+        code, resp = self.send_req(url=comment_url)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             comment_tags = soup.find_all(class_="t")
             comments = []
             for c in comment_tags:
@@ -644,11 +644,11 @@ class DmmUtil(BaseUtil):
             "cookie": "age_check_done=1;",
             "user-agent": self.ua_mobile(),  # 手机端页面更方便爬取
         }
-        code, resp = self._send_req(url=url, headers=headers)
+        code, resp = self.send_req(url=url, headers=headers)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             res = soup.find(class_="btn")
             return 200, res.a["href"]
         except Exception as e:
@@ -672,11 +672,11 @@ class DmmUtil(BaseUtil):
             "cookie": "age_check_done=1;",
             "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
         }
-        code, resp = self._send_req(url=url, headers=headers)
+        code, resp = self.send_req(url=url, headers=headers)
         if code != 200:
             return code, resp
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             av_list = soup.find(id="list")
             av_tags = av_list.find_all("li")
             avs = []
@@ -717,11 +717,11 @@ class DmmUtil(BaseUtil):
             "cookie": "age_check_done=1;",
             "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
         }
-        code, resp = self._send_req(url=url, headers=headers)
+        code, resp = self.send_req(url=url, headers=headers)
         if code != 200:
             return code, resp
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             res = soup.find(class_="rate")
             return 200, res.span.span.text
         except Exception as e:
@@ -747,11 +747,11 @@ class DmmUtil(BaseUtil):
             "cookie": "age_check_done=1;",
             "user-agent": self.ua_desktop(),
         }
-        code, resp = self._send_req(url=url, headers=headers)
+        code, resp = self.send_req(url=url, headers=headers)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             res = soup.find_all(class_="data")
             if not res or len(res) == 0:
                 return 404, None
@@ -815,11 +815,11 @@ class JavBusUtil(BaseUtil):
 
         :return typing.Tuple[int, list]: 状态码和类别列表
         """
-        code, resp = self._send_req(url=JavBusUtil.BASE_URL_GENRE)
+        code, resp = self.send_req(url=JavBusUtil.BASE_URL_GENRE)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             boxes = soup.find_all(class_="row genre-box")
             genres = []
             for box in boxes:
@@ -860,11 +860,11 @@ class JavBusUtil(BaseUtil):
         :param str url: 页面地址
         :return tuple[int, int]: 状态码和最大页数
         """
-        code, resp = self._send_req(url)
+        code, resp = self.send_req(url)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             tag_pagination = soup.find(class_="pagination pagination-lg")
             # 如果没有分页块则只有第一页
             if not tag_pagination:
@@ -890,12 +890,12 @@ class JavBusUtil(BaseUtil):
             if code != 200:
                 return code, None
             url = f"{base_page_url}/{random.randint(1, max_page)}"
-        code, resp = self._send_req(url=url)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         try:
             ids = []
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             tags = soup.find_all(class_="movie-box")
             for tag in tags:
                 id_link = tag["href"]
@@ -992,11 +992,11 @@ class JavBusUtil(BaseUtil):
         """
         samples = []
         url = f"{JavBusUtil.BASE_URL}/{id}"
-        code, resp = self._send_req(url=url)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             sample_tags = soup.find_all(class_="sample-box")
             for tag in sample_tags:
                 sample_link = tag["href"]
@@ -1021,12 +1021,12 @@ class JavBusUtil(BaseUtil):
             "star_name": star_name
         }
         """
-        code, resp = self._send_req(
+        code, resp = self.send_req(
             url=f"{JavBusUtil.BASE_URL_SEARCH_STAR}/{star_name}")
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             star = soup.find(class_="avatar-box text-center")
             star_id = star["href"].split("star/")[1]
             res_star_name = star.find("img")["title"]
@@ -1089,10 +1089,10 @@ class JavBusUtil(BaseUtil):
         }
         url = f"{JavBusUtil.BASE_URL}/{id}"
         av["url"] = url
-        code, resp = self._send_req(url=url)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
-        soup = self._get_soup(resp)
+        soup = self.get_soup(resp)
         html = soup.prettify()
         try:
             # 获取封面和标题
@@ -1153,13 +1153,13 @@ class JavBusUtil(BaseUtil):
             "referer": f"{JavBusUtil.BASE_URL}/{id}",
         }
         # 发送请求获取含磁链页
-        code, resp = self._send_req(url=url, headers=headers)
+        code, resp = self.send_req(url=url, headers=headers)
         # 如果不存在磁链或请求失败则直接返回
         if code != 200:
             return 200, av
         # 解析页面获取磁链
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             trs = soup.find_all("tr")
             for tr in trs:
                 magnet = {"link": "", "hd": "0", "zm": "0", "uc": "0"}
@@ -1223,7 +1223,7 @@ class AvgleUtil(BaseUtil):
         limit = 3
         url = f"{AvgleUtil.BASE_URL}/v1/jav/{id}/{page}?limit={limit}"
         res = {"fv": "", "pv": ""}
-        code, resp = self._send_req(url=url)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         if resp.json()["success"]:
@@ -1374,12 +1374,12 @@ class SukebeiUtil(BaseUtil):
             qid = qid.replace("-", " ")
         # 查找av
         url = f"{SukebeiUtil.BASE_URL}?q={qid}"
-        code, resp = self._send_req(url=url)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         try:
             av["url"] = url
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             torrent_list = soup.find(class_="torrent-list")
             trs = torrent_list.tbody.find_all("tr")
             for i, tr in enumerate(trs):
@@ -1436,11 +1436,11 @@ class SukebeiUtil(BaseUtil):
         }
         """
         url = f"{SukebeiUtil.BASE_URL}?q={tag}"
-        code, resp = self._send_req(url=url)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             torrent_list = soup.find(class_="torrent-list")
             trs = torrent_list.tbody.find_all("tr")
             avs = []
@@ -1473,11 +1473,11 @@ class SukebeiUtil(BaseUtil):
             "magnet": "",
         }
         """
-        code, resp = self._send_req(url=url)
+        code, resp = self.send_req(url=url)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             av = {
                 "url": url,
                 "title": "",
@@ -1613,11 +1613,11 @@ class SjsUtil(BaseUtil):
             "title": ""
         }
         """
-        code, resp = self._send_req(url=SjsUtil.BASE_URL_RANK)
+        code, resp = self.send_req(url=SjsUtil.BASE_URL_RANK)
         if code != 200:
             return code, None
         try:
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             nex_ranklist_box = soup.find(class_="nex_ranklist_box")  # 最新帖子
             nex_rank_cosimg = soup.find(class_="nex_rank_cosimg")  # cos视图榜
             nex_mangalist = soup.find(class_="nex_mangalist")  # 动漫阅读榜
@@ -1671,7 +1671,7 @@ class SgpUtil(BaseUtil):
         }
         data = '{"conditions": "' + av_id + '", "field": 0, "target": 1, "sort": 1, "userToken": "", "hm": "008-api", "device_id": ""}'
 
-        code, resp = self._send_req(url=SgpUtil.BASE_URL_SEARCH, headers=headers, m=1, data=data)
+        code, resp = self.send_req(url=SgpUtil.BASE_URL_SEARCH, headers=headers, m=1, data=data)
         if code != 200:
             return code, None
         res = resp.json()
@@ -1679,10 +1679,10 @@ class SgpUtil(BaseUtil):
             return 200, None
         else:
             library_id = res["data"][0]["library_id"]
-            code, resp = self._send_req(url=f"{SgpUtil.BASE_URL_DETAIL}{library_id}", headers=headers)
+            code, resp = self.send_req(url=f"{SgpUtil.BASE_URL_DETAIL}{library_id}", headers=headers)
             if code != 200:
                 return code, None
-            soup = self._get_soup(resp)
+            soup = self.get_soup(resp)
             try:
                 suffix = soup.find("iframe")["src"]
                 video_addr = f'{SgpUtil.BASE_URL}{suffix}'
