@@ -63,3 +63,6 @@ The following are some functions to be implemented, and I look forward to your c
 - [ ] cache the successful query results locally
 - [x] support javdb.com (Thanks: [@Steven-Fake](https://github.com/Steven-Fake))
 - [ ] support db.msin.jp
+- [ ] support JavDbUtil in cmd
+- [ ] support SgpUtil in cmd
+- [ ] support JavDbUtil in cmd
