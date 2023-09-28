@@ -149,8 +149,7 @@ class JavDbUtil(BaseUtil):
             for item in items:
                 if item.find(class_="video-title").strong.text.strip() == id.upper():
                     return 200, item.find("a")["href"].split("/")[-1]
-            else:
-                return 404, None
+            return 404, None  # if there is no correct result, return 404
         except Exception as e:
             self.log.error(f"JavDbUtil: 通过番号获取JavDB内部ID: {e}")
             return 404, None
