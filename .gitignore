@@ -7,3 +7,4 @@ jvav.egg-info
 /jvav/dist
 /jvav/build
 .DS_Store
+.idea
