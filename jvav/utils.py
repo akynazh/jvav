@@ -4,9 +4,9 @@ import logging
 import random
 import re
 import typing
-import lxml
 
 import requests
+import unicodedata
 import wikipediaapi
 from anti_useragent import UserAgent
 from bs4 import BeautifulSoup
@@ -130,12 +130,34 @@ class BaseUtil:
 
 class JavDbUtil(BaseUtil):
     BASE_URL = "https://javdb.com"
-    BASE_URL_SEARCH = "https://javdb.com/search?q="
+    BASE_URL_SEARCH = BASE_URL + "/search?q="
+    BASE_URL_VIDEO = BASE_URL + "/v/"
+    BASE_URL_ACTOR = BASE_URL + "/actors/"
 
-    def get_ids_from_page(self, url: str) -> typing.Tuple[int, list]:
-        """从某个页面获取番号列表
+    def get_javdb_id_by_id(self, id: str) -> typing.Tuple[int, None] | typing.Tuple[int, typing.Any]:
+        """通过番号获取 JavDB 内部 ID
 
-        :param str url: 某个页面
+        :param id: 番号
+        :return: tuple[int, None] 状态码和 JavDB 内部 ID
+        """
+        code, resp = self.send_req(url=JavDbUtil.BASE_URL_SEARCH + id)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            items = soup.find_all(class_="item")
+            for item in items:
+                if item.find(class_="video-title").strong.text.strip() == id.upper():
+                    return 200, item.find("a")["href"].split("/")[-1]
+            return 404, None  # if there is no correct result, return 404
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 通过番号获取JavDB内部ID: {e}")
+            return 404, None
+
+    def get_ids_from_page(self, url: str) -> typing.Tuple[int, None] | typing.Tuple[int, list[typing.Any]]:
+        """从页面 url 获取番号列表
+
+        :param str url: 首页/搜索页
         :return typing.Tuple[int, list]: 状态码和番号列表
         """
         code, resp = self.send_req(url=url)
@@ -144,16 +166,79 @@ class JavDbUtil(BaseUtil):
         try:
             soup = self.get_soup(resp)
             items = soup.find_all(class_="item")
-            ids = []
-            for item in items:
-                ids.append(item.find(class_="video-title").strong.text)
-            if ids == []:
+            ids = [item.find(class_="video-title").strong.text.strip() for item in items]
+            if not ids:
                 return 404, None
             return 200, ids
         except Exception as e:
-            self.log.error(f"JavDbUtil: 从某个页面获取番号列表: {e}")
+            self.log.error(f"JavDbUtil: 从页面获取番号列表: {e}")
             return 404, None
 
+    def get_javdb_ids_from_page(self, url: str) -> typing.Tuple[int, None] | typing.Tuple[int, list[typing.Any]]:
+        """从页面 url 获取 JavDB 的 ID 列表
+
+        :param url: 首页/搜索页
+        :return: typing.Tuple[int, list]: 状态码和 JavDB 的 ID 列表
+        """
+        code, resp = self.send_req(url=url)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            items = soup.find_all(class_="item")
+            ids = [item.find("a")["href"].split("/")[-1] for item in items]
+            if not ids:
+                return 404, None
+            return 200, ids
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 从页面获取 JavDB 内部 ID 列表: {e}")
+            return 404, None
+
+    def get_id_from_home(self) -> typing.Tuple[int, None] | typing.Tuple[int, typing.Any]:
+        """从主页获取一个番号(随机选取) 从首页获取 ID 或 JavDB ID
+
+        :return typing.Tuple[int, str]: 状态码和番号
+        """
+        code, resp = self.get_ids_from_page(url=JavDbUtil.BASE_URL)
+        if code != 200:
+            return code, None
+        else:
+            return 200, random.choice(resp)
+
+    def get_javdb_id_from_home(self) -> typing.Tuple[int, None] | typing.Tuple[int, typing.Any]:
+        """从主页获取一个 JavDB 内部 ID (随机选取)
+
+        :return typing.Tuple[int, str]: 状态码和JavDB内部ID
+        """
+        code, resp = self.get_javdb_ids_from_page(url=JavDbUtil.BASE_URL)
+        if code != 200:
+            return code, None
+        else:
+            return 200, random.choice(resp)
+
+    def get_ids_from_home(self) -> typing.Tuple[int, None] | typing.Tuple[int, list]:
+        """从主页获取全部番号
+
+        :return typing.Tuple[int, list]: 状态码和番号列表
+        """
+        code, resp = self.get_ids_from_page(url=JavDbUtil.BASE_URL)
+        if code != 200:
+            return code, None
+        else:
+            return 200, resp
+
+    def get_javdb_ids_from_home(self) -> typing.Tuple[int, None] | typing.Tuple[int, list]:
+        """从主页获取全部 JavDB 内部 ID
+
+        :return typing.Tuple[int, list]: 状态码和 JavDB 内部 ID 列表
+        """
+        code, resp = self.get_javdb_ids_from_page(url=JavDbUtil.BASE_URL)
+        if code != 200:
+            return code, None
+        else:
+            return 200, resp
+
+    # 基于搜索实现的某些功能
     def get_ids_by_tag(self, tag: str) -> typing.Tuple[int, list]:
         """根据标签获取番号列表
 
@@ -162,6 +247,253 @@ class JavDbUtil(BaseUtil):
         """
         url = f"{JavDbUtil.BASE_URL_SEARCH}{tag}"
         return self.get_ids_from_page(url)
+
+    def get_javdb_ids_by_tag(self, tag: str) -> typing.Tuple[int, list]:
+        """根据标签获取 JavDB 列表
+
+        :param str tag: 标签
+        :return typing.Tuple[int, list]: 状态码和番号列表
+        """
+        url = f"{JavDbUtil.BASE_URL_SEARCH}{tag}"
+        return self.get_javdb_ids_from_page(url)
+
+    def get_cover_by_id(self, id: str) -> typing.Tuple[int, None] | typing.Tuple[int, str]:
+        """根据番号获取封面
+
+        :param str id: 番号
+        :return typing.Tuple[int, str]: 状态码和封面
+        """
+        code, resp = self.send_req(url=JavDbUtil.BASE_URL_SEARCH + id)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            items = soup.find_all(class_="item")
+            for item in items:
+                if item.find(class_="video-title").strong.text.strip() == id.upper():
+                    return 200, item.find("img")["src"]
+            else:
+                return 404, None
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 通过番号获取封面: {e}")
+            return 404, None
+
+    def get_cover_by_javdb_id(self, javdb_id: str) -> typing.Tuple[int, None] | typing.Tuple[int, str]:
+        """通过 JavDB ID 获取封面
+
+        :param str javdb_id: JavDB内部ID
+        :return typing.Tuple[int, str]: 状态码和封面
+        """
+        code, resp = self.send_req(url=JavDbUtil.BASE_URL_VIDEO + javdb_id)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            cover = soup.find(class_="column column-video-cover")
+            if not cover:
+                return 404, None
+            return 200, cover.find("img")["src"]
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 通过JavDB ID获取封面: {e}")
+            return 404, None
+
+    def get_av_by_javdb_id(
+            self,
+            javdb_id: str,
+            is_nice: bool,
+            is_uncensored: bool,
+            sex_limit: bool = False,
+            magnet_max_count=10, ) -> typing.Tuple[int, None] | typing.Tuple[int, dict]:
+        """通过 JavDB ID 获取av
+
+        :param javdb_id: JavDB内部ID
+        :param bool is_nice: 是否过滤出高清，有字幕磁链
+        :param bool is_uncensored: 是否过滤出无码磁链
+        :param bool sex_limit: 是否只获取女优信息
+        :param int magnet_max_count: 过滤后磁链的最大数目, 默认为 10
+        :return typing.Tuple[int, dict]: 状态码和 av
+        av格式:
+        {
+            'id': '',       # 番号
+            'date': '',     # 发行日期
+            'title': '',    # 标题
+            'title_cn': '', # 中文标题
+            'img': '',      # 封面地址
+            'duration': '', # 时长(单位: 分钟)
+            'producer': '', # 片商
+            'publisher': '',# 发行商
+            'series': '',   # 系列
+            'scores': '',   # 评分
+            'tags': [],     # 标签
+            'stars': [],    # 演员
+            'magnets': [],  # 磁链
+            'url': '',      # 地址
+        }
+        磁链格式:
+        {
+            'link': '', # 链接
+            'size': '', # 大小
+            'hd': '0',  # 是否高清 0 否 | 1 是
+            'zm': '0',  # 是否有字幕 0 否 | 1 是
+            'uc': '0',  # 是否未经审查 0 否 | 1 是
+            'size_no_unit': 浮点值 # 去除单位后的大小值, 用于排序, 当要求过滤磁链时会存在该字段
+        }
+        演员格式:
+        {
+            'name': '', # 演员名称
+            'id': ''    # 演员编号
+            'sex': ''   # 演员性别
+        }
+        """
+        code, resp = self.send_req(url=JavDbUtil.BASE_URL_VIDEO + javdb_id)
+        if code != 200:
+            return code, None
+        try:
+            av = {
+                "id": "",
+                "date": "",
+                "img": "",
+                "title": "",
+                "title_cn": "",
+                "duration": "",
+                "producer": "",
+                "publisher": "",
+                "series": "",
+                "scores": "",
+                "tags": [],
+                "stars": [],
+                "magnets": [],
+                "url": JavDbUtil.BASE_URL_VIDEO + javdb_id
+            }
+            soup = self.get_soup(resp)
+            # 获取元信息
+            title_cn = soup.find("strong", {"class": "current-title"})
+            title = soup.find("span", {"class": "origin-title"})
+            av["title_cn"] = title_cn.text.strip() if title_cn else ""
+            av["title"] = title.text.strip() if title else ""
+            av["img"] = soup.find("div", {"class": "column column-video-cover"}).find("img")["src"]
+            # 由于nav栏会因为实际信息不同而导致行数不同，所以只能用循环的方式检索信息
+            metainfos = soup.find("nav", {"class": "panel movie-panel-info"}).find_all("div", {"class": "panel-block"})
+            for info in metainfos:  # 遍历nav栏所有信息
+                text = unicodedata.normalize("NFKD", re.sub("[\n ]", "", info.text))
+                if re.search("番號:.+", text):
+                    av["id"] = re.search("(番號: )(.+)", text).group(2).strip()
+                elif re.search("日期:.+", text):
+                    av["date"] = re.search("(日期: )(.+)", text).group(2).strip()
+                elif re.search("\d+(分鍾)", text):
+                    av["duration"] = int(re.search("(\d+)(分鍾)", text).group(1))
+                elif re.search("片商:.+", text):
+                    av["producer"] = re.search("(片商: )(.+)", text).group(2).strip()
+                elif re.search("發行:.+", text):
+                    av["publisher"] = re.search("(發行: )(.+)", text).group(2).strip()
+                elif re.search("系列:.+", text):
+                    av["series"] = re.search("(系列: )(.+)", text).group(2).strip()
+                elif re.search("類別:.+", text):
+                    av["tags"] = re.search("(類別: )(.+)", text).group(2).split(", ")
+                elif re.search("評分:.+", text):
+                    av["scores"] = re.search("(評分: +)(\d+\.*\d*)(分.+)", text).group(2).strip()
+                elif re.search("演員:.+", text):
+                    actor_info = info.find_all(("a", "strong"))[1:]
+                    for a in range(len(actor_info) // 2):
+                        actor = {"name": actor_info[a * 2].text.strip(),
+                                 "id": actor_info[a * 2]["href"].split("/")[-1],
+                                 "sex": "女" if actor_info[a * 2 + 1].text.endswith("♀") else "男"}
+                        if not (sex_limit and actor['sex'] == '男'):
+                            av["stars"].append(actor)
+            # 获取磁链
+            magnet_list = soup.find_all("div", {"class": "item columns is-desktop"}) + \
+                          soup.find_all("div", {"class": "item columns is-desktop odd"})
+            for link in magnet_list:
+                magnet = {"link": link.find("a")["href"], "hd": "0", "zm": "0", "uc": "0", "size": "0"}
+                # 获取大小
+                size = link.find("span", {"class": "meta"})
+                if size:
+                    magnet["size"] = size.text.strip().split(',')[0]
+                # 检查是否为uc
+                title = link.find("span", {"class": "name"}).text
+                if any(k in title for k in
+                       ['-U', '无码', '無碼', '无码流出', '無碼流出', '无码破解', '無碼破解', 'uncensored',
+                        'Uncensored']):
+                    magnet["uc"] = "1"
+                # 检查tag
+                tags_elements = link.find("div", {"class": "tags"})
+                if tags_elements:
+                    tags_contents = tags_elements.findAll("span")
+                    for i in tags_contents:
+                        if i.text.strip() == "高清":
+                            magnet["hd"] = "1"
+                        elif i.text.strip() == "字幕":
+                            magnet["zm"] = "1"
+                av["magnets"].append(magnet)
+            if is_uncensored:
+                av["magnets"] = MagnetUtil.get_nice_magnets(av["magnets"], "uc", expect_val="1")
+            if is_nice:
+                magnets = av["magnets"]
+                magnets = MagnetUtil.get_nice_magnets(
+                    magnets, "hd", expect_val="1"
+                )  # 过滤高清
+                magnets = MagnetUtil.get_nice_magnets(
+                    magnets, "zm", expect_val="1"
+                )  # 过滤有字幕
+                magnets = MagnetUtil.sort_magnets(magnets)  # 从大到小排序
+                magnets = magnets[0:magnet_max_count]
+                av["magnets"] = magnets
+            return 200, av
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 获取av信息: {e}")
+            return 404, None
+
+    def get_av_by_id(
+            self,
+            id: str,
+            is_nice: bool,
+            is_uncensored: bool,
+            sex_limit: bool = False,
+            magnet_max_count=10,
+    ) -> typing.Tuple[int, None] | typing.Tuple[int, dict]:
+        """通过 javdb 获取番号对应 av
+
+        :param str id: 番号
+        :param bool is_nice: 是否过滤出高清，有字幕磁链
+        :param bool is_uncensored: 是否过滤出无码磁链
+        :param int magnet_max_count: 过滤后磁链的最大数目, 默认为 10
+        :return typing.Tuple[int, dict]: 状态码和 av
+        av格式:
+        {
+            'id': '',       # 番号
+            'date': '',     # 发行日期
+            'title': '',    # 标题
+            'title_cn': '', # 中文标题
+            'img': '',      # 封面地址
+            'duration': '', # 时长(单位: 分钟)
+            'producer': '', # 片商
+            'publisher': '',# 发行商
+            'series': '',   # 系列
+            'scores': '',   # 评分
+            'tags': [],     # 标签
+            'stars': [],    # 演员
+            'magnets': [],  # 磁链
+            'url': '',      # 地址
+        }
+        磁链格式:
+        {
+            'link': '', # 链接
+            'size': '', # 大小
+            'hd': '0',  # 是否高清 0 否 | 1 是
+            'zm': '0',  # 是否有字幕 0 否 | 1 是
+            'uc': '0',  # 是否未经审查 0 否 | 1 是
+            'size_no_unit': 浮点值 # 去除单位后的大小值, 用于排序, 当要求过滤磁链时会存在该字段
+        }
+        演员格式:
+        {
+            'name': '', # 演员名称
+            'id': ''    # 演员编号
+            'sex': ''   # 演员性别
+        }
+        """
+        code, j_id = self.get_javdb_id_by_id(id)
+        return self.get_av_by_javdb_id(j_id, is_nice, is_uncensored, sex_limit,
+                                       magnet_max_count) if code == 200 else (code, None)
 
 
 class JavLibUtil(BaseUtil):

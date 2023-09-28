@@ -5,6 +5,7 @@ Useful tools for Jav.
 ## INSTALL
 
 ```
+# python >= 3.7.9
 pip install jvav -U
 ```
 
@@ -19,6 +20,7 @@ pip install jvav -U
 - SukebeiUtil
 - WikiUtil
 - TransUtil
+- SgpUtil
 
 ```py
 # A sample for DmmUtil
@@ -59,5 +61,5 @@ optional arguments:
 The following are some functions to be implemented, and I look forward to your contribution~ 
 
 - [ ] cache the successful query results locally
-- [ ] support javdb.com
+- [x] support javdb.com (Thanks: [@Steven-Fake](https://github.com/Steven-Fake))
 - [ ] support db.msin.jp

@@ -68,13 +68,46 @@ class SjsUtilTest(unittest.TestCase):
 class JavDbUtilTest(unittest.TestCase):
     util = jvav.JavDbUtil(proxy_addr=PROXY_ADDR)
 
+    def test_get_javdb_id_by_id(self):
+        assert_code(*JavDbUtilTest.util.get_javdb_id_by_id("IPX-580"))
+
     def test_get_ids_from_page(self):
         assert_code(
             *JavDbUtilTest.util.get_ids_from_page("https://javdb.com/search?q=中出")
         )
 
+    def test_get_javdb_ids_from_page(self):
+        assert_code(*JavDbUtilTest.util.get_javdb_ids_from_page("https://javdb.com/search?q=中出"))
+
+    def test_get_id_from_home(self):
+        assert_code(*JavDbUtilTest.util.get_id_from_home())
+
+    def test_get_javdb_id_from_home(self):
+        assert_code(*JavDbUtilTest.util.get_javdb_id_from_home())
+
+    def test_get_ids_from_home(self):
+        assert_code(*JavDbUtilTest.util.get_ids_from_home())
+
+    def test_get_javdb_ids_from_home(self):
+        assert_code(*JavDbUtilTest.util.get_javdb_ids_from_home())
+
     def test_get_ids_by_tag(self):
         assert_code(*JavDbUtilTest.util.get_ids_by_tag("出轨"))
+
+    def test_get_javdb_ids_by_tag(self):
+        assert_code(*JavDbUtilTest.util.get_javdb_ids_by_tag("数位马赛克"))
+
+    def test_get_cover_by_id(self):
+        assert_code(*JavDbUtilTest.util.get_cover_by_id("IPX-580"))
+
+    def test_get_cover_by_javdb_id(self):
+        assert_code(*JavDbUtilTest.util.get_cover_by_javdb_id("68YVQ"))
+
+    def test_get_av_by_id(self):
+        assert_code(*JavDbUtilTest.util.get_av_by_id("IPX-580", False, False, True))
+
+    def test_get_av_by_javdb_id(self):
+        assert_code(*JavDbUtilTest.util.get_av_by_javdb_id("68YVQ", True, False, False))
 
 
 class JavLibUtilTest(unittest.TestCase):
