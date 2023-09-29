@@ -796,6 +796,23 @@ class JavBusUtil(BaseUtil):
     BASE_URL_MAGNET = f"{BASE_URL}/ajax/uncledatoolsbyajax.php?lang=zh"
     BASE_URL_GENRE = f"{BASE_URL}/genre"
 
+    def get_headers(self):
+        return {
+            'authority': 'www.javbus.com',
+            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5',
+            'cache-control': 'max-age=0',
+            'sec-ch-ua': '"Microsoft Edge";v="117", "Not;A=Brand";v="8", "Chromium";v="117"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"macOS"',
+            'sec-fetch-dest': 'document',
+            'sec-fetch-mode': 'navigate',
+            'sec-fetch-site': 'none',
+            'sec-fetch-user': '?1',
+            'upgrade-insecure-requests': '1',
+            'user-agent': self.ua_desktop(),
+        }
+
     def __init__(
             self,
             proxy_addr="",
@@ -817,7 +834,7 @@ class JavBusUtil(BaseUtil):
 
         :return typing.Tuple[int, list]: 状态码和类别列表
         """
-        code, resp = self.send_req(url=JavBusUtil.BASE_URL_GENRE)
+        code, resp = self.send_req(url=JavBusUtil.BASE_URL_GENRE, headers=self.get_headers())
         if code != 200:
             return code, None
         try:
@@ -862,7 +879,7 @@ class JavBusUtil(BaseUtil):
         :param str url: 页面地址
         :return tuple[int, int]: 状态码和最大页数
         """
-        code, resp = self.send_req(url)
+        code, resp = self.send_req(url, headers=self.get_headers())
         if code != 200:
             return code, None
         try:
@@ -892,7 +909,7 @@ class JavBusUtil(BaseUtil):
             if code != 200:
                 return code, None
             url = f"{base_page_url}/{random.randint(1, max_page)}"
-        code, resp = self.send_req(url=url)
+        code, resp = self.send_req(url=url, headers=self.get_headers())
         if code != 200:
             return code, None
         try:
@@ -994,7 +1011,7 @@ class JavBusUtil(BaseUtil):
         """
         samples = []
         url = f"{JavBusUtil.BASE_URL}/{id}"
-        code, resp = self.send_req(url=url)
+        code, resp = self.send_req(url=url, headers=self.get_headers())
         if code != 200:
             return code, None
         try:
@@ -1024,7 +1041,7 @@ class JavBusUtil(BaseUtil):
         }
         """
         code, resp = self.send_req(
-            url=f"{JavBusUtil.BASE_URL_SEARCH_STAR}/{star_name}")
+            url=f"{JavBusUtil.BASE_URL_SEARCH_STAR}/{star_name}", headers=self.get_headers())
         if code != 200:
             return code, None
         try:
@@ -1091,22 +1108,7 @@ class JavBusUtil(BaseUtil):
         }
         url = f"{JavBusUtil.BASE_URL}/{id}"
         av["url"] = url
-        headers = {
-            'authority': 'www.javbus.com',
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5',
-            'cache-control': 'max-age=0',
-            'sec-ch-ua': '"Microsoft Edge";v="117", "Not;A=Brand";v="8", "Chromium";v="117"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"macOS"',
-            'sec-fetch-dest': 'document',
-            'sec-fetch-mode': 'navigate',
-            'sec-fetch-site': 'none',
-            'sec-fetch-user': '?1',
-            'upgrade-insecure-requests': '1',
-            'user-agent': self.ua_desktop(),
-        }
-        code, resp = self.send_req(url=url, headers=headers)
+        code, resp = self.send_req(url=url, headers=self.get_headers())
         if code != 200:
             return code, None
         soup = self.get_soup(resp)
