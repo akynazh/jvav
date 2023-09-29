@@ -204,6 +204,11 @@ class JavBusUtilTest(unittest.TestCase):
                 id="ipx-365", is_nice=True, is_uncensored=False
             )
         )
+        assert_code(
+            *JavBusUtilTest.util.get_av_by_id(
+                id="NINE-078", is_nice=True, is_uncensored=False
+            )
+        )
 
 
 class AvgleUtilTest(unittest.TestCase):
