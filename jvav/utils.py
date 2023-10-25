@@ -369,6 +369,11 @@ class JavDbUtil(BaseUtil):
             # 获取元信息
             title_cn = soup.find("strong", {"class": "current-title"})
             title = soup.find("span", {"class": "origin-title"})
+            if not title:
+                title, title_cn = title_cn, ""
+                # 这么写是因为单靠current-title无法确定类型，需要根据origin-title辅助判断。
+                # 当origin-title存在时，current-title为中文字幕，origin-title为日文字幕；
+                # 当origin-title不存在时，current-title为日文字幕，没有中文字幕。
             av["title_cn"] = title_cn.text.strip() if title_cn else ""
             av["title"] = title.text.strip() if title else ""
             av["img"] = soup.find("div", {"class": "column column-video-cover"}).find("img")["src"]
