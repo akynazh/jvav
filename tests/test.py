@@ -132,6 +132,14 @@ class DmmUtilTest(unittest.TestCase):
     def test_get_cids_by_tag_monthly(self):
         assert_code(*DmmUtilTest.util.get_cids_by_tag_monthly("arm"))
 
+    def test_get_cids_by_link(self):
+        assert_code(*DmmUtilTest.util.get_cids_by_link(
+            "https://www.dmm.co.jp/digital/videoa/-/list/search/=/n1=DgRJTglEBQ4GwOSdlJOP/sort=release_date/?searchstr=arm%2F"))
+
+    def test_get_cids_by_link_monthly(self):
+        assert_code(*DmmUtilTest.util.get_cids_by_link_monthly(
+            "https://www.dmm.co.jp/monthly/dream/-/list/search/=/limit=120/n1=DgRJTglEBQ4GwOSdlJOP/sort=ranking/?searchstr=arm"))
+
     def test_get_pv_by_id(self):
         assert_code(*DmmUtilTest.util.get_pv_by_id("ipx-365"))
 

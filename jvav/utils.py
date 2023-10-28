@@ -669,8 +669,7 @@ class DmmUtil(BaseUtil):
         except Exception as e:
             return None
 
-    def get_cids_by_tag(self, tag: str) -> typing.Tuple[int, list]:
-        url = self.BASE_URL_SEARCH_AV + tag
+    def get_cids(self, url: str) -> typing.Tuple[int, list]:
         headers = {
             "cookie": "age_check_done=1;",
             "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
@@ -695,8 +694,7 @@ class DmmUtil(BaseUtil):
             self.log.error(f"DmmUtil: 根据 {url} 从 DMM 获取 cid 列表: {e}")
             return 404, None
 
-    def get_cids_by_tag_monthly(self, tag: str) -> typing.Tuple[int, list]:
-        url = self.BASE_URL_SEARCH_AV_MONTHLY + tag
+    def get_cids_monthly(self, url: str) -> typing.Tuple[int, list]:
         headers = {
             "cookie": "age_check_done=1;",
             "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
@@ -720,6 +718,18 @@ class DmmUtil(BaseUtil):
         except Exception as e:
             self.log.error(f"DmmUtil: 根据 {url} 从 DMM 获取 cid 列表: {e}")
             return 404, None
+
+    def get_cids_by_tag(self, tag: str) -> typing.Tuple[int, list]:
+        return self.get_cids(self.BASE_URL_SEARCH_AV + tag)
+
+    def get_cids_by_tag_monthly(self, tag: str) -> typing.Tuple[int, list]:
+        return self.get_cids_monthly(self.BASE_URL_SEARCH_AV_MONTHLY + tag)
+
+    def get_cids_by_link(self, lk: str) -> typing.Tuple[int, list]:
+        return self.get_cids(lk)
+
+    def get_cids_by_link_monthly(self, lk: str) -> typing.Tuple[int, list]:
+        return self.get_cids_monthly(lk)
 
     def get_nice_avs_by_star_name(self, star_name: str) -> typing.Tuple[int, list]:
         """根据演员名字获取高分番号列表
