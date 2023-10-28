@@ -126,6 +126,12 @@ class JavLibUtilTest(unittest.TestCase):
 class DmmUtilTest(unittest.TestCase):
     util = jvav.DmmUtil(proxy_addr=PROXY_ADDR)
 
+    def test_get_cids_by_tag(self):
+        assert_code(*DmmUtilTest.util.get_cids_by_tag("ssis"))
+
+    def test_get_cids_by_tag_monthly(self):
+        assert_code(*DmmUtilTest.util.get_cids_by_tag_monthly("arm"))
+
     def test_get_pv_by_id(self):
         assert_code(*DmmUtilTest.util.get_pv_by_id("ipx-365"))
 

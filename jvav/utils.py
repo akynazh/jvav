@@ -628,11 +628,14 @@ class JavLibUtil(BaseUtil):
 
 class DmmUtil(BaseUtil):
     BASE_URL = "https://www.dmm.co.jp"
-    BASE_URL_SEARCH_AV = BASE_URL + "/search/=/searchstr="
+    BASE_URL_SEARCH_AV = BASE_URL + "/digital/-/list/search/=/sort=ranking/?searchstr="
+    BASE_URL_SEARCH_AV_MONTHLY = BASE_URL + "/monthly/dream/-/list/search/=/sort=ranking/?searchstr="
     BASE_URL_SEARCH_STAR = (
             BASE_URL + "/digital/videoa/-/list/search/=/device=tv/sort=ranking/?searchstr="
     )
     BASE_URL_TOP_STARS = BASE_URL + "/digital/videoa/-/ranking/=/type=actress"
+    CID_PAT = re.compile(r"/cid=.+/")
+    CID_PAT_REAL = re.compile(r"[A-Za-z]+0+[0-9]+")
 
     def get_pv_by_id(self, id: str) -> typing.Tuple[int, str]:
         """根据番号从 DMM 获取预览视频地址
@@ -655,6 +658,67 @@ class DmmUtil(BaseUtil):
             return 200, res.a["href"]
         except Exception as e:
             self.log.error(f"DmmUtil: 根据番号 {id} 从 DMM 获取预览视频地址: {e}")
+            return 404, None
+
+    def get_cid_from_link(self, lk: str) -> str:
+        try:
+            match = self.CID_PAT.findall(lk)
+            cid = match[0].replace("/cid=", "").replace("/", "")
+            cid = self.CID_PAT_REAL.findall(cid)[0]
+            return cid
+        except Exception as e:
+            return None
+
+    def get_cids_by_tag(self, tag: str) -> typing.Tuple[int, list]:
+        url = self.BASE_URL_SEARCH_AV + tag
+        headers = {
+            "cookie": "age_check_done=1;",
+            "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
+        }
+        code, resp = self.send_req(url=url, headers=headers)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            tmb_tags = soup.find_all(class_="tmb")
+            cids = []
+            for tmb in tmb_tags:
+                try:
+                    lk = tmb.a['href']
+                    cid = self.get_cid_from_link(lk)
+                    if cid:
+                        cids.append(cid)
+                except Exception:
+                    pass
+            return 200, cids
+        except Exception as e:
+            self.log.error(f"DmmUtil: 根据 {url} 从 DMM 获取 cid 列表: {e}")
+            return 404, None
+
+    def get_cids_by_tag_monthly(self, tag: str) -> typing.Tuple[int, list]:
+        url = self.BASE_URL_SEARCH_AV_MONTHLY + tag
+        headers = {
+            "cookie": "age_check_done=1;",
+            "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
+        }
+        code, resp = self.send_req(url=url, headers=headers)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            li_tags = soup.find(id="list").find_all("li")
+            cids = []
+            for li in li_tags:
+                try:
+                    lk = li.div.a['href']
+                    cid = self.get_cid_from_link(lk)
+                    if cid:
+                        cids.append(cid)
+                except Exception:
+                    pass
+            return 200, cids
+        except Exception as e:
+            self.log.error(f"DmmUtil: 根据 {url} 从 DMM 获取 cid 列表: {e}")
             return 404, None
 
     def get_nice_avs_by_star_name(self, star_name: str) -> typing.Tuple[int, list]:
