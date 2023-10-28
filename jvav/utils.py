@@ -756,20 +756,16 @@ class DmmUtil(BaseUtil):
             av_list = soup.find(id="list")
             av_tags = av_list.find_all("li")
             avs = []
-            cid_pat = re.compile(r"/cid=.+/")
-            cid_pat_real = re.compile(r"[A-Za-z]+0+[0-9]+")
             for av in av_tags:
                 try:
                     rate = av.find(class_="rate").span.span.text
                     av_href = av.find(class_="sample").a["href"]
-                    match = cid_pat.findall(av_href)
-                    cid = match[0].replace("/cid=", "").replace("/", "")
-                    cid = cid_pat_real.findall(cid)[0]
+                    cid = self.get_cid_from_link(av_href)
                     id_num = cid[-3:]
                     id_pre = re.sub("0*$", "", cid[:-3])
                     id = f"{id_pre}-{id_num}"
                     avs.append({"rate": float(rate), "id": id})
-                except Exception as e:
+                except Exception:
                     pass
             if avs == []:
                 return 404, None
