@@ -666,9 +666,9 @@ class DmmUtil(BaseUtil):
         try:
             match = self.CID_PAT.findall(lk)
             cid = match[0].replace("/cid=", "").replace("/", "")
-            cid = self.CID_PAT_REAL.findall(cid)[0]
+            # cid = self.CID_PAT_REAL.findall(cid)[0]
             return cid
-        except Exception as e:
+        except Exception:
             return None
 
     def get_cids(self, url: str) -> typing.Tuple[int, list]:

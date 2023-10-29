@@ -134,7 +134,7 @@ class DmmUtilTest(unittest.TestCase):
 
     def test_get_cids_by_link(self):
         assert_code(*DmmUtilTest.util.get_cids_by_link(
-            "https://www.dmm.co.jp/digital/videoa/-/list/search/=/n1=DgRJTglEBQ4GwOSdlJOP/sort=release_date/?searchstr=arm%2F"))
+            "https://www.dmm.co.jp/digital/videoa/-/list/=/article=series/id=217566/?dmmref=h%5Cu005f1209exfe00050&i3_ref=detail&i3_ord=1&i3_pst=info_series"))
 
     def test_get_cids_by_link_monthly(self):
         assert_code(*DmmUtilTest.util.get_cids_by_link_monthly(
