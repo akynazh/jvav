@@ -369,6 +369,8 @@ class JavDbUtil(BaseUtil):
             # 获取元信息
             title_cn = soup.find("strong", {"class": "current-title"})
             title = soup.find("span", {"class": "origin-title"})
+            if not title:
+                title, title_cn = title_cn, ""
             av["title_cn"] = title_cn.text.strip() if title_cn else ""
             av["title"] = title.text.strip() if title else ""
             av["img"] = soup.find("div", {"class": "column column-video-cover"}).find("img")["src"]
