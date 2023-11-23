@@ -5,7 +5,7 @@ Useful tools for Jav.
 ## INSTALL
 
 ```
-# python >= 3.7.9
+# python >= 3.10.9
 pip install jvav -U
 ```
 
@@ -34,7 +34,7 @@ util.get_all_top_stars()
 
 ## CMD
 
-```
+```shell
 $ jvav -h
 usage: cmd.py [-h] [-v] [-av1 AV1] [-av2 AV2] [-nc] [-uc] [-sr SR] [-srn SRN]
               [-tg TG] [-pv1 PV1] [-pv2 PV2] [-tp] [-p PROXY]
@@ -56,6 +56,26 @@ optional arguments:
                         Followed by the proxy server address, by default reads the value of the http_proxy environment variable.
 ```
 
+## DEV
+
+I use python-3.10.9 for development, please use python <= 3.10. 
+
+And it is recommended to use python virtual environment to avoid some unnecessary problems.
+
+Here is my developing steps:
+
+```shell
+# python=3.10.9
+git clone https://github.com/akynazh/jvav.git
+cd jvav
+python3 -m venv venv
+source ./venv/bin/activate
+pip3 install -r requirements.txt
+```
+
+And then you can enjoy coding! Remember to write or run test cases in `tests/test.py`.
+Please make sure the test is okay before submitting your code~
+
 ## TODO
 
 The following are some functions to be implemented, and I look forward to your contribution~ 
@@ -66,3 +86,5 @@ The following are some functions to be implemented, and I look forward to your c
 - [ ] support JavDbUtil in cmd
 - [ ] support SgpUtil in cmd
 - [ ] support JavDbUtil in cmd
+
+PS: DEV **python <= 3.11**
