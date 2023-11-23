@@ -5,7 +5,7 @@ Useful tools for Jav.
 ## INSTALL
 
 ```
-# python >= 3.10.9
+# python >= 3.10
 pip install jvav -U
 ```
 
@@ -86,5 +86,3 @@ The following are some functions to be implemented, and I look forward to your c
 - [ ] support JavDbUtil in cmd
 - [ ] support SgpUtil in cmd
 - [ ] support JavDbUtil in cmd
-
-PS: DEV **python <= 3.11**
