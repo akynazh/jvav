@@ -323,7 +323,7 @@ class JavDbUtil(BaseUtil):
             'producer': '', # 片商
             'publisher': '',# 发行商
             'series': '',   # 系列
-            'scores': '',   # 评分
+            'score': '',   # 评分
             'tags': [],     # 标签
             'stars': [],    # 演员
             'magnets': [],  # 磁链
@@ -359,7 +359,7 @@ class JavDbUtil(BaseUtil):
                 "producer": "",
                 "publisher": "",
                 "series": "",
-                "scores": "",
+                "score": "",
                 "tags": [],
                 "stars": [],
                 "magnets": [],
@@ -393,7 +393,7 @@ class JavDbUtil(BaseUtil):
                 elif re.search("類別:.+", text):
                     av["tags"] = re.search("(類別: )(.+)", text).group(2).split(", ")
                 elif re.search("評分:.+", text):
-                    av["scores"] = re.search("(評分: +)(\d+\.*\d*)(分.+)", text).group(2).strip()
+                    av["score"] = re.search("(評分: +)(\d+\.*\d*)(分.+)", text).group(2).strip()
                 elif re.search("演員:.+", text):
                     actor_info = info.find_all(("a", "strong"))[1:]
                     for a in range(len(actor_info) // 2):
@@ -471,7 +471,7 @@ class JavDbUtil(BaseUtil):
             'producer': '', # 片商
             'publisher': '',# 发行商
             'series': '',   # 系列
-            'scores': '',   # 评分
+            'score': '',   # 评分
             'tags': [],     # 标签
             'stars': [],    # 演员
             'magnets': [],  # 磁链
