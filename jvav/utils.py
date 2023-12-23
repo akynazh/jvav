@@ -1415,7 +1415,7 @@ class MagnetUtil:
                 magnet["size_no_unit"] = float(size[:gb_idx]) * 1024
             elif mb_idx != -1:  # 单位为 MB
                 magnet["size_no_unit"] = float(size[:mb_idx])
-        magnets = list(filter(lambda m: m["size_no_unit"] != -1, magnets))
+        # magnets = list(filter(lambda m: m["size_no_unit"] != -1, magnets))
         # 根据 size_no_unit 大小排序
         magnets = sorted(
             magnets, key=lambda m: m["size_no_unit"], reverse=True)
