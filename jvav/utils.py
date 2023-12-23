@@ -208,7 +208,7 @@ class JavDbUtil(BaseUtil):
     def get_javdb_id_from_home(self) -> typing.Tuple[int, None] | typing.Tuple[int, typing.Any]:
         """从主页获取一个 JavDB 内部 ID (随机选取)
 
-        :return typing.Tuple[int, str]: 状态码和JavDB内部ID
+        :return typing.Tuple[int, str]: 状态码和 JavDB 内部 ID
         """
         code, resp = self.get_javdb_ids_from_page(url=JavDbUtil.BASE_URL)
         if code != 200:
@@ -281,7 +281,7 @@ class JavDbUtil(BaseUtil):
     def get_cover_by_javdb_id(self, javdb_id: str) -> typing.Tuple[int, None] | typing.Tuple[int, str]:
         """通过 JavDB ID 获取封面
 
-        :param str javdb_id: JavDB内部ID
+        :param str javdb_id: JavDB 内部 ID
         :return typing.Tuple[int, str]: 状态码和封面
         """
         code, resp = self.send_req(url=JavDbUtil.BASE_URL_VIDEO + javdb_id)
@@ -304,9 +304,9 @@ class JavDbUtil(BaseUtil):
             is_uncensored: bool,
             sex_limit: bool = False,
             magnet_max_count=10, ) -> typing.Tuple[int, None] | typing.Tuple[int, dict]:
-        """通过 JavDB ID 获取av
+        """通过 JavDB ID 获取 av
 
-        :param javdb_id: JavDB内部ID
+        :param javdb_id: JavDB 内部 ID
         :param bool is_nice: 是否过滤出高清，有字幕磁链
         :param bool is_uncensored: 是否过滤出无码磁链
         :param bool sex_limit: 是否只获取女优信息
