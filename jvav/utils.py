@@ -1147,7 +1147,7 @@ class JavBusUtil(BaseUtil):
             'title': '',   # 标题
             'img': '',     # 封面地址
             'date': '',    # 发行日期
-            'tags': '',    # 标签
+            'tags': [],    # 标签
             'stars': [],   # 演员
             'magnets': [], # 磁链
             'url': '',     # 地址
@@ -1209,9 +1209,7 @@ class JavBusUtil(BaseUtil):
                 # 获取标签
                 elif p.text.find("類別:") != -1:
                     tags = paras[i + 1].find_all("a")
-                    for tag in tags:
-                        av["tags"] += f"#{''.join(tag.text.split())} "
-                    av["tags"] = av["tags"].strip()
+                    av["tags"] = [''.join(tag.text.split()) for tag in tags]
                 # 获取演员
                 elif i == len(paras) - 1:
                     tags = p.find_all("a")
@@ -1430,7 +1428,7 @@ class SukebeiUtil(BaseUtil):
             'title': '',   # 标题
             'img': '',     # 封面地址 | sukebei 不支持
             'date': '',    # 发行日期 | sukebei 不支持
-            'tags': '',    # 标签 | sukebei 不支持
+            'tags': [],    # 标签 | sukebei 不支持
             'stars': [],   # 演员 | sukebei 不支持
             'magnets': [], # 磁链
             'url': '',     # 地址
@@ -1455,7 +1453,7 @@ class SukebeiUtil(BaseUtil):
             "title": "",
             "img": "",
             "date": "",
-            "tags": "",
+            "tags": [],
             "stars": [],
             "magnets": [],
             "url": "",
