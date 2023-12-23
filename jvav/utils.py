@@ -297,6 +297,23 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 通过JavDB ID获取封面: {e}")
             return 404, None
 
+    def get_pv_by_id(self, id: str):
+        code, j_id = self.get_javdb_id_by_id(id)
+        if code != 200:
+            return code, None
+        code, resp = self.send_req(url=JavDbUtil.BASE_URL_VIDEO + j_id)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            url = soup.find(id="preview-video").find("source").attrs["src"]
+            if not url:
+                return 404, None
+            return 200, f"https:{url}"
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 获取预览视频: {e}")
+            return 404, None
+
     def get_av_by_javdb_id(
             self,
             javdb_id: str,

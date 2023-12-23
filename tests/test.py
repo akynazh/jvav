@@ -103,6 +103,9 @@ class JavDbUtilTest(unittest.TestCase):
     def test_get_cover_by_javdb_id(self):
         assert_code(*JavDbUtilTest.util.get_cover_by_javdb_id("68YVQ"))
 
+    def test_get_pv_by_id(self):
+        assert_code(*JavDbUtilTest.util.get_pv_by_id("IPZZ-154"))
+
     def test_get_av_by_id(self):
         assert_code(*JavDbUtilTest.util.get_av_by_id("IPX-580", False, False, True))
 
