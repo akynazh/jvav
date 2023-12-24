@@ -70,6 +70,15 @@ class SjsUtilTest(unittest.TestCase):
 class JavDbUtilTest(unittest.TestCase):
     util = jvav.JavDbUtil(proxy_addr=PROXY_ADDR)
 
+    def test_get_star_page_by_star_name(self):
+        assert_code(*JavDbUtilTest.util.get_star_page_by_star_name("河北彩花"))
+
+    def test_get_id_by_star_name(self):
+        assert_code(*JavDbUtilTest.util.get_id_by_star_name("河北彩花"))
+
+    def test_get_new_ids_by_star_name(self):
+        assert_code(*JavDbUtilTest.util.get_new_ids_by_star_name("河北彩花"))
+
     def test_get_javdb_id_by_id(self):
         assert_code(*JavDbUtilTest.util.get_javdb_id_by_id("IPX-580"))
 
@@ -119,7 +128,7 @@ class JavDbUtilTest(unittest.TestCase):
 
 
 class JavLibUtilTest(unittest.TestCase):
-    util = jvav.JavLibUtil(proxy_addr=PROXY_ADDR, max_rank_page=20)
+    util = jvav.JavLibUtil(proxy_addr=PROXY_ADDR)
 
     def test_get_random_id_from_rank(self):
         assert_code(*JavLibUtilTest.util.get_random_id_from_rank(1))

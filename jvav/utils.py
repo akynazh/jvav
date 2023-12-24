@@ -133,6 +133,81 @@ class JavDbUtil(BaseUtil):
     BASE_URL_SEARCH = BASE_URL + "/search?q="
     BASE_URL_VIDEO = BASE_URL + "/v/"
     BASE_URL_ACTOR = BASE_URL + "/actors/"
+    BASE_URL_SEARCH_STAR = BASE_URL + "/search?f=actor&q="
+
+    def __init__(
+            self,
+            proxy_addr="",
+            max_home_page_count=100,
+            max_new_avs_count=8,
+    ):
+        """初始化
+
+        :param str proxy_addr: 代理服务器地址, 默认为 ''
+        :param int max_home_page_count: 主页最大爬取页数, 默认为 100 页
+        :param int max_new_avs_count: 获取最新 AV 数量, 默认为 8 部
+        """
+        super().__init__(proxy_addr)
+        self.max_home_page_count = max_home_page_count
+        self.max_new_avs_count = max_new_avs_count
+
+    def get_star_page_by_star_name(self, star_name):
+        code, resp = self.send_req(url=JavDbUtil.BASE_URL_SEARCH_STAR + star_name)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            url = soup.find(class_="actor-box").find("a").attrs["href"]
+            if not url:
+                return 404, None
+            return 200, f"{self.BASE_URL}{url}"
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 获取预览图片: {e}")
+            return 404, None
+
+    def get_id_by_star_name(self, star_name: str, page=-1) -> typing.Tuple[int, str]:
+        """根据演员名称获取一个番号
+
+        :param str star_name: 演员名称
+        :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
+        :return tuple[int, str]: 状态码和番号
+        """
+        code, url = self.get_star_page_by_star_name(star_name)
+        if code != 200:
+            return code, None
+        try:
+            code, resp = self.send_req(url=url)
+            if code != 200:
+                return code, None
+            soup = self.get_soup(resp)
+            items = soup.find(class_="movie-list").find_all(class_="item")
+            if not items:
+                return 404, None
+            item = random.choice(items)
+            return 200, item.find("strong").text
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 根据演员名称获取一个番号: {e}")
+            return 404, None
+
+    def get_new_ids_by_star_name(self, star_name: str) -> typing.Tuple[int, list]:
+        """根据演员名字获取最新番号列表
+
+        :param str star_name: 演员名称
+        :return typing.Tuple[int, list]: 状态码和番号列表
+        """
+        code, url = self.get_star_page_by_star_name(star_name)
+        if code != 200:
+            return code, None
+        try:
+            code, resp = self.send_req(url=url)
+            if code != 200:
+                return code, None
+            soup = self.get_soup(resp)
+            items = soup.find(class_="movie-list").find_all(class_="item")
+            return 200, [item.find("strong").text for item in items[:self.max_new_avs_count]]
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 根据演员名字获取最新番号列表: {e}")
+            return 404, None
 
     def get_javdb_id_by_id(self, id: str) -> typing.Tuple[int, None] | typing.Tuple[int, typing.Any]:
         """通过番号获取 JavDB 内部 ID
@@ -238,7 +313,6 @@ class JavDbUtil(BaseUtil):
         else:
             return 200, resp
 
-    # 基于搜索实现的某些功能
     def get_ids_by_tag(self, tag: str) -> typing.Tuple[int, list]:
         """根据标签获取番号列表
 
@@ -567,19 +641,6 @@ class JavLibUtil(BaseUtil):
     # 排行榜最大页数
     MAX_RANK_PAGE = 25
 
-    def __init__(
-            self,
-            proxy_addr="",
-            max_rank_page=MAX_RANK_PAGE,
-    ):
-        """初始化
-
-        :param str proxy_addr: 代理服务器地址, 默认为 ''
-        :param int max_rank_page: 排行榜的最大页数, 默认为 JavLibUtil.MAX_RANK_PAGE 页
-        """
-        super().__init__(proxy_addr)
-        self.max_rank_page = max_rank_page
-
     def get_random_ids_from_rank_by_page(
             self, page: int, list_type: int
     ) -> typing.Tuple[int, str]:
@@ -614,7 +675,7 @@ class JavLibUtil(BaseUtil):
         :param int list_type: 排行榜类型 0 nice | 1 new
         :return typing.Tuple[int, str]: 状态码和番号
         """
-        page = random.randint(1, self.max_rank_page)
+        page = random.randint(1, self.MAX_RANK_PAGE)
         code, ids = self.get_random_ids_from_rank_by_page(
             page=page, list_type=list_type
         )
