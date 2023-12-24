@@ -309,7 +309,9 @@ class JavDbUtil(BaseUtil):
             url = soup.find(id="preview-video").find("source").attrs["src"]
             if not url:
                 return 404, None
-            return 200, f"https:{url}"
+            if "http" not in url:
+                url = f"https:{url}"
+            return 200, url
         except Exception as e:
             self.log.error(f"JavDbUtil: 获取预览视频: {e}")
             return 404, None
