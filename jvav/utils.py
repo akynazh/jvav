@@ -316,7 +316,7 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 获取预览视频: {e}")
             return 404, None
 
-    def get_sample_by_id(self, id: str):
+    def get_samples_by_id(self, id: str):
         code, j_id = self.get_javdb_id_by_id(id)
         if code != 200:
             return code, None
