@@ -3,6 +3,8 @@ import jvav
 import unittest
 
 PROXY_ADDR = ""
+
+
 # PROXY_ADDR = "http://127.0.0.1:7890"
 
 
@@ -105,6 +107,9 @@ class JavDbUtilTest(unittest.TestCase):
 
     def test_get_pv_by_id(self):
         assert_code(*JavDbUtilTest.util.get_pv_by_id("IPZZ-154"))
+
+    def test_get_sample_by_id(self):
+        assert_code(*JavDbUtilTest.util.get_sample_by_id("SSIS-586"))
 
     def test_get_av_by_id(self):
         assert_code(*JavDbUtilTest.util.get_av_by_id("IPX-580", False, False, True))

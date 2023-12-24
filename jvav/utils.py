@@ -316,6 +316,23 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 获取预览视频: {e}")
             return 404, None
 
+    def get_sample_by_id(self, id: str):
+        code, j_id = self.get_javdb_id_by_id(id)
+        if code != 200:
+            return code, None
+        code, resp = self.send_req(url=JavDbUtil.BASE_URL_VIDEO + j_id)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            img_tags = soup.find_all(class_="tile-images")[0].find_all("img")
+            if not img_tags:
+                return 404, None
+            return 200, [t.attrs["src"] for t in img_tags]
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 获取预览图片: {e}")
+            return 404, None
+
     def get_av_by_javdb_id(
             self,
             javdb_id: str,
