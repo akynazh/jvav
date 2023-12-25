@@ -151,6 +151,25 @@ class JavDbUtil(BaseUtil):
         self.max_home_page_count = max_home_page_count
         self.max_new_avs_count = max_new_avs_count
 
+    def get_max_page(self, url: str) -> typing.Tuple[int, int]:
+        """获取最大页数
+
+        :param str url: 页面地址
+        :return tuple[int, int]: 状态码和最大页数
+        """
+        code, resp = self.send_req(url)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            last_page = int(soup.find(class_="pagination-list").find_all("li")[-1].a.text)
+            if not last_page:
+                return 404, None
+            return 200, last_page
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 从 {url} 获取最大页数: {e}")
+            return 404, None
+
     def get_star_page_by_star_name(self, star_name):
         code, resp = self.send_req(url=JavDbUtil.BASE_URL_SEARCH_STAR + star_name)
         if code != 200:
@@ -172,10 +191,29 @@ class JavDbUtil(BaseUtil):
         :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
         :return tuple[int, str]: 状态码和番号
         """
-        code, url = self.get_star_page_by_star_name(star_name)
+        code, ids = self.get_ids_by_star_name(star_name, page)
+        if code != 200:
+            return code, None
+        return 200, random.choice(ids)
+
+    def get_ids_by_star_name(self, star_name: str, page=-1) -> typing.Tuple[int, list]:
+        """根据演员名称获取一批番号
+
+        :param str star_name: 演员名称
+        :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
+        :return tuple[int, list]: 状态码和番号
+        """
+        code, base_page_url = self.get_star_page_by_star_name(star_name)
         if code != 200:
             return code, None
         try:
+            if page != -1:
+                url = f"{base_page_url}?page={page}"
+            else:
+                code, max_page = self.get_max_page(base_page_url)
+                if code != 200:
+                    return code, None
+                url = f"{base_page_url}?page={random.randint(1, max_page)}"
             code, resp = self.send_req(url=url)
             if code != 200:
                 return code, None
@@ -183,8 +221,8 @@ class JavDbUtil(BaseUtil):
             items = soup.find(class_="movie-list").find_all(class_="item")
             if not items:
                 return 404, None
-            item = random.choice(items)
-            return 200, item.find("strong").text
+            ids = [item.find("strong").text for item in items]
+            return 200, ids
         except Exception as e:
             self.log.error(f"JavDbUtil: 根据演员名称获取一个番号: {e}")
             return 404, None
@@ -1063,14 +1101,13 @@ class JavBusUtil(BaseUtil):
             self.log.error(f"JavBusUtil: 从 {url} 获取最大页数: {e}")
             return 404, None
 
-    def get_ids_from_page(self, base_page_url: str, page=-1) -> typing.Tuple[int, list]:
+    def get_ids_from_page(self, base_page_url: str, page=1) -> typing.Tuple[int, list]:
         """从 av 列表页面获取该页面全部番号
 
         :param str base_page: 基础页地址, 也是第一页地址
-        :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
+        :param int page: 用于指定爬取哪一页的数据, 默认值为 1, 表示获取第一页
         :return tuple[int, str]: 状态码和番号列表
         """
-        url = ""
         if page != -1:
             url = f"{base_page_url}/{page}"
         else:
@@ -1132,6 +1169,16 @@ class JavBusUtil(BaseUtil):
             base_page_url=f"{JavBusUtil.BASE_URL_SEARCH_BY_STAR_NAME}/{star_name}",
             page=page,
         )
+
+    def get_ids_by_star_name(self, star_name: str, page=-1) -> typing.Tuple[int, list]:
+        """根据演员名称获取一批番号
+
+        :param str star_name: 演员名称
+        :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
+        :return tuple[int, list]: 状态码和番号
+        """
+        return self.get_ids_from_page(base_page_url=f"{JavBusUtil.BASE_URL_SEARCH_BY_STAR_NAME}/{star_name}",
+                                      page=page)
 
     def get_new_ids_by_star_name(self, star_name: str) -> typing.Tuple[int, list]:
         """根据演员名字获取最新番号列表

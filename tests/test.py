@@ -70,11 +70,17 @@ class SjsUtilTest(unittest.TestCase):
 class JavDbUtilTest(unittest.TestCase):
     util = jvav.JavDbUtil(proxy_addr=PROXY_ADDR)
 
+    def test_get_max_page(self):
+        assert_code(*JavDbUtilTest.util.get_max_page("https://javdb.com/actors/EvkJ"))
+
     def test_get_star_page_by_star_name(self):
         assert_code(*JavDbUtilTest.util.get_star_page_by_star_name("河北彩花"))
 
     def test_get_id_by_star_name(self):
         assert_code(*JavDbUtilTest.util.get_id_by_star_name("河北彩花"))
+
+    def test_get_ids_by_star_name(self):
+        assert_code(*JavDbUtilTest.util.get_ids_by_star_name("河北彩花", page=2))
 
     def test_get_new_ids_by_star_name(self):
         assert_code(*JavDbUtilTest.util.get_new_ids_by_star_name("河北彩花"))
@@ -213,6 +219,9 @@ class JavBusUtilTest(unittest.TestCase):
 
     def test_get_id_by_star_name(self):
         assert_code(*JavBusUtilTest.util.get_id_by_star_name(star_name="三上悠亜"))
+
+    def test_get_ids_by_star_name(self):
+        assert_code(*JavBusUtilTest.util.get_ids_by_star_name(star_name="三上悠亜"))
 
     def test_get_new_ids_by_star_name(self):
         assert_code(*JavBusUtilTest.util.get_new_ids_by_star_name(star_name="三上悠亜"))
