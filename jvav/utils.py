@@ -134,6 +134,8 @@ class JavDbUtil(BaseUtil):
     BASE_URL_VIDEO = BASE_URL + "/v/"
     BASE_URL_ACTOR = BASE_URL + "/actors/"
     BASE_URL_SEARCH_STAR = BASE_URL + "/search?f=actor&q="
+    BASE_PARAM_NICE_AVS_OF_STAR = "?sort_type=1"
+    PAT_SCORE = re.compile(r"(\d+\.?\d+)分")
 
     def __init__(
             self,
@@ -168,6 +170,26 @@ class JavDbUtil(BaseUtil):
             return 200, last_page
         except Exception as e:
             self.log.error(f"JavDbUtil: 从 {url} 获取最大页数: {e}")
+            return 404, None
+
+    def get_ids_from_page(self, url: str) -> typing.Tuple[int, None] | typing.Tuple[int, list[typing.Any]]:
+        """从页面 url 获取番号列表
+
+        :param str url: 首页/搜索页
+        :return typing.Tuple[int, list]: 状态码和番号列表
+        """
+        code, resp = self.send_req(url=url)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            items = soup.find_all(class_="item")
+            ids = [item.find(class_="video-title").strong.text.strip() for item in items]
+            if not ids:
+                return 404, None
+            return 200, ids
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 从页面获取番号列表: {e}")
             return 404, None
 
     def get_star_page_by_star_name(self, star_name):
@@ -214,14 +236,9 @@ class JavDbUtil(BaseUtil):
                 if code != 200:
                     return code, None
                 url = f"{base_page_url}?page={random.randint(1, max_page)}"
-            code, resp = self.send_req(url=url)
+            code, ids = self.get_ids_from_page(url)
             if code != 200:
                 return code, None
-            soup = self.get_soup(resp)
-            items = soup.find(class_="movie-list").find_all(class_="item")
-            if not items:
-                return 404, None
-            ids = [item.find("strong").text for item in items]
             return 200, ids
         except Exception as e:
             self.log.error(f"JavDbUtil: 根据演员名称获取一个番号: {e}")
@@ -237,14 +254,54 @@ class JavDbUtil(BaseUtil):
         if code != 200:
             return code, None
         try:
-            code, resp = self.send_req(url=url)
+            code, ids = self.get_ids_from_page(url)
             if code != 200:
                 return code, None
-            soup = self.get_soup(resp)
-            items = soup.find(class_="movie-list").find_all(class_="item")
-            return 200, [item.find("strong").text for item in items[:self.max_new_avs_count]]
+            return 200, ids[:self.max_new_avs_count]
         except Exception as e:
             self.log.error(f"JavDbUtil: 根据演员名字获取最新番号列表: {e}")
+            return 404, None
+
+    def get_nice_avs_by_star_name(self, star_name: str, cookie: str) -> typing.Tuple[int, list]:
+        """根据演员名字获取高分番号列表(需要登录)
+
+        :param str star_name: 演员名字
+        :param str cookie: 该方法需要登录，cookie 中的 _jdb_session 为必须值
+        :param str
+        :return typing.Tuple[int, list]: 状态码和番号列表
+        番号列表单个对象结构:
+        {
+            'rate': rate, # 评分
+            'id': id # 番号
+        }
+        """
+        code, base_page_url = self.get_star_page_by_star_name(star_name)
+        if code != 200:
+            return code, None
+        url = f"{base_page_url}{self.BASE_PARAM_NICE_AVS_OF_STAR}"
+        code, resp = self.send_req(url=url, headers={
+            'cookie': cookie,
+            'user-agent': self.ua_desktop()
+        })
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            items = soup.find_all(class_="item")
+            res = []
+            for item in items:
+                try:
+                    res.append({
+                        "rate": self.PAT_SCORE.findall(item.find(class_="score").text)[0],
+                        "id": item.find(class_="video-title").strong.text.strip()
+                    })
+                except Exception:
+                    pass
+            if not res:
+                return 404, None
+            return 200, res
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 从页面获取番号列表: {e}")
             return 404, None
 
     def get_javdb_id_by_id(self, id: str) -> typing.Tuple[int, None] | typing.Tuple[int, typing.Any]:
@@ -265,26 +322,6 @@ class JavDbUtil(BaseUtil):
             return 404, None  # if there is no correct result, return 404
         except Exception as e:
             self.log.error(f"JavDbUtil: 通过番号获取JavDB内部ID: {e}")
-            return 404, None
-
-    def get_ids_from_page(self, url: str) -> typing.Tuple[int, None] | typing.Tuple[int, list[typing.Any]]:
-        """从页面 url 获取番号列表
-
-        :param str url: 首页/搜索页
-        :return typing.Tuple[int, list]: 状态码和番号列表
-        """
-        code, resp = self.send_req(url=url)
-        if code != 200:
-            return code, None
-        try:
-            soup = self.get_soup(resp)
-            items = soup.find_all(class_="item")
-            ids = [item.find(class_="video-title").strong.text.strip() for item in items]
-            if not ids:
-                return 404, None
-            return 200, ids
-        except Exception as e:
-            self.log.error(f"JavDbUtil: 从页面获取番号列表: {e}")
             return 404, None
 
     def get_javdb_ids_from_page(self, url: str) -> typing.Tuple[int, None] | typing.Tuple[int, list[typing.Any]]:
@@ -771,8 +808,9 @@ class DmmUtil(BaseUtil):
             BASE_URL + "/digital/videoa/-/list/search/=/device=tv/sort=ranking/?searchstr="
     )
     BASE_URL_TOP_STARS = BASE_URL + "/digital/videoa/-/ranking/=/type=actress"
-    CID_PAT = re.compile(r"/cid=.+/")
-    CID_PAT_REAL = re.compile(r"[A-Za-z]+0+[0-9]+")
+    PAT_CID = re.compile(r"/cid=.+/")
+    PAT_CID_REAL = re.compile(r"[A-Za-z]+0+[0-9]+")
+    PAT_AV = re.compile(r"[a-z]+\d+")
 
     def get_pv_by_id(self, id: str) -> typing.Tuple[int, str]:
         """根据番号从 DMM 获取预览视频地址
@@ -799,7 +837,7 @@ class DmmUtil(BaseUtil):
 
     def get_cid_from_link(self, lk: str) -> str:
         try:
-            match = self.CID_PAT.findall(lk)
+            match = self.PAT_CID.findall(lk)
             cid = match[0].replace("/cid=", "").replace("/", "")
             # cid = self.CID_PAT_REAL.findall(cid)[0]
             return cid
@@ -898,8 +936,9 @@ class DmmUtil(BaseUtil):
                     rate = av.find(class_="rate").span.span.text
                     av_href = av.find(class_="sample").a["href"]
                     cid = self.get_cid_from_link(av_href)
-                    id_num = cid[-3:]
-                    id_pre = re.sub("0*$", "", cid[:-3])
+                    id_0 = self.PAT_AV.findall(cid)[0]
+                    id_num = re.search(r"[1-9]\d*", id_0).group()
+                    id_pre = re.sub(r"\d*$", "", id_0)
                     id = f"{id_pre}-{id_num}"
                     avs.append({"rate": float(rate), "id": id})
                 except Exception:

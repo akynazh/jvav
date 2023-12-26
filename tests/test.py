@@ -70,6 +70,10 @@ class SjsUtilTest(unittest.TestCase):
 class JavDbUtilTest(unittest.TestCase):
     util = jvav.JavDbUtil(proxy_addr=PROXY_ADDR)
 
+    def test_get_nice_avs_by_star_name(self):
+        assert_code(*JavDbUtilTest.util.get_nice_avs_by_star_name("西元めいさ",
+                                                                  cookie="_jdb_session=us8u%2BKc%2F8kraWTG6T5jKrHIkPOmQn3fs2xeSfCoRMqRT7JbCzOBDVG%2FAaYaj5SGVcxe8Dvbu1nXi7NJaw8ssVHBbMstublR1jc2qFt494rs5%2BsGeYiod6oiaF2zc5%2FRPlzXZv3iBX%2B471W7hFB%2BnR0Ix8bVFezmpNZ7FyrX0AclEn7LTM%2FzXm70CBveFkOnUMG9RcMorGV0SRDB6E0Cn8RrFit7E7uFMjWzua4DAIaoFP85Cj42y23zQ0t74KLltuz9%2BOYffVphnBE7LKTPFFH93RBowITxUyDwULz9XWOe%2Bvg2Hh3UN%2BwM8QkVmORKHb5l6mTu7pglc3WtLeB0wxrGQ0e0qFIy7RIzNq15kSZjOPWI65UpPy8I%2BL5u7Gt8yqGA%3D--i3%2Bm3PvAsjdJZbsT--Qt5tsiW5xsjOvpCkDb8ILw%3D%3D"))
+
     def test_get_max_page(self):
         assert_code(*JavDbUtilTest.util.get_max_page("https://javdb.com/actors/EvkJ"))
 
@@ -167,7 +171,7 @@ class DmmUtilTest(unittest.TestCase):
         assert_code(*DmmUtilTest.util.get_pv_by_id("ipx-365"))
 
     def test_get_nice_avs_by_star_name(self):
-        assert_code(*DmmUtilTest.util.get_nice_avs_by_star_name("小倉由菜"))
+        assert_code(*DmmUtilTest.util.get_nice_avs_by_star_name("西元めいさ"))
 
     def test_get_score_by_id(self):
         assert_code(*DmmUtilTest.util.get_score_by_id("ipx-365"))
