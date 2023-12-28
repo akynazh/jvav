@@ -49,7 +49,8 @@ class BaseUtilTest(unittest.TestCase):
             "sec-fetch-site": "cross-site",
             "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.82",
         }
-        data = '{"conditions":"ipx-828","field":0,"target":1,"sort":1,"userToken":"","hm":"008-api","device_id":""}'
+        data = {"conditions": "ipx-828", "field": 0, "target": 1, "sort": 1, "userToken": "", "hm": "008-api",
+                "device_id": ""}
         assert_code(
             *BaseUtilTest.util.send_req(
                 url="https://api.cbbee0.com/v1_2/articleSearch",
@@ -127,8 +128,8 @@ class JavDbUtilTest(unittest.TestCase):
     def test_get_pv_by_id(self):
         assert_code(*JavDbUtilTest.util.get_pv_by_id("IPZZ-154"))
 
-    def test_get_sample_by_id(self):
-        assert_code(*JavDbUtilTest.util.get_sample_by_id("SSIS-586"))
+    def test_get_samples_by_id(self):
+        assert_code(*JavDbUtilTest.util.get_samples_by_id("SSIS-586"))
 
     def test_get_av_by_id(self):
         assert_code(*JavDbUtilTest.util.get_av_by_id("IPX-580", False, False, True))
@@ -144,7 +145,7 @@ class JavLibUtilTest(unittest.TestCase):
         assert_code(*JavLibUtilTest.util.get_random_id_from_rank(1))
 
     def test_get_random_ids_from_rank_by_page(self):
-        assert_code(*JavLibUtilTest.util.get_random_ids_from_rank_by_page(2, 0, 4))
+        assert_code(*JavLibUtilTest.util.get_random_ids_from_rank_by_page(2, 0))
 
     def test_get_comments_by_id(self):
         assert_code(*JavLibUtilTest.util.get_comments_by_id(id="IPX-186"))
@@ -189,6 +190,7 @@ class DmmUtilTest(unittest.TestCase):
 # python -m unittest discover -s tests -k JavBusUtilTest
 class JavBusUtilTest(unittest.TestCase):
     util = jvav.JavBusUtil(
+        bus_auth="1155itPnlDVlY%2F3OpZPOsbyWEgOh1URYLDQQMWzOSFNltUSqUCSWqRCMqWIMPIu%2BaxI",
         proxy_addr=PROXY_ADDR, max_home_page_count=100, max_new_avs_count=10
     )
 

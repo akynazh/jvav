@@ -120,10 +120,6 @@ class BaseUtil:
 
     @staticmethod
     def write_html(resp: requests.Response):
-        """将 html 代码写到 tmp.html
-
-        :param requests.Response resp
-        """
         with open(f"./tmp.html", "w") as f:
             f.write(resp.text)
 
@@ -172,7 +168,7 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 从 {url} 获取最大页数: {e}")
             return 404, None
 
-    def get_ids_from_page(self, url: str) -> typing.Tuple[int, None] | typing.Tuple[int, list[typing.Any]]:
+    def get_ids_from_page(self, url: str) -> typing.Tuple[int, list]:
         """从页面 url 获取番号列表
 
         :param str url: 首页/搜索页
@@ -267,7 +263,6 @@ class JavDbUtil(BaseUtil):
 
         :param str star_name: 演员名字
         :param str cookie: 该方法需要登录，cookie 中的 _jdb_session 为必须值
-        :param str
         :return typing.Tuple[int, list]: 状态码和番号列表
         番号列表单个对象结构:
         {
@@ -304,7 +299,7 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 从页面获取番号列表: {e}")
             return 404, None
 
-    def get_javdb_id_by_id(self, id: str) -> typing.Tuple[int, None] | typing.Tuple[int, typing.Any]:
+    def get_javdb_id_by_id(self, id: str) -> typing.Tuple[int, str]:
         """通过番号获取 JavDB 内部 ID
 
         :param id: 番号
@@ -324,7 +319,7 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 通过番号获取JavDB内部ID: {e}")
             return 404, None
 
-    def get_javdb_ids_from_page(self, url: str) -> typing.Tuple[int, None] | typing.Tuple[int, list[typing.Any]]:
+    def get_javdb_ids_from_page(self, url: str) -> typing.Tuple[int, list]:
         """从页面 url 获取 JavDB 的 ID 列表
 
         :param url: 首页/搜索页
@@ -344,7 +339,7 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 从页面获取 JavDB 内部 ID 列表: {e}")
             return 404, None
 
-    def get_id_from_home(self) -> typing.Tuple[int, None] | typing.Tuple[int, typing.Any]:
+    def get_id_from_home(self) -> typing.Tuple[int, str]:
         """从主页获取一个番号(随机选取) 从首页获取 ID 或 JavDB ID
 
         :return typing.Tuple[int, str]: 状态码和番号
@@ -355,7 +350,7 @@ class JavDbUtil(BaseUtil):
         else:
             return 200, random.choice(resp)
 
-    def get_javdb_id_from_home(self) -> typing.Tuple[int, None] | typing.Tuple[int, typing.Any]:
+    def get_javdb_id_from_home(self) -> typing.Tuple[int, str]:
         """从主页获取一个 JavDB 内部 ID (随机选取)
 
         :return typing.Tuple[int, str]: 状态码和 JavDB 内部 ID
@@ -366,7 +361,7 @@ class JavDbUtil(BaseUtil):
         else:
             return 200, random.choice(resp)
 
-    def get_ids_from_home(self) -> typing.Tuple[int, None] | typing.Tuple[int, list]:
+    def get_ids_from_home(self) -> typing.Tuple[int, list]:
         """从主页获取全部番号
 
         :return typing.Tuple[int, list]: 状态码和番号列表
@@ -377,7 +372,7 @@ class JavDbUtil(BaseUtil):
         else:
             return 200, resp
 
-    def get_javdb_ids_from_home(self) -> typing.Tuple[int, None] | typing.Tuple[int, list]:
+    def get_javdb_ids_from_home(self) -> typing.Tuple[int, list]:
         """从主页获取全部 JavDB 内部 ID
 
         :return typing.Tuple[int, list]: 状态码和 JavDB 内部 ID 列表
@@ -406,7 +401,7 @@ class JavDbUtil(BaseUtil):
         url = f"{JavDbUtil.BASE_URL_SEARCH}{tag}"
         return self.get_javdb_ids_from_page(url)
 
-    def get_cover_by_id(self, id: str) -> typing.Tuple[int, None] | typing.Tuple[int, str]:
+    def get_cover_by_id(self, id: str) -> typing.Tuple[int, str]:
         """根据番号获取封面
 
         :param str id: 番号
@@ -427,7 +422,7 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 通过番号获取封面: {e}")
             return 404, None
 
-    def get_cover_by_javdb_id(self, javdb_id: str) -> typing.Tuple[int, None] | typing.Tuple[int, str]:
+    def get_cover_by_javdb_id(self, javdb_id: str) -> typing.Tuple[int, str]:
         """通过 JavDB ID 获取封面
 
         :param str javdb_id: JavDB 内部 ID
@@ -488,7 +483,7 @@ class JavDbUtil(BaseUtil):
             is_nice: bool,
             is_uncensored: bool,
             sex_limit: bool = False,
-            magnet_max_count=10, ) -> typing.Tuple[int, None] | typing.Tuple[int, dict]:
+            magnet_max_count=10, ) -> typing.Tuple[int, dict]:
         """通过 JavDB ID 获取 av
 
         :param javdb_id: JavDB 内部 ID
@@ -637,7 +632,7 @@ class JavDbUtil(BaseUtil):
             is_uncensored: bool,
             sex_limit: bool = False,
             magnet_max_count=10,
-    ) -> typing.Tuple[int, None] | typing.Tuple[int, dict]:
+    ) -> typing.Tuple[int, dict]:
         """通过 javdb 获取番号对应 av
 
         :param str id: 番号
@@ -1046,21 +1041,13 @@ class JavBusUtil(BaseUtil):
         return {
             'authority': 'www.javbus.com',
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5',
-            'cache-control': 'max-age=0',
-            'sec-ch-ua': '"Microsoft Edge";v="117", "Not;A=Brand";v="8", "Chromium";v="117"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"macOS"',
-            'sec-fetch-dest': 'document',
-            'sec-fetch-mode': 'navigate',
-            'sec-fetch-site': 'none',
-            'sec-fetch-user': '?1',
-            'upgrade-insecure-requests': '1',
-            'user-agent': self.ua_desktop(),
+            'cookie': f'bus_auth={self.bus_auth};',
+            'user-agent': self.ua_desktop()
         }
 
     def __init__(
             self,
+            bus_auth: str,
             proxy_addr="",
             max_home_page_count=100,
             max_new_avs_count=8,
@@ -1070,10 +1057,12 @@ class JavBusUtil(BaseUtil):
         :param str proxy_addr: 代理服务器地址, 默认为 ''
         :param int max_home_page_count: 主页最大爬取页数, 默认为 100 页
         :param int max_new_avs_count: 获取最新 AV 数量, 默认为 8 部
+        :param str bus_auth: cookie 需要用到的值
         """
         super().__init__(proxy_addr)
         self.max_home_page_count = max_home_page_count
         self.max_new_avs_count = max_new_avs_count
+        self.bus_auth = bus_auth
 
     def get_all_genres(self) -> typing.Tuple[int, list]:
         """获取所有类别

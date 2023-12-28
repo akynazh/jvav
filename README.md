@@ -5,7 +5,7 @@ Useful tools for Jav.
 ## INSTALL
 
 ```
-# python >= 3.10
+# python >= 3.7
 pip install jvav -U
 ```
 
@@ -58,14 +58,13 @@ optional arguments:
 
 ## DEV
 
-I use python-3.10.9 for development, please use python <= 3.10. 
+I use python-3.7.12 for development, please use python <= 3.7. 
 
 And it is recommended to use python virtual environment to avoid some unnecessary problems.
 
 Here is my developing steps:
 
 ```shell
-# python=3.10.9
 git clone https://github.com/akynazh/jvav.git
 cd jvav
 python3 -m venv venv
@@ -85,4 +84,3 @@ The following are some functions to be implemented, and I look forward to your c
 - [ ] support db.msin.jp
 - [ ] support JavDbUtil in cmd
 - [ ] support SgpUtil in cmd
-- [ ] support JavDbUtil in cmd

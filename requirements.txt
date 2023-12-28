@@ -4,5 +4,5 @@ deep_translator==1.11.4
 langdetect==1.0.9
 lxml==4.9.2
 Requests==2.31.0
-setuptools==68.1.2
+setuptools
 Wikipedia_API==0.5.8
