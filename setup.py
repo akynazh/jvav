@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 from setuptools import setup, find_packages
-import jvav
 
 with open("requirements.txt", encoding="utf-8") as r:
     requires = [i.strip() for i in r]
@@ -10,7 +9,7 @@ with open("README.md", encoding="utf-8") as f:
 
 setup(
     name="Jvav",
-    version=jvav.VERSION,
+    version="1.6.1",
     description="Useful tools for Jav.",
     long_description=readme,
     long_description_content_type="text/markdown",
