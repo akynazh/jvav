@@ -469,10 +469,10 @@ class JavDbUtil(BaseUtil):
             return code, None
         try:
             soup = self.get_soup(resp)
-            img_tags = soup.find_all(class_="tile-images")[0].find_all("img")
+            img_tags = soup.find_all(class_="tile-item")
             if not img_tags:
                 return 404, None
-            return 200, [t.attrs["src"] for t in img_tags]
+            return 200, [t.attrs["href"] for t in img_tags]
         except Exception as e:
             self.log.error(f"JavDbUtil: 获取预览图片: {e}")
             return 404, None
