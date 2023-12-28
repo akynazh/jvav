@@ -11,3 +11,5 @@ jvav.egg-info
 *.spec
 /jvav/dist
 /jvav/build
+
+venv
