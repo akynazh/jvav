@@ -56,6 +56,12 @@ class JvavArgsParser:
             help="Followed by a code, search this code on Sukebei",
         )
         parser.add_argument(
+            "-av3",
+            type=str,
+            default="",
+            help="Followed by a code, search this code on JavDb",
+        )
+        parser.add_argument(
             "-nc",
             action="store_true",
             help="Filter out high-definition subtitles magnet links",
@@ -149,6 +155,12 @@ class JvavArgsParser:
             self.handle_code(
                 *jvav.SukebeiUtil(proxy_addr=args.proxy).get_av_by_id(
                     id=args.av2, is_nice=args.nc, is_uncensored=args.uc
+                )
+            )
+        elif args.av3 != "":
+            self.handle_code(
+                *jvav.JavDbUtil(proxy_addr=args.proxy).get_av_by_id(
+                    id=args.av3, is_nice=args.nc, is_uncensored=args.uc
                 )
             )
         elif args.tp:
