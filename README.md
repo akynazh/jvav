@@ -1,6 +1,6 @@
 # Jvav
 
-Useful tools for Jav.
+Useful tools for Jav. Supports Python library operations and command-line usage, with additional proxy options.
 
 ## INSTALL
 
