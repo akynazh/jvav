@@ -13,3 +13,4 @@ jvav.egg-info
 /jvav/build
 
 venv
+jvav_cache.sqlite

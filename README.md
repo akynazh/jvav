@@ -1,6 +1,6 @@
 # Jvav
 
-Useful tools for Jav. Supports Python library operations and command-line usage, with additional proxy options and cache support(by [requests_cache](https://pypi.org/project/requests-cache)).
+Useful tools for Jav. Supports Python library operations and command-line usage, with additional proxy options and cache support.
 
 ## INSTALL
 
