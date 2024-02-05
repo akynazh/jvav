@@ -62,6 +62,12 @@ class JvavArgsParser:
             help="Followed by a code, search this code on JavDb",
         )
         parser.add_argument(
+            "-auth",
+            type=str,
+            default="",
+            help="Followed by a authentication code for JavBus, get it from cookie key: bus_auth",
+        )
+        parser.add_argument(
             "-nc",
             action="store_true",
             help="Filter out high-definition subtitles magnet links",
@@ -146,8 +152,11 @@ class JvavArgsParser:
         if args.proxy == "" and env_proxy:
             args.proxy = env_proxy
         if args.av1 != "":
+            if args.auth == "":
+                print("Please specify the authentication code for JavBus by '-auth', get it from cookie key: bus_auth")
+                return
             self.handle_code(
-                *jvav.JavBusUtil(proxy_addr=args.proxy).get_av_by_id(
+                *jvav.JavBusUtil(bus_auth=args.auth, proxy_addr=args.proxy).get_av_by_id(
                     id=args.av1, is_nice=args.nc, is_uncensored=args.uc
                 )
             )

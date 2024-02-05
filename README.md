@@ -1,6 +1,6 @@
 # Jvav
 
-Useful tools for Jav. Supports Python library operations and command-line usage, with additional proxy options.
+Useful tools for Jav. Supports Python library operations and command-line usage, with additional proxy options and cache support(by [requests_cache](https://pypi.org/project/requests-cache)).
 
 ## INSTALL
 
@@ -36,8 +36,9 @@ util.get_all_top_stars()
 
 ```shell
 $ jvav -h
-usage: cmd.py [-h] [-v] [-av1 AV1] [-av2 AV2] [-av3 AV3] [-nc] [-uc] [-sr SR]
-              [-srn SRN] [-tg TG] [-pv1 PV1] [-pv2 PV2] [-tp] [-p PROXY]
+usage: cmd.py [-h] [-v] [-av1 AV1] [-av2 AV2] [-av3 AV3] [-auth AUTH] [-nc]
+              [-uc] [-sr SR] [-srn SRN] [-tg TG] [-pv1 PV1] [-pv2 PV2] [-tp]
+              [-p PROXY]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -45,6 +46,8 @@ optional arguments:
   -av1 AV1              Followed by a code, search this code on JavBus
   -av2 AV2              Followed by a code, search this code on Sukebei
   -av3 AV3              Followed by a code, search this code on JavDb
+  -auth AUTH            Followed by a authentication code for JavBus, get it
+                        from cookie key: bus_auth
   -nc                   Filter out high-definition subtitles magnet links
   -uc                   Filter out uncoded magnet links
   -sr SR                Followed by an actress name, get a list of high-rated
@@ -74,7 +77,7 @@ Here is my developing steps:
 ```shell
 git clone https://github.com/akynazh/jvav.git
 cd jvav
-python3 -m venv venv
+~/.pyenv/versions/3.7.12/bin/python -m venv venv
 source ./venv/bin/activate
 pip3 install -r requirements.txt
 ```
@@ -86,8 +89,8 @@ Please make sure the test is okay before submitting your code~
 
 The following are some functions to be implemented, and I look forward to your contribution~ 
 
-- [ ] cache the successful query results locally
+- [x] cache the successful query results locally (Thanks: [@akynazh](https://github.com/akynazh))
 - [x] support javdb.com (Thanks: [@Steven-Fake](https://github.com/Steven-Fake))
 - [ ] support db.msin.jp
-- [x] support JavDbUtil in cmd
+- [x] support JavDbUtil in cmd (Thanks: [@akynazh](https://github.com/akynazh))
 - [ ] support SgpUtil in cmd

@@ -6,12 +6,15 @@ import re
 import typing
 
 import requests
+import requests_cache
 import unicodedata
 import wikipediaapi
 from anti_useragent import UserAgent
 from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
 
+
+requests_cache.install_cache('jvav_cache')
 
 class BaseUtil:
     def __init__(self, proxy_addr=""):
