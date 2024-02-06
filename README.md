@@ -94,3 +94,10 @@ The following are some functions to be implemented, and I look forward to your c
 - [ ] support db.msin.jp
 - [x] support JavDbUtil in cmd (Thanks: [@akynazh](https://github.com/akynazh))
 - [ ] support SgpUtil in cmd
+
+## Thanks
+
+<a href="https://www.jetbrains.com/">
+<img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo." style="width: 200px;"></a>
+
+Thanks to JetBrains for their support to this project!
