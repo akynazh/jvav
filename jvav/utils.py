@@ -1939,26 +1939,24 @@ class SgpUtil(BaseUtil):
         if code != 200:
             return code, None
         res = resp.json()
-        if not res["data"]:
-            return 200, None
-        else:
-            library_id = res["data"][0]["library_id"]
-            code, resp = self.send_req(url=f"{SgpUtil.BASE_URL_DETAIL}{library_id}", headers=headers)
-            if code != 200:
-                return code, None
-            soup = self.get_soup(resp)
-            try:
-                suffix = soup.find("iframe")["src"]
-                video_addr = f'{SgpUtil.BASE_URL}{suffix}'
-                video_content = soup.find('div', {'class': 'content'})
-                # md = html2text.html2text(content.encode_contents().decode("utf-8"))
-                res = f"""解说视频地址: {video_addr}
-                
-                解说内容:
-                
-                {video_content}
-                
-                解说视频地址: {video_addr}"""
-                return 200, res
-            except Exception:
-                return 404, None
+        code, resp = self.send_req(url=SgpUtil.BASE_URL_DETAIL, headers=headers, json={
+            "encrypt_key": res["encrypt_key"],
+            "encrypt_data": res["encrypt_data"]
+        })
+        if code != 200:
+            return code, None
+        soup = self.get_soup(resp)
+        try:
+            suffix = soup.find("iframe")["src"]
+            video_addr = f'{SgpUtil.BASE_URL}{suffix}'
+            video_content = soup.find('div', {'class': 'content'})
+            res = f"""解说视频地址: {video_addr}
+            
+            解说内容:
+            
+            {video_content}
+            
+            解说视频地址: {video_addr}"""
+            return 200, res
+        except Exception:
+            return 404, None

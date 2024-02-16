@@ -35,10 +35,9 @@ util.get_all_top_stars()
 ## CMD
 
 ```shell
-$ jvav -h
-usage: cmd.py [-h] [-v] [-av1 AV1] [-av2 AV2] [-av3 AV3] [-auth AUTH] [-nc]
-              [-uc] [-sr SR] [-srn SRN] [-tg TG] [-pv1 PV1] [-pv2 PV2] [-tp]
-              [-p PROXY]
+usage: cmd.py [-h] [-v] [-av1 AV1] [-av2 AV2] [-av3 AV3] [-sg SG] [-auth AUTH]
+              [-nc] [-uc] [-sr SR] [-srn SRN] [-tg TG] [-pv1 PV1] [-pv2 PV2]
+              [-tp] [-p PROXY]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -46,6 +45,8 @@ optional arguments:
   -av1 AV1              Followed by a code, search this code on JavBus
   -av2 AV2              Followed by a code, search this code on Sukebei
   -av3 AV3              Followed by a code, search this code on JavDb
+  -sg SG                Followed by a code, search the explainer video of this
+                        code
   -auth AUTH            Followed by a authentication code for JavBus, get it
                         from cookie key: bus_auth
   -nc                   Filter out high-definition subtitles magnet links
@@ -89,11 +90,11 @@ Please make sure the test is okay before submitting your code~
 
 The following are some functions to be implemented, and I look forward to your contribution~ 
 
+- [ ] fix SgpUtil(currently not work)
 - [x] cache the successful query results locally (Thanks: [@akynazh](https://github.com/akynazh))
 - [x] support javdb.com (Thanks: [@Steven-Fake](https://github.com/Steven-Fake))
 - [ ] support db.msin.jp
 - [x] support JavDbUtil in cmd (Thanks: [@akynazh](https://github.com/akynazh))
-- [ ] support SgpUtil in cmd
 
 ## Thanks
 
