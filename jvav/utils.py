@@ -1043,8 +1043,13 @@ class JavBusUtil(BaseUtil):
     def get_headers(self):
         return {
             'authority': 'www.javbus.com',
+            'method': 'GET',
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'accept-encoding': 'gzip, deflate, br',
+            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-US;q=0.7,fr-FR;q=0.6,fr;q=0.5',
             'cookie': f'bus_auth={self.bus_auth};',
+            'dnt': '1',
+            'sec-ch-ua-platform': '"Windows"',
             'user-agent': self.ua_desktop()
         }
 
