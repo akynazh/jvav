@@ -14,7 +14,7 @@ from jvav.utils import (
     SgpUtil,
 )
 
-__version__ = "1.7.2"
+__version__ = "1.7.3"
 
 VERSION = __version__
 

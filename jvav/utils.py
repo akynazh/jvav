@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
 
 
-requests_cache.install_cache('jvav_cache')
+# requests_cache.install_cache('jvav_cache')
 
 class BaseUtil:
     def __init__(self, proxy_addr=""):
@@ -76,41 +76,42 @@ class BaseUtil:
             headers = {"user-agent": self.ua()}
         if proxies == {}:
             proxies = self.proxy_json
-        try:
-            if m == 0:
-                resp = requests.get(
-                    url,
-                    proxies=proxies,
-                    headers=headers,
-                    **args
-                )
-            elif m == 1:
-                resp = requests.post(
-                    url,
-                    proxies=proxies,
-                    headers=headers,
-                    **args
-                )
-            elif m == 2:
-                resp = requests.delete(
-                    url,
-                    proxies=proxies,
-                    headers=headers,
-                    **args
-                )
-            elif m == 3:
-                resp = requests.put(
-                    url,
-                    proxies=proxies,
-                    headers=headers,
-                    **args
-                )
-            if resp.status_code != 200:
-                return 404, None
-            return 200, resp
-        except Exception as e:
-            self.log.error(f"BaseUtil: 访问 {url}: {e}")
-            return 502, None
+        with requests_cache.CachedSession(cache_name="jvav_cache") as session:
+            try:
+                if m == 0:
+                    resp = session.get(
+                        url,
+                        proxies=proxies,
+                        headers=headers,
+                        **args
+                    )
+                elif m == 1:
+                    resp = session.post(
+                        url,
+                        proxies=proxies,
+                        headers=headers,
+                        **args
+                    )
+                elif m == 2:
+                    resp = session.delete(
+                        url,
+                        proxies=proxies,
+                        headers=headers,
+                        **args
+                    )
+                elif m == 3:
+                    resp = session.put(
+                        url,
+                        proxies=proxies,
+                        headers=headers,
+                        **args
+                    )
+                if resp.status_code != 200:
+                    return 404, None
+                return 200, resp
+            except Exception as e:
+                self.log.error(f"BaseUtil: 访问 {url}: {e}")
+                return 502, None
 
     @staticmethod
     def get_soup(resp: requests.Response) -> BeautifulSoup:
