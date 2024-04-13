@@ -16,8 +16,9 @@ from deep_translator import GoogleTranslator
 
 # requests_cache.install_cache('jvav_cache')
 
+
 class BaseUtil:
-    def __init__(self, proxy_addr=""):
+    def __init__(self, proxy_addr="", use_cache=True):
         """初始化
 
         :param str proxy_addr: 代理服务器地址, 默认为 ''
@@ -25,6 +26,7 @@ class BaseUtil:
 
         self.log = logging.getLogger(__name__)
         self.proxy_addr = ""
+        self.use_cache = use_cache
         if proxy_addr != "":
             self.proxy_addr = proxy_addr
         if self.proxy_addr != "":
@@ -56,8 +58,31 @@ class BaseUtil:
         """
         return UserAgent().random
 
+    def inner_send_req(
+        self, url: str, session, headers={}, proxies={}, m=0, **args
+    ) -> typing.Tuple[int, requests.Response]:
+        if headers == {}:
+            headers = {"user-agent": self.ua()}
+        if proxies == {}:
+            proxies = self.proxy_json
+        try:
+            if m == 0:
+                resp = session.get(url, proxies=proxies, headers=headers, **args)
+            elif m == 1:
+                resp = session.post(url, proxies=proxies, headers=headers, **args)
+            elif m == 2:
+                resp = session.delete(url, proxies=proxies, headers=headers, **args)
+            elif m == 3:
+                resp = session.put(url, proxies=proxies, headers=headers, **args)
+            if resp.status_code != 200:
+                return 404, None
+            return 200, resp
+        except Exception as e:
+            self.log.error(f"BaseUtil: 访问 {url}: {e}")
+            return 502, None
+
     def send_req(
-            self, url: str, headers={}, proxies={}, m=0, **args
+        self, url: str, headers={}, proxies={}, m=0, **args
     ) -> typing.Tuple[int, requests.Response]:
         """发送请求
 
@@ -72,46 +97,12 @@ class BaseUtil:
         404: 未找到
         502: 网络问题
         """
-        if headers == {}:
-            headers = {"user-agent": self.ua()}
-        if proxies == {}:
-            proxies = self.proxy_json
-        with requests_cache.CachedSession(cache_name="jvav_cache") as session:
-            try:
-                if m == 0:
-                    resp = session.get(
-                        url,
-                        proxies=proxies,
-                        headers=headers,
-                        **args
-                    )
-                elif m == 1:
-                    resp = session.post(
-                        url,
-                        proxies=proxies,
-                        headers=headers,
-                        **args
-                    )
-                elif m == 2:
-                    resp = session.delete(
-                        url,
-                        proxies=proxies,
-                        headers=headers,
-                        **args
-                    )
-                elif m == 3:
-                    resp = session.put(
-                        url,
-                        proxies=proxies,
-                        headers=headers,
-                        **args
-                    )
-                if resp.status_code != 200:
-                    return 404, None
-                return 200, resp
-            except Exception as e:
-                self.log.error(f"BaseUtil: 访问 {url}: {e}")
-                return 502, None
+        if self.use_cache:
+            with requests_cache.CachedSession(cache_name="jvav_cache") as session:
+                return self.inner_send_req(url, session, headers, proxies, m, **args)
+        else:
+            with requests.Session() as session:
+                return self.inner_send_req(url, session, headers, proxies, m, **args)
 
     @staticmethod
     def get_soup(resp: requests.Response) -> BeautifulSoup:
@@ -138,18 +129,20 @@ class JavDbUtil(BaseUtil):
     PAT_SCORE = re.compile(r"(\d+\.?\d+)分")
 
     def __init__(
-            self,
-            proxy_addr="",
-            max_home_page_count=100,
-            max_new_avs_count=8,
+        self,
+        proxy_addr="",
+        use_cache=True,
+        max_home_page_count=100,
+        max_new_avs_count=8,
     ):
         """初始化
 
         :param str proxy_addr: 代理服务器地址, 默认为 ''
+        :param bool use_cache: 是否使用缓存, 默认为 True
         :param int max_home_page_count: 主页最大爬取页数, 默认为 100 页
         :param int max_new_avs_count: 获取最新 AV 数量, 默认为 8 部
         """
-        super().__init__(proxy_addr)
+        super().__init__(proxy_addr, use_cache)
         self.max_home_page_count = max_home_page_count
         self.max_new_avs_count = max_new_avs_count
 
@@ -164,7 +157,9 @@ class JavDbUtil(BaseUtil):
             return code, None
         try:
             soup = self.get_soup(resp)
-            last_page = int(soup.find(class_="pagination-list").find_all("li")[-1].a.text)
+            last_page = int(
+                soup.find(class_="pagination-list").find_all("li")[-1].a.text
+            )
             if not last_page:
                 return 404, None
             return 200, last_page
@@ -184,7 +179,9 @@ class JavDbUtil(BaseUtil):
         try:
             soup = self.get_soup(resp)
             items = soup.find_all(class_="item")
-            ids = [item.find(class_="video-title").strong.text.strip() for item in items]
+            ids = [
+                item.find(class_="video-title").strong.text.strip() for item in items
+            ]
             if not ids:
                 return 404, None
             return 200, ids
@@ -257,12 +254,14 @@ class JavDbUtil(BaseUtil):
             code, ids = self.get_ids_from_page(url)
             if code != 200:
                 return code, None
-            return 200, ids[:self.max_new_avs_count]
+            return 200, ids[: self.max_new_avs_count]
         except Exception as e:
             self.log.error(f"JavDbUtil: 根据演员名字获取最新番号列表: {e}")
             return 404, None
 
-    def get_nice_avs_by_star_name(self, star_name: str, cookie: str) -> typing.Tuple[int, list]:
+    def get_nice_avs_by_star_name(
+        self, star_name: str, cookie: str
+    ) -> typing.Tuple[int, list]:
         """根据演员名字获取高分番号列表(需要登录)
 
         :param str star_name: 演员名字
@@ -278,10 +277,9 @@ class JavDbUtil(BaseUtil):
         if code != 200:
             return code, None
         url = f"{base_page_url}{self.BASE_PARAM_NICE_AVS_OF_STAR}"
-        code, resp = self.send_req(url=url, headers={
-            'cookie': cookie,
-            'user-agent': self.ua_desktop()
-        })
+        code, resp = self.send_req(
+            url=url, headers={"cookie": cookie, "user-agent": self.ua_desktop()}
+        )
         if code != 200:
             return code, None
         try:
@@ -290,10 +288,14 @@ class JavDbUtil(BaseUtil):
             res = []
             for item in items:
                 try:
-                    res.append({
-                        "rate": self.PAT_SCORE.findall(item.find(class_="score").text)[0],
-                        "id": item.find(class_="video-title").strong.text.strip()
-                    })
+                    res.append(
+                        {
+                            "rate": self.PAT_SCORE.findall(
+                                item.find(class_="score").text
+                            )[0],
+                            "id": item.find(class_="video-title").strong.text.strip(),
+                        }
+                    )
                 except Exception:
                     pass
             if not res:
@@ -482,12 +484,13 @@ class JavDbUtil(BaseUtil):
             return 404, None
 
     def get_av_by_javdb_id(
-            self,
-            javdb_id: str,
-            is_nice: bool,
-            is_uncensored: bool,
-            sex_limit: bool = False,
-            magnet_max_count=10, ) -> typing.Tuple[int, dict]:
+        self,
+        javdb_id: str,
+        is_nice: bool,
+        is_uncensored: bool,
+        sex_limit: bool = False,
+        magnet_max_count=10,
+    ) -> typing.Tuple[int, dict]:
         """通过 JavDB ID 获取 av
 
         :param javdb_id: JavDB 内部 ID
@@ -547,7 +550,7 @@ class JavDbUtil(BaseUtil):
                 "tags": [],
                 "stars": [],
                 "magnets": [],
-                "url": JavDbUtil.BASE_URL_VIDEO + javdb_id
+                "url": JavDbUtil.BASE_URL_VIDEO + javdb_id,
             }
             soup = self.get_soup(resp)
             # 获取元信息
@@ -557,9 +560,13 @@ class JavDbUtil(BaseUtil):
                 title, title_cn = title_cn, ""
             av["title_cn"] = title_cn.text.strip() if title_cn else ""
             av["title"] = title.text.strip() if title else ""
-            av["img"] = soup.find("div", {"class": "column column-video-cover"}).find("img")["src"]
+            av["img"] = soup.find("div", {"class": "column column-video-cover"}).find(
+                "img"
+            )["src"]
             # 由于nav栏会因为实际信息不同而导致行数不同，所以只能用循环的方式检索信息
-            metainfos = soup.find("nav", {"class": "panel movie-panel-info"}).find_all("div", {"class": "panel-block"})
+            metainfos = soup.find("nav", {"class": "panel movie-panel-info"}).find_all(
+                "div", {"class": "panel-block"}
+            )
             for info in metainfos:  # 遍历nav栏所有信息
                 text = unicodedata.normalize("NFKD", re.sub("[\n ]", "", info.text))
                 if re.search("番號:.+", text):
@@ -577,29 +584,55 @@ class JavDbUtil(BaseUtil):
                 elif re.search("類別:.+", text):
                     av["tags"] = re.search("(類別: )(.+)", text).group(2).split(", ")
                 elif re.search("評分:.+", text):
-                    av["score"] = re.search("(評分: +)(\d+\.*\d*)(分.+)", text).group(2).strip()
+                    av["score"] = (
+                        re.search("(評分: +)(\d+\.*\d*)(分.+)", text).group(2).strip()
+                    )
                 elif re.search("演員:.+", text):
                     actor_info = info.find_all(("a", "strong"))[1:]
                     for a in range(len(actor_info) // 2):
-                        actor = {"name": actor_info[a * 2].text.strip(),
-                                 "id": actor_info[a * 2]["href"].split("/")[-1],
-                                 "sex": "女" if actor_info[a * 2 + 1].text.endswith("♀") else "男"}
-                        if not (sex_limit and actor['sex'] == '男'):
+                        actor = {
+                            "name": actor_info[a * 2].text.strip(),
+                            "id": actor_info[a * 2]["href"].split("/")[-1],
+                            "sex": (
+                                "女"
+                                if actor_info[a * 2 + 1].text.endswith("♀")
+                                else "男"
+                            ),
+                        }
+                        if not (sex_limit and actor["sex"] == "男"):
                             av["stars"].append(actor)
             # 获取磁链
-            magnet_list = soup.find_all("div", {"class": "item columns is-desktop"}) + \
-                          soup.find_all("div", {"class": "item columns is-desktop odd"})
+            magnet_list = soup.find_all(
+                "div", {"class": "item columns is-desktop"}
+            ) + soup.find_all("div", {"class": "item columns is-desktop odd"})
             for link in magnet_list:
-                magnet = {"link": link.find("a")["href"], "hd": "0", "zm": "0", "uc": "0", "size": "0"}
+                magnet = {
+                    "link": link.find("a")["href"],
+                    "hd": "0",
+                    "zm": "0",
+                    "uc": "0",
+                    "size": "0",
+                }
                 # 获取大小
                 size = link.find("span", {"class": "meta"})
                 if size:
-                    magnet["size"] = size.text.strip().split(',')[0]
+                    magnet["size"] = size.text.strip().split(",")[0]
                 # 检查是否为uc
                 title = link.find("span", {"class": "name"}).text
-                if any(k in title for k in
-                       ['-U', '无码', '無碼', '无码流出', '無碼流出', '无码破解', '無碼破解', 'uncensored',
-                        'Uncensored']):
+                if any(
+                    k in title
+                    for k in [
+                        "-U",
+                        "无码",
+                        "無碼",
+                        "无码流出",
+                        "無碼流出",
+                        "无码破解",
+                        "無碼破解",
+                        "uncensored",
+                        "Uncensored",
+                    ]
+                ):
                     magnet["uc"] = "1"
                 # 检查tag
                 tags_elements = link.find("div", {"class": "tags"})
@@ -612,7 +645,9 @@ class JavDbUtil(BaseUtil):
                             magnet["zm"] = "1"
                 av["magnets"].append(magnet)
             if is_uncensored:
-                av["magnets"] = MagnetUtil.get_nice_magnets(av["magnets"], "uc", expect_val="1")
+                av["magnets"] = MagnetUtil.get_nice_magnets(
+                    av["magnets"], "uc", expect_val="1"
+                )
             if is_nice:
                 magnets = av["magnets"]
                 magnets = MagnetUtil.get_nice_magnets(
@@ -630,12 +665,12 @@ class JavDbUtil(BaseUtil):
             return 404, None
 
     def get_av_by_id(
-            self,
-            id: str,
-            is_nice: bool,
-            is_uncensored: bool,
-            sex_limit: bool = False,
-            magnet_max_count=10,
+        self,
+        id: str,
+        is_nice: bool,
+        is_uncensored: bool,
+        sex_limit: bool = False,
+        magnet_max_count=10,
     ) -> typing.Tuple[int, dict]:
         """通过 javdb 获取番号对应 av
 
@@ -678,8 +713,13 @@ class JavDbUtil(BaseUtil):
         }
         """
         code, j_id = self.get_javdb_id_by_id(id)
-        return self.get_av_by_javdb_id(j_id, is_nice, is_uncensored, sex_limit,
-                                       magnet_max_count) if code == 200 else (code, None)
+        return (
+            self.get_av_by_javdb_id(
+                j_id, is_nice, is_uncensored, sex_limit, magnet_max_count
+            )
+            if code == 200
+            else (code, None)
+        )
 
 
 class JavLibUtil(BaseUtil):
@@ -687,12 +727,10 @@ class JavLibUtil(BaseUtil):
     # nice
     BASE_URL_BEST_RATED_LAST_MONTH = BASE_URL + "/cn/vl_bestrated.php?mode=1&page="
     BASE_URL_BEST_RATED_ALL = BASE_URL + "/cn/vl_bestrated.php?mode=2&page="
-    BASE_URL_MOST_WANTED_LAST_MONTH = BASE_URL + \
-                                      "/cn/vl_mostwanted.php?&mode=1&page="
+    BASE_URL_MOST_WANTED_LAST_MONTH = BASE_URL + "/cn/vl_mostwanted.php?&mode=1&page="
     BASE_URL_MOST_WANTED_ALL = BASE_URL + "/cn/vl_mostwanted.php?&mode=2&page="
     # new
-    BASE_URL_NEW_RELEASE_HAVE_COMMENT = BASE_URL + \
-                                        "/cn/vl_newrelease.php?&mode=1&page="
+    BASE_URL_NEW_RELEASE_HAVE_COMMENT = BASE_URL + "/cn/vl_newrelease.php?&mode=1&page="
     BASE_URL_NEW_RELEASE_ALL = BASE_URL + "/cn/vl_newrelease.php?&mode=2&page="
     BASE_URL_NEW_ENTRIES = BASE_URL + "/cn/vl_newentries.php?page="
     URLS_NICE = [
@@ -716,7 +754,7 @@ class JavLibUtil(BaseUtil):
     MAX_RANK_PAGE = 25
 
     def get_random_ids_from_rank_by_page(
-            self, page: int, list_type: int
+        self, page: int, list_type: int
     ) -> typing.Tuple[int, str]:
         """从排行榜某页中获取该页番号列表
 
@@ -728,7 +766,11 @@ class JavLibUtil(BaseUtil):
             url = random.choice(JavLibUtil.URLS_NICE)
         elif list_type == 1:
             url = random.choice(JavLibUtil.URLS_NEW)
-        code, resp = self.send_req(url=url + str(page))
+        headers = {
+            "cookie": "over18=18;",
+            "user-agent": self.ua_desktop(),
+        }
+        code, resp = self.send_req(url=url + str(page), headers=headers)
         if code != 200:
             return code, None
         try:
@@ -774,13 +816,13 @@ class JavLibUtil(BaseUtil):
                 soup = self.get_soup(resp)
                 videos = soup.find_all(class_="video")
                 video_href = videos[0].a["href"]
-                javlib_av_id = video_href[video_href.find("v=") + 2:]
+                javlib_av_id = video_href[video_href.find("v=") + 2 :]
             except Exception as e:
                 self.log.error(f"JavLibUtil: 根据番号 {id} 获取评论失败: {e}")
                 return 404, None
         else:
             r_url = resp.url
-            javlib_av_id = r_url[r_url.find("v=") + 2:]
+            javlib_av_id = r_url[r_url.find("v=") + 2 :]
         comment_url = JavLibUtil.BASE_URL_REVIEW + javlib_av_id
         code, resp = self.send_req(url=comment_url)
         if code != 200:
@@ -802,9 +844,11 @@ class JavLibUtil(BaseUtil):
 class DmmUtil(BaseUtil):
     BASE_URL = "https://www.dmm.co.jp"
     BASE_URL_SEARCH_AV = BASE_URL + "/digital/-/list/search/=/sort=ranking/?searchstr="
-    BASE_URL_SEARCH_AV_MONTHLY = BASE_URL + "/monthly/dream/-/list/search/=/sort=ranking/?searchstr="
+    BASE_URL_SEARCH_AV_MONTHLY = (
+        BASE_URL + "/monthly/dream/-/list/search/=/sort=ranking/?searchstr="
+    )
     BASE_URL_SEARCH_STAR = (
-            BASE_URL + "/digital/videoa/-/list/search/=/device=tv/sort=ranking/?searchstr="
+        BASE_URL + "/digital/videoa/-/list/search/=/device=tv/sort=ranking/?searchstr="
     )
     BASE_URL_TOP_STARS = BASE_URL + "/digital/videoa/-/ranking/=/type=actress"
     PAT_CID = re.compile(r"/cid=.+/")
@@ -857,7 +901,7 @@ class DmmUtil(BaseUtil):
             cids = []
             for tmb in tmb_tags:
                 try:
-                    lk = tmb.a['href']
+                    lk = tmb.a["href"]
                     cid = self.get_cid_from_link(lk)
                     if cid:
                         cids.append(cid)
@@ -882,7 +926,7 @@ class DmmUtil(BaseUtil):
             cids = []
             for li in li_tags:
                 try:
-                    lk = li.div.a['href']
+                    lk = li.div.a["href"]
                     cid = self.get_cid_from_link(lk)
                     if cid:
                         cids.append(cid)
@@ -1043,30 +1087,32 @@ class JavBusUtil(BaseUtil):
 
     def get_headers(self):
         return {
-            'authority': 'www.javbus.com',
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-US;q=0.7,fr-FR;q=0.6,fr;q=0.5',
-            'cookie': f'bus_auth={self.bus_auth};',
-            'dnt': '1',
-            'sec-ch-ua-platform': '"Windows"',
-            'user-agent': self.ua_desktop()
+            "authority": "www.javbus.com",
+            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+            "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-US;q=0.7,fr-FR;q=0.6,fr;q=0.5",
+            "cookie": f"bus_auth={self.bus_auth};",
+            "dnt": "1",
+            "sec-ch-ua-platform": '"Windows"',
+            "user-agent": self.ua_desktop(),
         }
 
     def __init__(
-            self,
-            bus_auth: str,
-            proxy_addr="",
-            max_home_page_count=100,
-            max_new_avs_count=8,
+        self,
+        bus_auth: str,
+        proxy_addr="",
+        use_cache=True,
+        max_home_page_count=100,
+        max_new_avs_count=8,
     ):
         """初始化
 
         :param str proxy_addr: 代理服务器地址, 默认为 ''
+        :param bool use_cache: 是否使用缓存
         :param int max_home_page_count: 主页最大爬取页数, 默认为 100 页
         :param int max_new_avs_count: 获取最新 AV 数量, 默认为 8 部
         :param str bus_auth: cookie 需要用到的值
         """
-        super().__init__(proxy_addr)
+        super().__init__(proxy_addr, use_cache)
         self.max_home_page_count = max_home_page_count
         self.max_new_avs_count = max_new_avs_count
         self.bus_auth = bus_auth
@@ -1076,7 +1122,9 @@ class JavBusUtil(BaseUtil):
 
         :return typing.Tuple[int, list]: 状态码和类别列表
         """
-        code, resp = self.send_req(url=JavBusUtil.BASE_URL_GENRE, headers=self.get_headers())
+        code, resp = self.send_req(
+            url=JavBusUtil.BASE_URL_GENRE, headers=self.get_headers()
+        )
         if code != 200:
             return code, None
         try:
@@ -1086,8 +1134,7 @@ class JavBusUtil(BaseUtil):
             for box in boxes:
                 tags = box.find_all("a")
                 for tag in tags:
-                    genres.append(
-                        {tag.text: tag["href"][tag["href"].rfind("/") + 1:]})
+                    genres.append({tag.text: tag["href"][tag["href"].rfind("/") + 1 :]})
             if genres == []:
                 return 404, None
             return 200, genres
@@ -1159,14 +1206,15 @@ class JavBusUtil(BaseUtil):
             tags = soup.find_all(class_="movie-box")
             for tag in tags:
                 id_link = tag["href"]
-                id = id_link[id_link.rfind("/") + 1:]
+                id = id_link[id_link.rfind("/") + 1 :]
                 ids.append(id)
             if ids == []:
                 return 404, None
             return 200, ids
         except Exception as e:
             self.log.error(
-                f"JavBusUtil: 从 av 列表页面 {base_page_url} 获取该页面全部番号: {e}")
+                f"JavBusUtil: 从 av 列表页面 {base_page_url} 获取该页面全部番号: {e}"
+            )
             return 404, None
 
     def get_id_from_page(self, base_page_url: str, page=-1) -> typing.Tuple[int, str]:
@@ -1212,8 +1260,10 @@ class JavBusUtil(BaseUtil):
         :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
         :return tuple[int, list]: 状态码和番号
         """
-        return self.get_ids_from_page(base_page_url=f"{JavBusUtil.BASE_URL_SEARCH_BY_STAR_NAME}/{star_name}",
-                                      page=page)
+        return self.get_ids_from_page(
+            base_page_url=f"{JavBusUtil.BASE_URL_SEARCH_BY_STAR_NAME}/{star_name}",
+            page=page,
+        )
 
     def get_new_ids_by_star_name(self, star_name: str) -> typing.Tuple[int, list]:
         """根据演员名字获取最新番号列表
@@ -1292,7 +1342,9 @@ class JavBusUtil(BaseUtil):
         }
         """
         code, resp = self.send_req(
-            url=f"{JavBusUtil.BASE_URL_SEARCH_STAR}/{star_name}", headers=self.get_headers())
+            url=f"{JavBusUtil.BASE_URL_SEARCH_STAR}/{star_name}",
+            headers=self.get_headers(),
+        )
         if code != 200:
             return code, None
         try:
@@ -1303,15 +1355,16 @@ class JavBusUtil(BaseUtil):
             return 200, {"star_id": star_id, "star_name": res_star_name}
         except Exception as e:
             self.log.error(
-                f"JavBusUtil: 根据演员名称 {star_name} 确认该演员在 javbus 是否存在: {e}")
+                f"JavBusUtil: 根据演员名称 {star_name} 确认该演员在 javbus 是否存在: {e}"
+            )
             return 404, None
 
     def get_av_by_id(
-            self,
-            id: str,
-            is_nice: bool,
-            is_uncensored: bool,
-            magnet_max_count=10,
+        self,
+        id: str,
+        is_nice: bool,
+        is_uncensored: bool,
+        magnet_max_count=10,
     ) -> typing.Tuple[int, dict]:
         """通过 javbus 获取番号对应 av
 
@@ -1388,7 +1441,7 @@ class JavBusUtil(BaseUtil):
                 # 获取标签
                 elif p.text.find("類別:") != -1:
                     tags = paras[i + 1].find_all("a")
-                    av["tags"] = [''.join(tag.text.split()) for tag in tags]
+                    av["tags"] = ["".join(tag.text.split()) for tag in tags]
                 # 获取演员
                 elif i == len(paras) - 1:
                     tags = p.find_all("a")
@@ -1437,10 +1490,10 @@ class JavBusUtil(BaseUtil):
                         magnet["link"] = td.a["href"]
                         magnet_title = td.a.text.strip().lower()
                         if (
-                                "uncensor" in magnet_title
-                                or "無修正" in magnet_title
-                                or "无修正" in magnet_title
-                                or "无码" in magnet_title
+                            "uncensor" in magnet_title
+                            or "無修正" in magnet_title
+                            or "无修正" in magnet_title
+                            or "无码" in magnet_title
                         ):
                             magnet["uc"] = "1"
                         links = td.find_all("a")
@@ -1569,8 +1622,7 @@ class MagnetUtil:
         # 统一单位为 MB
         for magnet in magnets:
             magnet["size_no_unit"] = -1
-            size = magnet["size"].lower().replace(
-                "gib", "gb").replace("mib", "mb")
+            size = magnet["size"].lower().replace("gib", "gb").replace("mib", "mb")
             gb_idx = size.find("gb")
             mb_idx = size.find("mb")
             if gb_idx != -1:  # 单位为 GB
@@ -1579,8 +1631,7 @@ class MagnetUtil:
                 magnet["size_no_unit"] = float(size[:mb_idx])
         # magnets = list(filter(lambda m: m["size_no_unit"] != -1, magnets))
         # 根据 size_no_unit 大小排序
-        magnets = sorted(
-            magnets, key=lambda m: m["size_no_unit"], reverse=True)
+        magnets = sorted(magnets, key=lambda m: m["size_no_unit"], reverse=True)
         return magnets
 
 
@@ -1588,11 +1639,11 @@ class SukebeiUtil(BaseUtil):
     BASE_URL = "https://sukebei.nyaa.si"
 
     def get_av_by_id(
-            self,
-            id: str,
-            is_nice: bool,
-            is_uncensored: bool,
-            magnet_max_count=10,
+        self,
+        id: str,
+        is_nice: bool,
+        is_uncensored: bool,
+        magnet_max_count=10,
     ) -> typing.Tuple[int, dict]:
         """通过 sukebei 获取番号对应 av
 
@@ -1663,10 +1714,10 @@ class SukebeiUtil(BaseUtil):
                     if j == 1:  # 获取标题
                         title = td.a.text
                         if (
-                                "uncensor" in title
-                                or "無修正" in title
-                                or "无修正" in title
-                                or "无码" in title
+                            "uncensor" in title
+                            or "無修正" in title
+                            or "无修正" in title
+                            or "无码" in title
                         ):
                             magnet["uc"] = "1"
                         if i == 0:
@@ -1782,8 +1833,7 @@ class WikiUtil(BaseUtil):
         }
         """
         try:
-            wiki = wikipediaapi.Wikipedia(
-                language=from_lang, proxies=self.proxy_json)
+            wiki = wikipediaapi.Wikipedia(language=from_lang, proxies=self.proxy_json)
             page = wiki.page(title=topic)
             # links = page.links
             # for k in links.keys():
@@ -1839,11 +1889,9 @@ class SjsUtil(BaseUtil):
                 img = dd.find("img")["src"]
                 url = dd.find("h5").a["href"]
                 title = dd.find("h5").a.text
-                rank_list.append({
-                    "img": img,
-                    "url": f"{SjsUtil.BASE_URL}/{url}",
-                    "title": title
-                })
+                rank_list.append(
+                    {"img": img, "url": f"{SjsUtil.BASE_URL}/{url}", "title": title}
+                )
             except Exception:
                 pass
         return rank_list
@@ -1860,11 +1908,9 @@ class SjsUtil(BaseUtil):
                 img = dd.find("img")["src"]
                 url = dd.find("a")["href"]
                 title = dd.find("h5").text
-                rank_list.append({
-                    "img": img,
-                    "url": f"{SjsUtil.BASE_URL}/{url}",
-                    "title": title
-                })
+                rank_list.append(
+                    {"img": img, "url": f"{SjsUtil.BASE_URL}/{url}", "title": title}
+                )
             except Exception:
                 pass
         return rank_list
@@ -1923,37 +1969,47 @@ class SgpUtil(BaseUtil):
 
     def get_video_by_av_id(self, av_id: str) -> typing.Tuple[int, str]:
         headers = {
-            'authority': 'api.cbbee0.com',
-            'accept': 'application/json, text/plain, */*',
-            'accept-language': 'zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5',
-            'content-type': 'application/json;charset=UTF-8',
-            'origin': SgpUtil.BASE_URL,
-            'referer': SgpUtil.BASE_URL + '/',
-            'sec-ch-ua': '"Not.A/Brand";v="8", "Chromium";v="114", "Microsoft Edge";v="114"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"macOS"',
-            'sec-fetch-dest': 'empty',
-            'sec-fetch-mode': 'cors',
-            'sec-fetch-site': 'cross-site',
-            'user-agent': self.ua(),
+            "authority": "api.cbbee0.com",
+            "accept": "application/json, text/plain, */*",
+            "accept-language": "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6,zh-TW;q=0.5",
+            "content-type": "application/json;charset=UTF-8",
+            "origin": SgpUtil.BASE_URL,
+            "referer": SgpUtil.BASE_URL + "/",
+            "sec-ch-ua": '"Not.A/Brand";v="8", "Chromium";v="114", "Microsoft Edge";v="114"',
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": '"macOS"',
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "user-agent": self.ua(),
         }
-        data = '{"conditions": "' + av_id + '", "field": 0, "target": 1, "sort": 1, "userToken": "", "hm": "008-api", "device_id": ""}'
+        data = (
+            '{"conditions": "'
+            + av_id
+            + '", "field": 0, "target": 1, "sort": 1, "userToken": "", "hm": "008-api", "device_id": ""}'
+        )
 
-        code, resp = self.send_req(url=SgpUtil.BASE_URL_SEARCH, headers=headers, m=1, data=data)
+        code, resp = self.send_req(
+            url=SgpUtil.BASE_URL_SEARCH, headers=headers, m=1, data=data
+        )
         if code != 200:
             return code, None
         res = resp.json()
-        code, resp = self.send_req(url=SgpUtil.BASE_URL_DETAIL, headers=headers, json={
-            "encrypt_key": res["encrypt_key"],
-            "encrypt_data": res["encrypt_data"]
-        })
+        code, resp = self.send_req(
+            url=SgpUtil.BASE_URL_DETAIL,
+            headers=headers,
+            json={
+                "encrypt_key": res["encrypt_key"],
+                "encrypt_data": res["encrypt_data"],
+            },
+        )
         if code != 200:
             return code, None
         soup = self.get_soup(resp)
         try:
             suffix = soup.find("iframe")["src"]
-            video_addr = f'{SgpUtil.BASE_URL}{suffix}'
-            video_content = soup.find('div', {'class': 'content'})
+            video_addr = f"{SgpUtil.BASE_URL}{suffix}"
+            video_content = soup.find("div", {"class": "content"})
             res = f"""解说视频地址: {video_addr}
             
             解说内容:

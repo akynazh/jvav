@@ -5,9 +5,6 @@ import unittest
 PROXY_ADDR = ""
 
 
-# PROXY_ADDR = "http://127.0.0.1:7890"
-
-
 def assert_code(code: int, res):
     """确认状态码是否为 200, 如果是则打印结果
 
@@ -24,14 +21,14 @@ def assert_res(res):
 
 
 class SgpUtilTest(unittest.TestCase):
-    util = jvav.SgpUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.SgpUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 
     def test_get_video_by_av_id(self):
         assert_code(*SgpUtilTest.util.get_video_by_av_id("ipx-828"))
 
 
 class BaseUtilTest(unittest.TestCase):
-    util = jvav.BaseUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.BaseUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 
     def test_1(self):
         headers = {
@@ -49,8 +46,15 @@ class BaseUtilTest(unittest.TestCase):
             "sec-fetch-site": "cross-site",
             "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36 Edg/114.0.1823.82",
         }
-        data = {"conditions": "ipx-828", "field": 0, "target": 1, "sort": 1, "userToken": "", "hm": "008-api",
-                "device_id": ""}
+        data = {
+            "conditions": "ipx-828",
+            "field": 0,
+            "target": 1,
+            "sort": 1,
+            "userToken": "",
+            "hm": "008-api",
+            "device_id": "",
+        }
         assert_code(
             *BaseUtilTest.util.send_req(
                 url="https://api.cbbee0.com/v1_2/articleSearch",
@@ -62,18 +66,22 @@ class BaseUtilTest(unittest.TestCase):
 
 
 class SjsUtilTest(unittest.TestCase):
-    util = jvav.SjsUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.SjsUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 
     def test_get_rank(self):
         assert_code(*SjsUtilTest.util.get_rank(2))
 
 
 class JavDbUtilTest(unittest.TestCase):
-    util = jvav.JavDbUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.JavDbUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 
     def test_get_nice_avs_by_star_name(self):
-        assert_code(*JavDbUtilTest.util.get_nice_avs_by_star_name("西元めいさ",
-                                                                  cookie="_jdb_session=us8u%2BKc%2F8kraWTG6T5jKrHIkPOmQn3fs2xeSfCoRMqRT7JbCzOBDVG%2FAaYaj5SGVcxe8Dvbu1nXi7NJaw8ssVHBbMstublR1jc2qFt494rs5%2BsGeYiod6oiaF2zc5%2FRPlzXZv3iBX%2B471W7hFB%2BnR0Ix8bVFezmpNZ7FyrX0AclEn7LTM%2FzXm70CBveFkOnUMG9RcMorGV0SRDB6E0Cn8RrFit7E7uFMjWzua4DAIaoFP85Cj42y23zQ0t74KLltuz9%2BOYffVphnBE7LKTPFFH93RBowITxUyDwULz9XWOe%2Bvg2Hh3UN%2BwM8QkVmORKHb5l6mTu7pglc3WtLeB0wxrGQ0e0qFIy7RIzNq15kSZjOPWI65UpPy8I%2BL5u7Gt8yqGA%3D--i3%2Bm3PvAsjdJZbsT--Qt5tsiW5xsjOvpCkDb8ILw%3D%3D"))
+        assert_code(
+            *JavDbUtilTest.util.get_nice_avs_by_star_name(
+                "西元めいさ",
+                cookie="_jdb_session=us8u%2BKc%2F8kraWTG6T5jKrHIkPOmQn3fs2xeSfCoRMqRT7JbCzOBDVG%2FAaYaj5SGVcxe8Dvbu1nXi7NJaw8ssVHBbMstublR1jc2qFt494rs5%2BsGeYiod6oiaF2zc5%2FRPlzXZv3iBX%2B471W7hFB%2BnR0Ix8bVFezmpNZ7FyrX0AclEn7LTM%2FzXm70CBveFkOnUMG9RcMorGV0SRDB6E0Cn8RrFit7E7uFMjWzua4DAIaoFP85Cj42y23zQ0t74KLltuz9%2BOYffVphnBE7LKTPFFH93RBowITxUyDwULz9XWOe%2Bvg2Hh3UN%2BwM8QkVmORKHb5l6mTu7pglc3WtLeB0wxrGQ0e0qFIy7RIzNq15kSZjOPWI65UpPy8I%2BL5u7Gt8yqGA%3D--i3%2Bm3PvAsjdJZbsT--Qt5tsiW5xsjOvpCkDb8ILw%3D%3D",
+            )
+        )
 
     def test_get_max_page(self):
         assert_code(*JavDbUtilTest.util.get_max_page("https://javdb.com/actors/EvkJ"))
@@ -99,7 +107,11 @@ class JavDbUtilTest(unittest.TestCase):
         )
 
     def test_get_javdb_ids_from_page(self):
-        assert_code(*JavDbUtilTest.util.get_javdb_ids_from_page("https://javdb.com/search?q=中出"))
+        assert_code(
+            *JavDbUtilTest.util.get_javdb_ids_from_page(
+                "https://javdb.com/search?q=中出"
+            )
+        )
 
     def test_get_id_from_home(self):
         assert_code(*JavDbUtilTest.util.get_id_from_home())
@@ -139,7 +151,7 @@ class JavDbUtilTest(unittest.TestCase):
 
 
 class JavLibUtilTest(unittest.TestCase):
-    util = jvav.JavLibUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.JavLibUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 
     def test_get_random_id_from_rank(self):
         assert_code(*JavLibUtilTest.util.get_random_id_from_rank(1))
@@ -152,7 +164,7 @@ class JavLibUtilTest(unittest.TestCase):
 
 
 class DmmUtilTest(unittest.TestCase):
-    util = jvav.DmmUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.DmmUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 
     def test_get_cids_by_tag(self):
         assert_code(*DmmUtilTest.util.get_cids_by_tag("ssis"))
@@ -161,12 +173,18 @@ class DmmUtilTest(unittest.TestCase):
         assert_code(*DmmUtilTest.util.get_cids_by_tag_monthly("arm"))
 
     def test_get_cids_by_link(self):
-        assert_code(*DmmUtilTest.util.get_cids_by_link(
-            "https://www.dmm.co.jp/digital/videoa/-/list/=/article=series/id=217566/?dmmref=h%5Cu005f1209exfe00050&i3_ref=detail&i3_ord=1&i3_pst=info_series"))
+        assert_code(
+            *DmmUtilTest.util.get_cids_by_link(
+                "https://www.dmm.co.jp/digital/videoa/-/list/=/article=series/id=217566/?dmmref=h%5Cu005f1209exfe00050&i3_ref=detail&i3_ord=1&i3_pst=info_series"
+            )
+        )
 
     def test_get_cids_by_link_monthly(self):
-        assert_code(*DmmUtilTest.util.get_cids_by_link_monthly(
-            "https://www.dmm.co.jp/monthly/dream/-/list/search/=/limit=120/n1=DgRJTglEBQ4GwOSdlJOP/sort=ranking/?searchstr=arm"))
+        assert_code(
+            *DmmUtilTest.util.get_cids_by_link_monthly(
+                "https://www.dmm.co.jp/monthly/dream/-/list/search/=/limit=120/n1=DgRJTglEBQ4GwOSdlJOP/sort=ranking/?searchstr=arm"
+            )
+        )
 
     def test_get_pv_by_id(self):
         assert_code(*DmmUtilTest.util.get_pv_by_id("ipx-365"))
@@ -191,7 +209,10 @@ class DmmUtilTest(unittest.TestCase):
 class JavBusUtilTest(unittest.TestCase):
     util = jvav.JavBusUtil(
         bus_auth="1155itPnlDVlY%2F3OpZPOsbyWEgOh1URYLDQQMWzOSFNltUSqUCSWqRCMqWIMPIu%2BaxI",
-        proxy_addr=PROXY_ADDR, max_home_page_count=100, max_new_avs_count=10
+        proxy_addr=PROXY_ADDR,
+        max_home_page_count=100,
+        max_new_avs_count=10,
+        use_cache=False,
     )
 
     def test_get_all_genres(self):
@@ -258,7 +279,7 @@ class JavBusUtilTest(unittest.TestCase):
 
 
 class AvgleUtilTest(unittest.TestCase):
-    util = jvav.AvgleUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.AvgleUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 
     def test_get_video_by_id(self):
         assert_code(*AvgleUtilTest.util.get_video_by_id("ipx-369"))
@@ -309,7 +330,7 @@ class MagnetUtilTest(unittest.TestCase):
 
 
 class SukebeiUtilTest(unittest.TestCase):
-    util = jvav.SukebeiUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.SukebeiUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 
     def test_get_av_by_id(self):
         assert_code(
@@ -328,7 +349,7 @@ class SukebeiUtilTest(unittest.TestCase):
 
 
 class WikiUtilTest(unittest.TestCase):
-    util = jvav.WikiUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.WikiUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 
     def test_get_wiki_page_by_lang(self):
         assert_res(
@@ -339,7 +360,7 @@ class WikiUtilTest(unittest.TestCase):
 
 
 class TransUtilTest(unittest.TestCase):
-    util = jvav.TransUtil(proxy_addr=PROXY_ADDR)
+    util = jvav.TransUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 
     def test_trans(self):
         assert_res(
