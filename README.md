@@ -21,6 +21,7 @@ pip install jvav -U
 - WikiUtil
 - TransUtil
 - SgpUtil
+- RankUtil
 
 ```py
 # A sample for DmmUtil
@@ -91,6 +92,8 @@ Please make sure the test is okay before submitting your code~
 The following are some functions to be implemented, and I look forward to your contribution~ 
 
 - [ ] fix SgpUtil(currently not work)
+- [ ] support RankUtil in CMD
+- [ ] fix JavLibUtil(currently not work because of cloudflare)
 - [x] cache the successful query results locally (Thanks: [@akynazh](https://github.com/akynazh))
 - [x] support javdb.com (Thanks: [@Steven-Fake](https://github.com/Steven-Fake))
 - [ ] support db.msin.jp

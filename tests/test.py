@@ -20,6 +20,16 @@ def assert_res(res):
     print(res)
 
 
+class RankUtilTest(unittest.TestCase):
+    util = jvav.RankUtil(proxy_addr=PROXY_ADDR, use_cache=False)
+
+    def test_random_get_av_from_rank(self):
+        assert_code(*RankUtilTest.util.random_get_av_from_rank())
+
+    def test_get_av_250_rank(self):
+        assert_code(*RankUtilTest.util.get_av_250_rank())
+
+
 class SgpUtilTest(unittest.TestCase):
     util = jvav.SgpUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 
@@ -74,6 +84,9 @@ class SjsUtilTest(unittest.TestCase):
 
 class JavDbUtilTest(unittest.TestCase):
     util = jvav.JavDbUtil(proxy_addr=PROXY_ADDR, use_cache=False)
+
+    def test_get_new_ids(self):
+        assert_code(*JavDbUtilTest.util.get_new_ids())
 
     def test_get_nice_avs_by_star_name(self):
         assert_code(

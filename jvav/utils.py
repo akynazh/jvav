@@ -14,9 +14,6 @@ from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
 
 
-# requests_cache.install_cache('jvav_cache')
-
-
 class BaseUtil:
     def __init__(self, proxy_addr="", use_cache=True):
         """初始化
@@ -58,7 +55,7 @@ class BaseUtil:
         """
         return UserAgent().random
 
-    def inner_send_req(
+    def _inner_send_req(
         self, url: str, session, headers={}, proxies={}, m=0, **args
     ) -> typing.Tuple[int, requests.Response]:
         if headers == {}:
@@ -99,10 +96,10 @@ class BaseUtil:
         """
         if self.use_cache:
             with requests_cache.CachedSession(cache_name="jvav_cache") as session:
-                return self.inner_send_req(url, session, headers, proxies, m, **args)
+                return self._inner_send_req(url, session, headers, proxies, m, **args)
         else:
             with requests.Session() as session:
-                return self.inner_send_req(url, session, headers, proxies, m, **args)
+                return self._inner_send_req(url, session, headers, proxies, m, **args)
 
     @staticmethod
     def get_soup(resp: requests.Response) -> BeautifulSoup:
@@ -119,8 +116,37 @@ class BaseUtil:
             f.write(resp.text)
 
 
+class RankUtil(BaseUtil):
+    BASE_URL_AV_RANK = "https://gist.githubusercontent.com/jinjier/7a405fad753f996d85ed43073e3bf009/raw/29bf7a4635c1283a1415aad9fb335f92ece2972b/250.csv"
+    BASE_URL_STAR_RANK = ""  # DmmUtil supports
+
+    def random_get_av_from_rank(self) -> typing.Tuple[int, str]:
+        """从排行榜随机获取一个番号
+
+        :return tuple[int, str]: 状态码和番号
+        """
+        code, resp = self.send_req(self.BASE_URL_AV_RANK)
+        if code != 200:
+            return code, None
+        lines = str(resp.text).splitlines()
+        id = lines[random.randint(0, len(lines) - 1)].split(",")[1]
+        return 200, id
+
+    def get_av_250_rank(self) -> typing.Tuple[int, list]:
+        """获取 av 排行榜
+
+        :return tuple[int, list]: 状态码和番号列表
+        """
+        code, resp = self.send_req(self.BASE_URL_AV_RANK)
+        if code != 200:
+            return code, None
+        lines = str(resp.text).splitlines()
+        return 200, [line.split(",")[1] for line in lines]
+
+
 class JavDbUtil(BaseUtil):
     BASE_URL = "https://javdb.com"
+    BASE_URL_NEW_AV = BASE_URL + "/?vft=1&vst=1"
     BASE_URL_SEARCH = BASE_URL + "/search?q="
     BASE_URL_VIDEO = BASE_URL + "/v/"
     BASE_URL_ACTOR = BASE_URL + "/actors/"
@@ -166,6 +192,13 @@ class JavDbUtil(BaseUtil):
         except Exception as e:
             self.log.error(f"JavDbUtil: 从 {url} 获取最大页数: {e}")
             return 404, None
+
+    def get_new_ids(self) -> typing.Tuple[int, list]:
+        """获取最新的番号列表
+
+        :return typing.Tuple[int, list]: 状态码和番号列表
+        """
+        return self.get_ids_from_page(self.BASE_URL_NEW_AV)
 
     def get_ids_from_page(self, url: str) -> typing.Tuple[int, list]:
         """从页面 url 获取番号列表
