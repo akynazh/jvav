@@ -79,8 +79,8 @@ Here is my developing steps:
 ```shell
 git clone https://github.com/akynazh/jvav.git
 cd jvav
-~/.pyenv/versions/3.7.12/bin/python -m venv venv
-source ./venv/bin/activate
+~/.pyenv/versions/3.7.12/bin/python -m venv .venv
+source ./.venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
