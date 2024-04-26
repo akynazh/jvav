@@ -75,13 +75,6 @@ class BaseUtilTest(unittest.TestCase):
         )
 
 
-class SjsUtilTest(unittest.TestCase):
-    util = jvav.SjsUtil(proxy_addr=PROXY_ADDR, use_cache=False)
-
-    def test_get_rank(self):
-        assert_code(*SjsUtilTest.util.get_rank(2))
-
-
 class JavDbUtilTest(unittest.TestCase):
     util = jvav.JavDbUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 

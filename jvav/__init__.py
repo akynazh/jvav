@@ -10,12 +10,11 @@ from jvav.utils import (
     WikiUtil,
     TransUtil,
     JavDbUtil,
-    SjsUtil,
     SgpUtil,
     RankUtil,
 )
 
-__version__ = "1.9.0"
+__version__ = "1.9.1"
 
 VERSION = __version__
 
@@ -31,7 +30,6 @@ __all__ = [
     WikiUtil,
     TransUtil,
     JavDbUtil,
-    SjsUtil,
     SgpUtil,
     RankUtil,
 ]
