@@ -14,7 +14,7 @@ from jvav.utils import (
     RankUtil,
 )
 
-__version__ = "1.9.1"
+__version__ = "1.9.2"
 
 VERSION = __version__
 

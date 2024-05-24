@@ -95,7 +95,7 @@ class BaseUtil:
         502: 网络问题
         """
         if self.use_cache:
-            with requests_cache.CachedSession(cache_name="jvav_cache") as session:
+            with requests_cache.CachedSession(cache_name=".jvav_cache") as session:
                 return self._inner_send_req(url, session, headers, proxies, m, **args)
         else:
             with requests.Session() as session:

@@ -13,5 +13,5 @@ jvav.egg-info
 /jvav/build
 
 .venv
-jvav_cache.sqlite
+.jvav_cache.sqlite
 tmp.html

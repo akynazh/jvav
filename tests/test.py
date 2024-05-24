@@ -21,7 +21,7 @@ def assert_res(res):
 
 
 class RankUtilTest(unittest.TestCase):
-    util = jvav.RankUtil(proxy_addr=PROXY_ADDR, use_cache=False)
+    util = jvav.RankUtil(proxy_addr=PROXY_ADDR, use_cache=True)
 
     def test_random_get_av_from_rank(self):
         assert_code(*RankUtilTest.util.random_get_av_from_rank())
