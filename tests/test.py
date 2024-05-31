@@ -76,7 +76,10 @@ class BaseUtilTest(unittest.TestCase):
 
 
 class JavDbUtilTest(unittest.TestCase):
-    util = jvav.JavDbUtil(proxy_addr=PROXY_ADDR, use_cache=False)
+    util = jvav.JavDbUtil()
+
+    def test_fuzzy_search_stars(self):
+        assert_code(*JavDbUtilTest.util.fuzzy_search_stars("未久"))
 
     def test_get_new_ids(self):
         assert_code(*JavDbUtilTest.util.get_new_ids())

@@ -236,6 +236,26 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 获取预览图片: {e}")
             return 404, None
 
+    def fuzzy_search_stars(self, text) -> typing.Tuple[int, list]:
+        """模糊搜索演员
+
+        :param str text: 演员名称
+        :return typing.Tuple[int, list]: 状态码和演员列表
+        """
+        code, resp = self.send_req(url=JavDbUtil.BASE_URL_SEARCH_STAR + text)
+        if code != 200:
+            return code, None
+        try:
+            soup = self.get_soup(resp)
+            actor_boxs = soup.find_all(class_="actor-box")
+            names = [box.find("a")["title"] for box in actor_boxs]
+            if not names:
+                return 404, None
+            return 200, names
+        except Exception as e:
+            self.log.error(f"JavDbUtil: 模糊搜索演员: {e}")
+            return 404, None
+
     def get_id_by_star_name(self, star_name: str, page=-1) -> typing.Tuple[int, str]:
         """根据演员名称获取一个番号
 
