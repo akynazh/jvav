@@ -76,7 +76,7 @@ class BaseUtilTest(unittest.TestCase):
 
 
 class JavDbUtilTest(unittest.TestCase):
-    util = jvav.JavDbUtil()
+    util = jvav.JavDbUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 
     def test_fuzzy_search_stars(self):
         assert_code(*JavDbUtilTest.util.fuzzy_search_stars("未久"))
@@ -214,7 +214,7 @@ class DmmUtilTest(unittest.TestCase):
         assert_code(*DmmUtilTest.util.get_all_top_stars())
 
 
-# python -m unittest discover -s tests -k JavBusUtilTest
+
 class JavBusUtilTest(unittest.TestCase):
     util = jvav.JavBusUtil(
         bus_auth="1155itPnlDVlY%2F3OpZPOsbyWEgOh1URYLDQQMWzOSFNltUSqUCSWqRCMqWIMPIu%2BaxI",
@@ -230,7 +230,6 @@ class JavBusUtilTest(unittest.TestCase):
     def test_get_id_by_genre_id(self):
         assert_code(*JavBusUtilTest.util.get_id_by_genre_id("3s"))
 
-    # python -m unittest discover -s tests -k test_get_max_page
     def test_get_max_page(self):
         assert_code(
             *JavBusUtilTest.util.get_max_page("https://www.javbus.com/star/okq")
@@ -380,6 +379,7 @@ class TransUtilTest(unittest.TestCase):
             )
         )
 
-
+# python3 -m unittest tests.test.RankUtilTest
+# python3 -m unittest tests.test.RankUtilTest.test_random_get_av_from_rank
 if __name__ == "__main__":
     unittest.main()
