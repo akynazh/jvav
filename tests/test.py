@@ -214,10 +214,9 @@ class DmmUtilTest(unittest.TestCase):
         assert_code(*DmmUtilTest.util.get_all_top_stars())
 
 
-
 class JavBusUtilTest(unittest.TestCase):
     util = jvav.JavBusUtil(
-        bus_auth="1155itPnlDVlY%2F3OpZPOsbyWEgOh1URYLDQQMWzOSFNltUSqUCSWqRCMqWIMPIu%2BaxI",
+        bus_auth="ba50WJ3DouyEDdVF5L%2BBAHavxC6NH%2BiZXV7f04MisHvkwny3RIejXRqC4%2BCAw79ZbsM",
         proxy_addr=PROXY_ADDR,
         max_home_page_count=100,
         max_new_avs_count=10,
@@ -241,6 +240,9 @@ class JavBusUtilTest(unittest.TestCase):
                 base_page_url="https://www.javbus.com/star/okq"
             )
         )
+
+    def test_fuzzy_search_stars(self):
+        assert_code(*JavBusUtilTest.util.fuzzy_search_stars("未久"))
 
     def test_get_id_from_page(self):
         assert_code(
@@ -378,6 +380,7 @@ class TransUtilTest(unittest.TestCase):
                 to_lang="zh-CN",
             )
         )
+
 
 # python3 -m unittest tests.test.RankUtilTest
 # python3 -m unittest tests.test.RankUtilTest.test_random_get_av_from_rank
