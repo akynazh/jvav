@@ -74,6 +74,9 @@ class BaseUtilTest(unittest.TestCase):
             )
         )
 
+    def test_2(self):
+        print(BaseUtilTest.util.ua_mobile())
+
 
 class JavDbUtilTest(unittest.TestCase):
     util = jvav.JavDbUtil(proxy_addr=PROXY_ADDR, use_cache=False)

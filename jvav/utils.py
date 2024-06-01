@@ -898,7 +898,7 @@ class JavLibUtil(BaseUtil):
 
 class DmmUtil(BaseUtil):
     BASE_URL = "https://www.dmm.co.jp"
-    BASE_URL_SEARCH_AV = BASE_URL + "/digital/-/list/search/=/sort=ranking/?searchstr="
+    BASE_URL_SEARCH_AV = BASE_URL + "/mono/-/search/=/searchstr="
     BASE_URL_SEARCH_AV_MONTHLY = (
             BASE_URL + "/monthly/dream/-/list/search/=/sort=ranking/?searchstr="
     )
@@ -918,16 +918,16 @@ class DmmUtil(BaseUtil):
         """
         # 搜索番号
         url = DmmUtil.BASE_URL_SEARCH_AV + id
-        headers = {
-            "cookie": "age_check_done=1;",
-            "user-agent": self.ua_mobile(),  # 手机端页面更方便爬取
-        }
-        code, resp = self.send_req(url=url, headers=headers)
+        code, resp = self.send_req(url=url, headers={
+            "user-agent": self.ua_mobile(),
+        }, cookies={
+            "age_check_done": "1",
+        })
         if code != 200:
             return code, None
         try:
             soup = self.get_soup(resp)
-            res = soup.find(class_="btn")
+            res = soup.find(class_="box-sampleplay")
             return 200, res.a["href"]
         except Exception as e:
             self.log.error(f"DmmUtil: 根据番号 {id} 从 DMM 获取预览视频地址: {e}")
@@ -943,11 +943,11 @@ class DmmUtil(BaseUtil):
             return None
 
     def get_cids(self, url: str) -> typing.Tuple[int, list]:
-        headers = {
-            "cookie": "age_check_done=1;",
+        code, resp = self.send_req(url=url, headers={
             "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
-        }
-        code, resp = self.send_req(url=url, headers=headers)
+        }, cookies={
+            "age_check_done": "1",
+        })
         if code != 200:
             return code, None
         try:
@@ -968,11 +968,11 @@ class DmmUtil(BaseUtil):
             return 404, None
 
     def get_cids_monthly(self, url: str) -> typing.Tuple[int, list]:
-        headers = {
-            "cookie": "age_check_done=1;",
+        code, resp = self.send_req(url=url, headers={
             "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
-        }
-        code, resp = self.send_req(url=url, headers=headers)
+        }, cookies={
+            "age_check_done": "1",
+        })
         if code != 200:
             return code, None
         try:
@@ -1017,11 +1017,11 @@ class DmmUtil(BaseUtil):
         """
         # 搜索演员
         url = DmmUtil.BASE_URL_SEARCH_STAR + star_name
-        headers = {
-            "cookie": "age_check_done=1;",
+        code, resp = self.send_req(url=url, headers={
             "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
-        }
-        code, resp = self.send_req(url=url, headers=headers)
+        }, cookies={
+            "age_check_done": "1",
+        })
         if code != 200:
             return code, resp
         try:
@@ -1059,11 +1059,11 @@ class DmmUtil(BaseUtil):
         """
         # 搜索番号
         url = DmmUtil.BASE_URL_SEARCH_AV + id
-        headers = {
-            "cookie": "age_check_done=1;",
+        code, resp = self.send_req(url=url, headers={
             "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
-        }
-        code, resp = self.send_req(url=url, headers=headers)
+        }, cookies={
+            "age_check_done": "1",
+        })
         if code != 200:
             return code, resp
         try:
@@ -1089,11 +1089,11 @@ class DmmUtil(BaseUtil):
         :return tuple[int, list]: 状态码和明星列表
         """
         url = DmmUtil.BASE_URL_TOP_STARS + f"/page={page}/"
-        headers = {
-            "cookie": "age_check_done=1;",
-            "user-agent": self.ua_desktop(),
-        }
-        code, resp = self.send_req(url=url, headers=headers)
+        code, resp = self.send_req(url=url, headers={
+            "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
+        }, cookies={
+            "age_check_done": "1",
+        })
         if code != 200:
             return code, None
         try:
