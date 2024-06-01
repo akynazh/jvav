@@ -236,7 +236,7 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 获取预览图片: {e}")
             return 404, None
 
-    def fuzzy_search_stars(self, text) -> typing.Tuple[int, list]:
+    def fuzzy_search_stars(self, text) -> typing.Tuple[int, any]:
         """模糊搜索演员
 
         :param str text: 演员名称
@@ -251,6 +251,8 @@ class JavDbUtil(BaseUtil):
             names = [box.find("a")["title"] for box in actor_boxs]
             if not names:
                 return 404, None
+            names = [name.split(',')[0] for name in names]
+            names = list(set(names))
             return 200, names
         except Exception as e:
             self.log.error(f"JavDbUtil: 模糊搜索演员: {e}")
@@ -1438,6 +1440,7 @@ class JavBusUtil(BaseUtil):
             names = [box.find("img")["title"] for box in actor_boxs]
             if not names:
                 return 404, None
+            names = list(set(names))
             return 200, names
         except Exception as e:
             self.log.error(f"JavDbUtil: 模糊搜索演员: {e}")
