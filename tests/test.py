@@ -30,13 +30,6 @@ class RankUtilTest(unittest.TestCase):
         assert_code(*RankUtilTest.util.get_av_250_rank())
 
 
-class SgpUtilTest(unittest.TestCase):
-    util = jvav.SgpUtil(proxy_addr=PROXY_ADDR, use_cache=False)
-
-    def test_get_video_by_av_id(self):
-        assert_code(*SgpUtilTest.util.get_video_by_av_id("ipx-828"))
-
-
 class BaseUtilTest(unittest.TestCase):
     util = jvav.BaseUtil(proxy_addr=PROXY_ADDR, use_cache=False)
 
@@ -172,7 +165,7 @@ class JavLibUtilTest(unittest.TestCase):
         assert_code(*JavLibUtilTest.util.get_random_ids_from_rank_by_page(2, 0))
 
     def test_get_comments_by_id(self):
-        assert_code(*JavLibUtilTest.util.get_comments_by_id(id="IPX-186"))
+        assert_code(*JavLibUtilTest.util.get_comments_by_id(id="ipx-985"))
 
 
 class DmmUtilTest(unittest.TestCase):
