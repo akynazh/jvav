@@ -9,7 +9,7 @@ with open("README.md", encoding="utf-8") as f:
 
 setup(
     name="Jvav",
-    version="2.0.0",
+    version="2.1.0",
     description="Useful tools for Jav.",
     long_description=readme,
     long_description_content_type="text/markdown",

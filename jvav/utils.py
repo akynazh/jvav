@@ -16,20 +16,12 @@ from deep_translator import GoogleTranslator
 
 class BaseUtil:
     def __init__(self, proxy_addr="", use_cache=True):
-        """初始化
-
-        :param str proxy_addr: 代理服务器地址, 默认为 ''
-        """
-
         self.log = logging.getLogger(__name__)
-        self.proxy_addr = ""
+        self.proxy_addr = proxy_addr
         self.use_cache = use_cache
-        if proxy_addr != "":
-            self.proxy_addr = proxy_addr
+        self.proxy_json = None
         if self.proxy_addr != "":
             self.proxy_json = {"http": proxy_addr, "https": proxy_addr}
-        else:
-            self.proxy_json = {"http": "", "https": ""}
 
     @staticmethod
     def ua_mobile() -> str:
@@ -55,51 +47,51 @@ class BaseUtil:
         """
         return UserAgent().random
 
-    def _inner_send_req(
-            self, url: str, session, headers={}, proxies={}, m=0, **args
-    ) -> Union[Tuple[int, None], Tuple[int, Any]]:
-        if headers == {}:
+    def _inner_send_req(self, url: str, session, headers=None, m=0, **args) -> Union[Tuple[int, None], Tuple[int, Any]]:
+        if not headers:
             headers = {"user-agent": self.ua()}
-        if proxies == {}:
-            proxies = self.proxy_json
         try:
-            if m == 0:
-                resp = session.get(url, proxies=proxies, headers=headers, **args)
-            elif m == 1:
-                resp = session.post(url, proxies=proxies, headers=headers, **args)
-            elif m == 2:
-                resp = session.delete(url, proxies=proxies, headers=headers, **args)
-            elif m == 3:
-                resp = session.put(url, proxies=proxies, headers=headers, **args)
-            if resp.status_code != 200:
-                return 404, None
-            return 200, resp
+            methods = {
+                0: session.get,
+                1: session.post,
+                2: session.delete,
+                3: session.put
+            }
+            if m in methods:
+                if self.proxy_json:
+                    resp = methods[m](url, proxies=self.proxy_json, headers=headers, **args)
+                else:
+                    resp = methods[m](url, headers=headers, **args)
+                if resp.status_code != 200:
+                    return 404, None
+                return 200, resp
+            else:
+                return 502, None
         except Exception as e:
             self.log.error(f"BaseUtil: 访问 {url}: {e}")
             return 502, None
 
     def send_req(
-            self, url: str, headers={}, proxies={}, m=0, **args
+            self, url: str, headers=None, m=0, **args
     ) -> Tuple[int, requests.Response]:
         """发送请求
 
         :param str url: 地址
         :param dict headers: 请求头, 默认使用随机请求头
-        :param dict proxies: 代理字典, 默认使用类初始化时指定的代理进行配置
         :param int m: 请求方法, 默认为 get(0), 其他为 post(1), delete(2), put(3)
         :param dict args: 其他 requests 参数
         :return tuple[int, requests.Response] 状态码和请求返回值
         关于状态码:
         200: 成功
         404: 未找到
-        502: 网络问题
+        502: 后台/网络问题
         """
         if self.use_cache:
             with requests_cache.CachedSession(cache_name=".jvav_cache") as session:
-                return self._inner_send_req(url, session, headers, proxies, m, **args)
+                return self._inner_send_req(url, session, headers, m, **args)
         else:
             with requests.Session() as session:
-                return self._inner_send_req(url, session, headers, proxies, m, **args)
+                return self._inner_send_req(url, session, headers, m, **args)
 
     @staticmethod
     def get_soup(resp: requests.Response) -> BeautifulSoup:
