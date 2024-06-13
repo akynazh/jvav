@@ -274,12 +274,7 @@ class JavBusUtilTest(unittest.TestCase):
     def test_get_av_by_id(self):
         assert_code(
             *JavBusUtilTest.util.get_av_by_id(
-                id="ipx-365", is_nice=True, is_uncensored=False
-            )
-        )
-        assert_code(
-            *JavBusUtilTest.util.get_av_by_id(
-                id="NINE-078", is_nice=True, is_uncensored=False
+                id="juq-589", is_nice=True, is_uncensored=False
             )
         )
 

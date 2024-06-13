@@ -15,11 +15,12 @@ from deep_translator import GoogleTranslator
 
 
 class BaseUtil:
-    def __init__(self, proxy_addr="", use_cache=True):
+    def __init__(self, proxy_addr="", use_cache=True, expire_after=3600):
         self.log = logging.getLogger(__name__)
         self.proxy_addr = proxy_addr
         self.use_cache = use_cache
         self.proxy_json = None
+        self.expire_after = expire_after
         if self.proxy_addr != "":
             self.proxy_json = {"http": proxy_addr, "https": proxy_addr}
 
@@ -87,7 +88,7 @@ class BaseUtil:
         502: 后台/网络问题
         """
         if self.use_cache:
-            with requests_cache.CachedSession(cache_name=".jvav_cache") as session:
+            with requests_cache.CachedSession(cache_name=".jvav_cache", expire_after=self.expire_after) as session:
                 return self._inner_send_req(url, session, headers, m, **args)
         else:
             with requests.Session() as session:
