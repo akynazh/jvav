@@ -1188,7 +1188,7 @@ class JavBusUtil(BaseUtil):
 
     def __init__(
             self,
-            bus_auth: str,
+            bus_auth="",
             proxy_addr="",
             use_cache=True,
             max_home_page_count=100,
@@ -1201,7 +1201,7 @@ class JavBusUtil(BaseUtil):
         :param bool use_cache: 是否使用缓存
         :param int max_home_page_count: 主页最大爬取页数, 默认为 100 页
         :param int max_new_avs_count: 获取最新 AV 数量, 默认为 8 部
-        :param str bus_auth: cookie 需要用到的值
+        :param str bus_auth: cookie 需要用到的值, 默认为空串
         :param str base_url: 基础地址, 默认为 BASE_URL
         """
         super().__init__(proxy_addr, use_cache)
