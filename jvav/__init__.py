@@ -13,7 +13,7 @@ from jvav.utils import (
     RankUtil,
 )
 
-__version__ = "2.2.1"
+__version__ = "2.5.0"
 
 VERSION = __version__
 

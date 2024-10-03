@@ -9,7 +9,7 @@ with open("README.md", encoding="utf-8") as f:
 
 setup(
     name="Jvav",
-    version="2.2.1",
+    version="2.5.0",
     description="Useful tools for Jav.",
     long_description=readme,
     long_description_content_type="text/markdown",
@@ -29,7 +29,7 @@ setup(
         "Tracker": "https://github.com/akynazh/jvav/issues",
         "Source": "https://github.com/akynazh/jvav",
     },
-    python_requires="~=3.7",
+    python_requires="~=3.9",
     packages=find_packages(),
     zip_safe=False,
     install_requires=requires,

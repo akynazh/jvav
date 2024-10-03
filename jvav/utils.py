@@ -5,6 +5,7 @@ import random
 import re
 from typing import Tuple, Union, List, Any, Dict
 
+import os
 import requests
 import requests_cache
 import unicodedata
@@ -12,6 +13,11 @@ import wikipediaapi
 from anti_useragent import UserAgent
 from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
+
+PATH_ROOT = os.path.expanduser("~") + "/.jvav"
+PATH_CACHE_JVAV = f"{PATH_ROOT}/.jvav_cache"
+if not os.path.exists(PATH_ROOT):
+    os.makedirs(PATH_ROOT)
 
 
 class BaseUtil:
@@ -48,7 +54,9 @@ class BaseUtil:
         """
         return UserAgent().random
 
-    def _inner_send_req(self, url: str, session, headers=None, m=0, **args) -> Union[Tuple[int, None], Tuple[int, Any]]:
+    def _inner_send_req(
+        self, url: str, session, headers=None, m=0, **args
+    ) -> Union[Tuple[int, None], Tuple[int, Any]]:
         if not headers:
             headers = {"user-agent": self.ua()}
         try:
@@ -56,11 +64,13 @@ class BaseUtil:
                 0: session.get,
                 1: session.post,
                 2: session.delete,
-                3: session.put
+                3: session.put,
             }
             if m in methods:
                 if self.proxy_json:
-                    resp = methods[m](url, proxies=self.proxy_json, headers=headers, **args)
+                    resp = methods[m](
+                        url, proxies=self.proxy_json, headers=headers, **args
+                    )
                 else:
                     resp = methods[m](url, headers=headers, **args)
                 if resp.status_code != 200:
@@ -73,7 +83,7 @@ class BaseUtil:
             return 502, None
 
     def send_req(
-            self, url: str, headers=None, m=0, **args
+        self, url: str, headers=None, m=0, **args
     ) -> Tuple[int, requests.Response]:
         """发送请求
 
@@ -88,7 +98,9 @@ class BaseUtil:
         502: 后台/网络问题
         """
         if self.use_cache:
-            with requests_cache.CachedSession(cache_name=".jvav_cache", expire_after=self.expire_after) as session:
+            with requests_cache.CachedSession(
+                cache_name=PATH_CACHE_JVAV, expire_after=self.expire_after
+            ) as session:
                 return self._inner_send_req(url, session, headers, m, **args)
         else:
             with requests.Session() as session:
@@ -143,12 +155,12 @@ class JavDbUtil(BaseUtil):
     PAT_SCORE = re.compile(r"(\d+\.?\d+)分")
 
     def __init__(
-            self,
-            proxy_addr="",
-            use_cache=True,
-            max_home_page_count=100,
-            max_new_avs_count=8,
-            base_url=BASE_URL,
+        self,
+        proxy_addr="",
+        use_cache=True,
+        max_home_page_count=100,
+        max_new_avs_count=8,
+        base_url=BASE_URL,
     ):
         """初始化
 
@@ -196,7 +208,9 @@ class JavDbUtil(BaseUtil):
         """
         return self.get_ids_from_page(self.base_url_new_av)
 
-    def get_ids_from_page(self, url: str) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
+    def get_ids_from_page(
+        self, url: str
+    ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
         """从页面 url 获取番号列表
 
         :param str url: 首页/搜索页
@@ -218,7 +232,9 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 从页面获取番号列表: {e}")
             return 404, None
 
-    def get_star_page_by_star_name(self, star_name) -> Union[Tuple[int, None], Tuple[int, str]]:
+    def get_star_page_by_star_name(
+        self, star_name
+    ) -> Union[Tuple[int, None], Tuple[int, str]]:
         code, resp = self.send_req(url=self.base_url_search_star + star_name)
         if code != 200:
             return code, None
@@ -232,7 +248,9 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 获取预览图片: {e}")
             return 404, None
 
-    def fuzzy_search_stars(self, text) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
+    def fuzzy_search_stars(
+        self, text
+    ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
         """模糊搜索演员
 
         :param str text: 演员名称
@@ -247,14 +265,16 @@ class JavDbUtil(BaseUtil):
             names = [box.find("a")["title"] for box in actor_boxs]
             if not names:
                 return 404, None
-            names = [name.split(',')[0] for name in names]
+            names = [name.split(",")[0] for name in names]
             names = list(set(names))
             return 200, names
         except Exception as e:
             self.log.error(f"JavDbUtil: 模糊搜索演员: {e}")
             return 404, None
 
-    def get_id_by_star_name(self, star_name: str, page=-1) -> Union[Tuple[int, None], Tuple[int, Any]]:
+    def get_id_by_star_name(
+        self, star_name: str, page=-1
+    ) -> Union[Tuple[int, None], Tuple[int, Any]]:
         """根据演员名称获取一个番号
 
         :param str star_name: 演员名称
@@ -266,8 +286,9 @@ class JavDbUtil(BaseUtil):
             return code, None
         return 200, random.choice(ids)
 
-    def get_ids_by_star_name(self, star_name: str, page=-1) -> Union[
-        Tuple[Any, None], Tuple[int, Any], Tuple[int, None]]:
+    def get_ids_by_star_name(
+        self, star_name: str, page=-1
+    ) -> Union[Tuple[Any, None], Tuple[int, Any], Tuple[int, None]]:
         """根据演员名称获取一批番号
 
         :param str star_name: 演员名称
@@ -293,7 +314,9 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 根据演员名称获取一个番号: {e}")
             return 404, None
 
-    def get_new_ids_by_star_name(self, star_name: str) -> Union[Tuple[Any, None], Tuple[int, Any], Tuple[int, None]]:
+    def get_new_ids_by_star_name(
+        self, star_name: str
+    ) -> Union[Tuple[Any, None], Tuple[int, Any], Tuple[int, None]]:
         """根据演员名字获取最新番号列表
 
         :param str star_name: 演员名称
@@ -312,8 +335,10 @@ class JavDbUtil(BaseUtil):
             return 404, None
 
     def get_nice_avs_by_star_name(
-            self, star_name: str, cookie: str
-    ) -> Union[Tuple[Any, None], Tuple[int, None], Tuple[int, List[Dict[str, Union[str, Any]]]]]:
+        self, star_name: str, cookie: str
+    ) -> Union[
+        Tuple[Any, None], Tuple[int, None], Tuple[int, List[Dict[str, Union[str, Any]]]]
+    ]:
         """根据演员名字获取高分番号列表(需要登录)
 
         :param str star_name: 演员名字
@@ -377,7 +402,9 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 通过番号获取JavDB内部ID: {e}")
             return 404, None
 
-    def get_javdb_ids_from_page(self, url: str) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
+    def get_javdb_ids_from_page(
+        self, url: str
+    ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
         """从页面 url 获取 JavDB 的 ID 列表
 
         :param url: 首页/搜索页
@@ -480,7 +507,9 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 通过番号获取封面: {e}")
             return 404, None
 
-    def get_cover_by_javdb_id(self, javdb_id: str) -> Union[Tuple[int, None], Tuple[int, Union[str, Any]]]:
+    def get_cover_by_javdb_id(
+        self, javdb_id: str
+    ) -> Union[Tuple[int, None], Tuple[int, Union[str, Any]]]:
         """通过 JavDB ID 获取封面
 
         :param str javdb_id: JavDB 内部 ID
@@ -499,7 +528,9 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 通过JavDB ID获取封面: {e}")
             return 404, None
 
-    def get_pv_by_id(self, id: str) -> Union[Tuple[Any, None], Tuple[int, None], Tuple[int, Union[str, Any]]]:
+    def get_pv_by_id(
+        self, id: str
+    ) -> Union[Tuple[Any, None], Tuple[int, None], Tuple[int, Union[str, Any]]]:
         code, j_id = self.get_javdb_id_by_id(id)
         if code != 200:
             return code, None
@@ -518,7 +549,9 @@ class JavDbUtil(BaseUtil):
             self.log.error(f"JavDbUtil: 获取预览视频: {e}")
             return 404, None
 
-    def get_samples_by_id(self, id: str) -> Union[Tuple[Any, None], Tuple[int, None], Tuple[int, List[Any]]]:
+    def get_samples_by_id(
+        self, id: str
+    ) -> Union[Tuple[Any, None], Tuple[int, None], Tuple[int, List[Any]]]:
         code, j_id = self.get_javdb_id_by_id(id)
         if code != 200:
             return code, None
@@ -536,12 +569,12 @@ class JavDbUtil(BaseUtil):
             return 404, None
 
     def get_av_by_javdb_id(
-            self,
-            javdb_id: str,
-            is_nice: bool,
-            is_uncensored: bool,
-            sex_limit: bool = False,
-            magnet_max_count=10,
+        self,
+        javdb_id: str,
+        is_nice: bool,
+        is_uncensored: bool,
+        sex_limit: bool = False,
+        magnet_max_count=10,
     ) -> Tuple[int, any]:
         """通过 JavDB ID 获取 av
 
@@ -672,18 +705,18 @@ class JavDbUtil(BaseUtil):
                 # 检查是否为uc
                 title = link.find("span", {"class": "name"}).text
                 if any(
-                        k in title
-                        for k in [
-                            "-U",
-                            "无码",
-                            "無碼",
-                            "无码流出",
-                            "無碼流出",
-                            "无码破解",
-                            "無碼破解",
-                            "uncensored",
-                            "Uncensored",
-                        ]
+                    k in title
+                    for k in [
+                        "-U",
+                        "无码",
+                        "無碼",
+                        "无码流出",
+                        "無碼流出",
+                        "无码破解",
+                        "無碼破解",
+                        "uncensored",
+                        "Uncensored",
+                    ]
                 ):
                     magnet["uc"] = "1"
                 # 检查tag
@@ -717,12 +750,12 @@ class JavDbUtil(BaseUtil):
             return 404, None
 
     def get_av_by_id(
-            self,
-            id: str,
-            is_nice: bool,
-            is_uncensored: bool,
-            sex_limit: bool = False,
-            magnet_max_count=10,
+        self,
+        id: str,
+        is_nice: bool,
+        is_uncensored: bool,
+        sex_limit: bool = False,
+        magnet_max_count=10,
     ) -> Tuple[int, any]:
         """通过 javdb 获取番号对应 av
 
@@ -780,10 +813,10 @@ class JavLibUtil(BaseUtil):
     MAX_RANK_PAGE = 25
 
     def __init__(
-            self,
-            proxy_addr="",
-            use_cache=True,
-            base_url=BASE_URL,
+        self,
+        proxy_addr="",
+        use_cache=True,
+        base_url=BASE_URL,
     ):
         """初始化
 
@@ -794,13 +827,25 @@ class JavLibUtil(BaseUtil):
         super().__init__(proxy_addr, use_cache)
         self.base_url = base_url
         # nice
-        self.base_url_best_rated_last_month = self.base_url + "/cn/vl_bestrated.php?mode=1&page="
-        self.base_url_best_rated_all = self.base_url + "/cn/vl_bestrated.php?mode=2&page="
-        self.base_url_most_wanted_last_month = self.base_url + "/cn/vl_mostwanted.php?&mode=1&page="
-        self.base_url_most_wanted_all = self.base_url + "/cn/vl_mostwanted.php?&mode=2&page="
+        self.base_url_best_rated_last_month = (
+            self.base_url + "/cn/vl_bestrated.php?mode=1&page="
+        )
+        self.base_url_best_rated_all = (
+            self.base_url + "/cn/vl_bestrated.php?mode=2&page="
+        )
+        self.base_url_most_wanted_last_month = (
+            self.base_url + "/cn/vl_mostwanted.php?&mode=1&page="
+        )
+        self.base_url_most_wanted_all = (
+            self.base_url + "/cn/vl_mostwanted.php?&mode=2&page="
+        )
         # new
-        self.base_url_new_release_have_comment = self.base_url + "/cn/vl_newrelease.php?&mode=1&page="
-        self.base_url_new_release_all = self.base_url + "/cn/vl_newrelease.php?&mode=2&page="
+        self.base_url_new_release_have_comment = (
+            self.base_url + "/cn/vl_newrelease.php?&mode=1&page="
+        )
+        self.base_url_new_release_all = (
+            self.base_url + "/cn/vl_newrelease.php?&mode=2&page="
+        )
         self.base_url_new_entries = self.base_url + "/cn/vl_newentries.php?page="
         self.urls_nice = [
             self.base_url_best_rated_last_month,
@@ -827,7 +872,7 @@ class JavLibUtil(BaseUtil):
         }
 
     def get_random_ids_from_rank_by_page(
-            self, page: int, list_type: int
+        self, page: int, list_type: int
     ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
         """从排行榜某页中获取该页番号列表
 
@@ -855,7 +900,9 @@ class JavLibUtil(BaseUtil):
             self.log.error(f"JavLibUtil: 从排行榜某页中获取该页番号列表: {e}")
             return 404, None
 
-    def get_random_id_from_rank(self, list_type: int) -> Union[Tuple[Any, None], Tuple[int, Any]]:
+    def get_random_id_from_rank(
+        self, list_type: int
+    ) -> Union[Tuple[Any, None], Tuple[int, Any]]:
         """从排行榜中随机获取番号
 
         :param int list_type: 排行榜类型 0 nice | 1 new
@@ -870,7 +917,9 @@ class JavLibUtil(BaseUtil):
         else:
             return 200, random.choice(ids)
 
-    def get_comments_by_id(self, id: str) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
+    def get_comments_by_id(
+        self, id: str
+    ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
         """根据番号获取评论 (最佳评论, 最多 5 条)
 
         :param str id: 番号
@@ -885,13 +934,13 @@ class JavLibUtil(BaseUtil):
                 soup = self.get_soup(resp)
                 videos = soup.find_all(class_="video")
                 video_href = videos[0].a["href"]
-                javlib_av_id = video_href[video_href.find("v=") + 2:]
+                javlib_av_id = video_href[video_href.find("v=") + 2 :]
             except Exception as e:
                 self.log.error(f"JavLibUtil: 根据番号 {id} 获取评论失败: {e}")
                 return 404, None
         else:
             r_url = resp.url
-            javlib_av_id = r_url[r_url.find("v=") + 2:]
+            javlib_av_id = r_url[r_url.find("v=") + 2 :]
         comment_url = self.base_url_review + javlib_av_id
         code, resp = self.send_req(url=comment_url, headers=self.get_headers())
         if code != 200:
@@ -917,10 +966,10 @@ class DmmUtil(BaseUtil):
     PAT_AV = re.compile(r"[a-z]+\d+")
 
     def __init__(
-            self,
-            proxy_addr="",
-            use_cache=True,
-            base_url=BASE_URL,
+        self,
+        proxy_addr="",
+        use_cache=True,
+        base_url=BASE_URL,
     ):
         """初始化
 
@@ -932,12 +981,15 @@ class DmmUtil(BaseUtil):
         self.base_url = base_url
         self.base_url_search_av = self.base_url + "/mono/-/search/=/searchstr="
         self.base_url_search_av_monthly = (
-                self.base_url + "/monthly/dream/-/list/search/=/sort=ranking/?searchstr="
+            self.base_url + "/monthly/dream/-/list/search/=/sort=ranking/?searchstr="
         )
         self.base_url_search_star = (
-                self.base_url + "/digital/videoa/-/list/search/=/device=tv/sort=ranking/?searchstr="
+            self.base_url
+            + "/digital/videoa/-/list/search/=/device=tv/sort=ranking/?searchstr="
         )
-        self.base_url_top_stars = self.base_url + "/digital/videoa/-/ranking/=/type=actress"
+        self.base_url_top_stars = (
+            self.base_url + "/digital/videoa/-/ranking/=/type=actress"
+        )
 
     def get_pv_by_id(self, id: str) -> Union[Tuple[int, None], Tuple[int, Any]]:
         """根据番号从 DMM 获取预览视频地址
@@ -947,11 +999,15 @@ class DmmUtil(BaseUtil):
         """
         # 搜索番号
         url = self.base_url_search_av + id
-        code, resp = self.send_req(url=url, headers={
-            "user-agent": self.ua_mobile(),
-        }, cookies={
-            "age_check_done": "1",
-        })
+        code, resp = self.send_req(
+            url=url,
+            headers={
+                "user-agent": self.ua_mobile(),
+            },
+            cookies={
+                "age_check_done": "1",
+            },
+        )
         if code != 200:
             return code, None
         try:
@@ -972,11 +1028,15 @@ class DmmUtil(BaseUtil):
             return None
 
     def get_cids(self, url: str) -> Union[Tuple[int, None], Tuple[int, List[str]]]:
-        code, resp = self.send_req(url=url, headers={
-            "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
-        }, cookies={
-            "age_check_done": "1",
-        })
+        code, resp = self.send_req(
+            url=url,
+            headers={
+                "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
+            },
+            cookies={
+                "age_check_done": "1",
+            },
+        )
         if code != 200:
             return code, None
         try:
@@ -996,12 +1056,18 @@ class DmmUtil(BaseUtil):
             self.log.error(f"DmmUtil: 根据 {url} 从 DMM 获取 cid 列表: {e}")
             return 404, None
 
-    def get_cids_monthly(self, url: str) -> Union[Tuple[int, None], Tuple[int, List[str]]]:
-        code, resp = self.send_req(url=url, headers={
-            "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
-        }, cookies={
-            "age_check_done": "1",
-        })
+    def get_cids_monthly(
+        self, url: str
+    ) -> Union[Tuple[int, None], Tuple[int, List[str]]]:
+        code, resp = self.send_req(
+            url=url,
+            headers={
+                "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
+            },
+            cookies={
+                "age_check_done": "1",
+            },
+        )
         if code != 200:
             return code, None
         try:
@@ -1046,11 +1112,15 @@ class DmmUtil(BaseUtil):
         """
         # 搜索演员
         url = self.base_url_search_star + star_name
-        code, resp = self.send_req(url=url, headers={
-            "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
-        }, cookies={
-            "age_check_done": "1",
-        })
+        code, resp = self.send_req(
+            url=url,
+            headers={
+                "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
+            },
+            cookies={
+                "age_check_done": "1",
+            },
+        )
         if code != 200:
             return code, resp
         try:
@@ -1088,11 +1158,15 @@ class DmmUtil(BaseUtil):
         """
         # 搜索番号
         url = self.base_url_search_av + id
-        code, resp = self.send_req(url=url, headers={
-            "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
-        }, cookies={
-            "age_check_done": "1",
-        })
+        code, resp = self.send_req(
+            url=url,
+            headers={
+                "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
+            },
+            cookies={
+                "age_check_done": "1",
+            },
+        )
         if code != 200:
             return code, resp
         try:
@@ -1118,11 +1192,15 @@ class DmmUtil(BaseUtil):
         :return tuple[int, list]: 状态码和明星列表
         """
         url = self.base_url_top_stars + f"/page={page}/"
-        code, resp = self.send_req(url=url, headers={
-            "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
-        }, cookies={
-            "age_check_done": "1",
-        })
+        code, resp = self.send_req(
+            url=url,
+            headers={
+                "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
+            },
+            cookies={
+                "age_check_done": "1",
+            },
+        )
         if code != 200:
             return code, None
         try:
@@ -1175,25 +1253,25 @@ class JavBusUtil(BaseUtil):
         #     "user-agent": self.ua_desktop(),
         # }
         return {
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Sec-Fetch-Site': 'none',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Sec-Fetch-Mode': 'navigate',
-            'Host': 'www.javbus.com',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15',
-            'Accept-Language': 'zh-CN,zh-Hans;q=0.9',
-            'Sec-Fetch-Dest': 'document',
-            'Connection': 'keep-alive',
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Sec-Fetch-Site": "none",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Sec-Fetch-Mode": "navigate",
+            "Host": "www.javbus.com",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Safari/605.1.15",
+            "Accept-Language": "zh-CN,zh-Hans;q=0.9",
+            "Sec-Fetch-Dest": "document",
+            "Connection": "keep-alive",
         }
 
     def __init__(
-            self,
-            bus_auth="",
-            proxy_addr="",
-            use_cache=True,
-            max_home_page_count=100,
-            max_new_avs_count=8,
-            base_url=BASE_URL
+        self,
+        bus_auth="",
+        proxy_addr="",
+        use_cache=True,
+        max_home_page_count=100,
+        max_new_avs_count=8,
+        base_url=BASE_URL,
     ):
         """初始化
 
@@ -1215,14 +1293,14 @@ class JavBusUtil(BaseUtil):
         self.base_url_magnet = f"{self.base_url}/ajax/uncledatoolsbyajax.php?lang=zh"
         self.base_url_genre = f"{self.base_url}/genre"
 
-    def get_all_genres(self) -> Union[Tuple[int, None], Tuple[int, List[Dict[Any, Any]]]]:
+    def get_all_genres(
+        self,
+    ) -> Union[Tuple[int, None], Tuple[int, List[Dict[Any, Any]]]]:
         """获取所有类别
 
         :return Tuple[int, list]: 状态码和类别列表
         """
-        code, resp = self.send_req(
-            url=self.base_url_genre, headers=self.get_headers()
-        )
+        code, resp = self.send_req(url=self.base_url_genre, headers=self.get_headers())
         if code != 200:
             return code, None
         try:
@@ -1232,7 +1310,7 @@ class JavBusUtil(BaseUtil):
             for box in boxes:
                 tags = box.find_all("a")
                 for tag in tags:
-                    genres.append({tag.text: tag["href"][tag["href"].rfind("/") + 1:]})
+                    genres.append({tag.text: tag["href"][tag["href"].rfind("/") + 1 :]})
             if genres == []:
                 return 404, None
             return 200, genres
@@ -1246,9 +1324,7 @@ class JavBusUtil(BaseUtil):
         :param str genre: 类别编号
         :return Tuple[int, str]: 状态码和番号
         """
-        return self.get_id_from_page(
-            base_page_url=f"{self.base_url_genre}/{genre}"
-        )
+        return self.get_id_from_page(base_page_url=f"{self.base_url_genre}/{genre}")
 
     def get_id_by_genre_name(self, genre: str) -> Tuple[int, str]:
         """通过类别编号获取一个番号
@@ -1256,9 +1332,7 @@ class JavBusUtil(BaseUtil):
         :param str genre: 类别名称
         :return Tuple[int, str]: 状态码和番号
         """
-        return self.get_id_from_page(
-            base_page_url=f"{self.base_url_genre}/{genre}"
-        )
+        return self.get_id_from_page(base_page_url=f"{self.base_url_genre}/{genre}")
 
     def get_max_page(self, url: str) -> Union[Tuple[int, None], Tuple[int, int]]:
         """获取最大页数(只适用于不超过 10 页的页面)
@@ -1281,7 +1355,9 @@ class JavBusUtil(BaseUtil):
             self.log.error(f"JavBusUtil: 从 {url} 获取最大页数: {e}")
             return 404, None
 
-    def get_ids_from_page(self, base_page_url: str, page=1) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
+    def get_ids_from_page(
+        self, base_page_url: str, page=1
+    ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
         """从 av 列表页面获取该页面全部番号
 
         :param str base_page: 基础页地址, 也是第一页地址
@@ -1304,7 +1380,7 @@ class JavBusUtil(BaseUtil):
             tags = soup.find_all(class_="movie-box")
             for tag in tags:
                 id_link = tag["href"]
-                id = id_link[id_link.rfind("/") + 1:]
+                id = id_link[id_link.rfind("/") + 1 :]
                 ids.append(id)
             if ids == []:
                 return 404, None
@@ -1315,7 +1391,9 @@ class JavBusUtil(BaseUtil):
             )
             return 404, None
 
-    def get_id_from_page(self, base_page_url: str, page=-1) -> Union[Tuple[int, None], Tuple[int, Any]]:
+    def get_id_from_page(
+        self, base_page_url: str, page=-1
+    ) -> Union[Tuple[int, None], Tuple[int, Any]]:
         """从 av 列表页面获取一个番号
 
         :param str base_page: 基础页地址, 也是第一页地址
@@ -1335,9 +1413,7 @@ class JavBusUtil(BaseUtil):
         """
         if page == -1:
             page = random.randint(1, self.max_home_page_count)
-        return self.get_id_from_page(
-            base_page_url=self.base_url + "/page", page=page
-        )
+        return self.get_id_from_page(base_page_url=self.base_url + "/page", page=page)
 
     def get_id_by_star_name(self, star_name: str, page=-1) -> Tuple[int, str]:
         """根据演员名称获取一个番号
@@ -1363,7 +1439,9 @@ class JavBusUtil(BaseUtil):
             page=page,
         )
 
-    def get_new_ids_by_star_name(self, star_name: str) -> Union[Tuple[int, None], Tuple[int, Any]]:
+    def get_new_ids_by_star_name(
+        self, star_name: str
+    ) -> Union[Tuple[int, None], Tuple[int, Any]]:
         """根据演员名字获取最新番号列表
 
         :param str star_name: 演员名称
@@ -1389,7 +1467,9 @@ class JavBusUtil(BaseUtil):
             page=page,
         )
 
-    def get_new_ids_by_star_id(self, star_id: str) -> Union[Tuple[int, None], Tuple[int, list]]:
+    def get_new_ids_by_star_id(
+        self, star_id: str
+    ) -> Union[Tuple[int, None], Tuple[int, list]]:
         """根据演员编号获取最新番号
 
         :param str star_id: 演员编号
@@ -1402,7 +1482,9 @@ class JavBusUtil(BaseUtil):
             return code, None
         return 200, ids[: self.max_new_avs_count]
 
-    def get_samples_by_id(self, id: str) -> Union[Tuple[int, None], Tuple[int, List[Union[str, Any]]]]:
+    def get_samples_by_id(
+        self, id: str
+    ) -> Union[Tuple[int, None], Tuple[int, List[Union[str, Any]]]]:
         """根据番号获取截图
 
         :param str id: 番号
@@ -1428,7 +1510,9 @@ class JavBusUtil(BaseUtil):
             self.log.error(f"JavBusUtil: 根据番号 {id} 获取截图: {e}")
             return 404, None
 
-    def check_star_exists(self, star_name: str) -> Union[Tuple[int, None], Tuple[int, Dict[str, Union[str, Any]]]]:
+    def check_star_exists(
+        self, star_name: str
+    ) -> Union[Tuple[int, None], Tuple[int, Dict[str, Union[str, Any]]]]:
         """根据演员名称确认该演员在 javbus 是否存在, 如果存在则返回演员 id 和演员名称
 
         :param str star_name: 演员名称
@@ -1457,13 +1541,17 @@ class JavBusUtil(BaseUtil):
             )
             return 404, None
 
-    def fuzzy_search_stars(self, text) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
+    def fuzzy_search_stars(
+        self, text
+    ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
         """模糊搜索演员
 
         :param str text: 演员名称
         :return Tuple[int, list]: 状态码和演员列表
         """
-        code, resp = self.send_req(url=f"{self.base_url_search_star}/{text}", headers=self.get_headers())
+        code, resp = self.send_req(
+            url=f"{self.base_url_search_star}/{text}", headers=self.get_headers()
+        )
         if code != 200:
             return code, None
         try:
@@ -1479,11 +1567,11 @@ class JavBusUtil(BaseUtil):
             return 404, None
 
     def get_av_by_id(
-            self,
-            id: str,
-            is_nice: bool,
-            is_uncensored: bool,
-            magnet_max_count=10,
+        self,
+        id: str,
+        is_nice: bool,
+        is_uncensored: bool,
+        magnet_max_count=10,
     ) -> Tuple[int, any]:
         """通过 javbus 获取番号对应 av
 
@@ -1609,10 +1697,10 @@ class JavBusUtil(BaseUtil):
                         magnet["link"] = td.a["href"]
                         magnet_title = td.a.text.strip().lower()
                         if (
-                                "uncensor" in magnet_title
-                                or "無修正" in magnet_title
-                                or "无修正" in magnet_title
-                                or "无码" in magnet_title
+                            "uncensor" in magnet_title
+                            or "無修正" in magnet_title
+                            or "无修正" in magnet_title
+                            or "无码" in magnet_title
                         ):
                             magnet["uc"] = "1"
                         links = td.find_all("a")
@@ -1650,10 +1738,10 @@ class AvgleUtil(BaseUtil):
     BASE_URL = "https://api.avgle.com"
 
     def __init__(
-            self,
-            proxy_addr="",
-            use_cache=True,
-            base_url=BASE_URL,
+        self,
+        proxy_addr="",
+        use_cache=True,
+        base_url=BASE_URL,
     ):
         """初始化
 
@@ -1773,10 +1861,10 @@ class SukebeiUtil(BaseUtil):
     BASE_URL = "https://sukebei.nyaa.si"
 
     def __init__(
-            self,
-            proxy_addr="",
-            use_cache=True,
-            base_url=BASE_URL,
+        self,
+        proxy_addr="",
+        use_cache=True,
+        base_url=BASE_URL,
     ):
         """初始化
 
@@ -1788,11 +1876,11 @@ class SukebeiUtil(BaseUtil):
         self.base_url = base_url
 
     def get_av_by_id(
-            self,
-            id: str,
-            is_nice: bool,
-            is_uncensored: bool,
-            magnet_max_count=10,
+        self,
+        id: str,
+        is_nice: bool,
+        is_uncensored: bool,
+        magnet_max_count=10,
     ) -> Tuple[int, any]:
         """通过 sukebei 获取番号对应 av
 
@@ -1863,10 +1951,10 @@ class SukebeiUtil(BaseUtil):
                     if j == 1:  # 获取标题
                         title = td.a.text
                         if (
-                                "uncensor" in title
-                                or "無修正" in title
-                                or "无修正" in title
-                                or "无码" in title
+                            "uncensor" in title
+                            or "無修正" in title
+                            or "无修正" in title
+                            or "无码" in title
                         ):
                             magnet["uc"] = "1"
                         if i == 0:
@@ -1968,7 +2056,9 @@ class WikiUtil(BaseUtil):
     BASE_URL_JAPAN_WIKI = "https://ja.wikipedia.org/wiki"
     BASE_URL_CHINA_WIKI = "https://zh.wikipedia.org/wiki"
 
-    def get_wiki_page_by_lang(self, topic: str, from_lang: str, to_lang: str) -> Union[dict, None]:
+    def get_wiki_page_by_lang(
+        self, topic: str, from_lang: str, to_lang: str
+    ) -> Union[dict, None]:
         """根据搜索词和原来语言码返回指定语言维基页, 如果搜索不到结果则返回空, 如果搜索到结果但找不到指定语言维基页则返回原页
 
         :param str topic: 搜索词

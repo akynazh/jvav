@@ -5,7 +5,7 @@ Useful tools for crawling study resources. Supports Python library operations an
 ## INSTALL
 
 ```
-# python >= 3.7
+# python >= 3.9
 pip install jvav -U
 ```
 
@@ -69,7 +69,7 @@ optional arguments:
 
 ## DEV
 
-I use python-3.7.12 for development, please use python <= 3.7. 
+I use python-3.9.13 for development, please use python <= 3.9. 
 
 And it is recommended to use python virtual environment to avoid some unnecessary problems.
 
@@ -78,7 +78,7 @@ Here is my developing steps:
 ```shell
 git clone https://github.com/akynazh/jvav.git
 cd jvav
-~/.pyenv/versions/3.7.12/bin/python -m venv .venv
+~/.pyenv/versions/3.9.13/bin/python -m venv .venv -m venv .venv
 source ./.venv/bin/activate
 pip3 install -r requirements.txt
 ```

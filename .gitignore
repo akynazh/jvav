@@ -1,5 +1,6 @@
 __pycache__
 # .vscode
+.pytest_cache
 .DS_Store
 .idea
 
