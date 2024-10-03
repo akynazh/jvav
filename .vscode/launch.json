@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Tests Debug",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "unittest",
+            "args": ["tests.test.DmmUtilTest.test_get_top_stars"]
+        }
+    ]
+}
