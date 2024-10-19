@@ -1111,7 +1111,7 @@ class DmmUtil(BaseUtil):
         }
         """
         # 搜索演员
-        url = self.base_url_search_star + star_name
+        url = self.base_url_search_star + star_name + "%20単体"
         code, resp = self.send_req(
             url=url,
             headers={

@@ -195,7 +195,7 @@ class DmmUtilTest(unittest.TestCase):
         assert_code(*DmmUtilTest.util.get_pv_by_id("ipx-365"))
 
     def test_get_nice_avs_by_star_name(self):
-        assert_code(*DmmUtilTest.util.get_nice_avs_by_star_name("西元めいさ"))
+        assert_code(*DmmUtilTest.util.get_nice_avs_by_star_name("浅野こころ"))
 
     def test_get_score_by_id(self):
         assert_code(*DmmUtilTest.util.get_score_by_id("ipx-365"))
