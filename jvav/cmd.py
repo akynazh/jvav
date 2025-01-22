@@ -114,9 +114,13 @@ class JvavArgsParser:
             default="",
             help="Follow a code, get the corresponding preview video of the code on Avgle",
         )
-        # Get leaderboard
+        # Get star rank
         parser.add_argument(
-            "-tp", action="store_true", help="Get the top 25 ranking of DMM actresses"
+            "-rk1", action="store_true", help="Get the top 25 ranking of DMM actresses"
+        )
+        # Get av rank
+        parser.add_argument(
+            "-rk2", action="store_true", help="Get the top 25 ranking of AVs"
         )
         # Configure proxy
         parser.add_argument(
@@ -182,8 +186,12 @@ class JvavArgsParser:
             self.handle_code(
                 *jvav.SgpUtil(proxy_addr=args.proxy).get_video_by_av_id(av_id=args.sg)
             )
-        elif args.tp:
+        elif args.rk1:
             self.handle_code(*jvav.DmmUtil(proxy_addr=args.proxy).get_top_stars(1))
+        elif args.rk2:
+            self.handle_code(
+                *jvav.RankUtil(proxy_addr=args.proxy).get_av_250_rank()[:25]
+            )
         elif args.sr != "" or args.srn != "":
             star_name = args.sr if args.sr != "" else args.srn
             flag_srn = True if args.srn != "" else False

@@ -78,7 +78,7 @@ Here is my developing steps:
 ```shell
 git clone https://github.com/akynazh/jvav.git
 cd jvav
-~/.pyenv/versions/3.9.13/bin/python -m venv .venv -m venv .venv
+~/.pyenv/versions/3.9.13/bin/python -m venv .venv
 source ./.venv/bin/activate
 pip3 install -r requirements.txt
 ```
@@ -90,7 +90,7 @@ Please make sure the test is okay before submitting your code~
 
 The following are some functions to be implemented, and I look forward to your contribution~ 
 
-- [ ] support RankUtil in CMD
+- [x] support RankUtil in CMD (Thanks: [@akynazh](https://github.com/akynazh))
 - [x] cache the successful query results locally (Thanks: [@akynazh](https://github.com/akynazh))
 - [x] support javdb.com (Thanks: [@Steven-Fake](https://github.com/Steven-Fake))
 - [ ] support db.msin.jp
