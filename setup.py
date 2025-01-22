@@ -9,8 +9,8 @@ with open("README.md", encoding="utf-8") as f:
 
 setup(
     name="Jvav",
-    version="2.5.1",
-    description="Useful tools for Jav.",
+    version="2.5.3",
+    description="[NSFW] Useful tools for crawling study resources.",
     long_description=readme,
     long_description_content_type="text/markdown",
     url="https://github.com/akynazh/jvav",
@@ -24,7 +24,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Topic :: Internet :: WWW/HTTP :: Indexing/Search",
     ],
-    keywords="jav japan av api library python spider",
+    keywords="nsfw japan video api library python spider jav adult",
     project_urls={
         "Tracker": "https://github.com/akynazh/jvav/issues",
         "Source": "https://github.com/akynazh/jvav",

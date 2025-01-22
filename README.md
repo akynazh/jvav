@@ -35,36 +35,27 @@ util.get_all_top_stars()
 ## CMD
 
 ```shell
-usage: cmd.py [-h] [-v] [-av1 AV1] [-av2 AV2] [-av3 AV3] [-sg SG] [-auth AUTH]
-              [-nc] [-uc] [-sr SR] [-srn SRN] [-tg TG] [-pv1 PV1] [-pv2 PV2]
-              [-tp] [-p PROXY]
+usage: cmd.py [-h] [-v] [-av1 AV1] [-av2 AV2] [-av3 AV3] [-sg SG] [-auth AUTH] [-nc] [-uc] [-sr SR] [-srn SRN] [-tg TG] [-pv1 PV1] [-pv2 PV2] [-rk1] [-rk2] [-p PROXY]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -v, --version         Check version
   -av1 AV1              Followed by a code, search this code on JavBus
   -av2 AV2              Followed by a code, search this code on Sukebei
   -av3 AV3              Followed by a code, search this code on JavDb
-  -sg SG                Followed by a code, search the explainer video of this
-                        code
-  -auth AUTH            Followed by a authentication code for JavBus, get it
-                        from cookie key: bus_auth
+  -sg SG                Followed by a code, search the explainer video of this code
+  -auth AUTH            Followed by a authentication code for JavBus, use it if you failed to search from Javbus, get the code from cookie key: bus_auth
   -nc                   Filter out high-definition subtitles magnet links
   -uc                   Filter out uncoded magnet links
-  -sr SR                Followed by an actress name, get a list of high-rated
-                        codes based on the actress name
-  -srn SRN              Followed by an actress name, get a list of the most
-                        recent codes based on the actress name
-  -tg TG                Followed by a keyword, search for codes based on the
-                        keyword
-  -pv1 PV1              Followed by a code, get the corresponding preview
-                        video of the code on DMM
-  -pv2 PV2              Follow a code, get the corresponding preview video of
-                        the code on Avgle
-  -tp                   Get the top 25 ranking of DMM actresses
+  -sr SR                Followed by an actress name, get a list of high-rated codes based on the actress name
+  -srn SRN              Followed by an actress name, get a list of the most recent codes based on the actress name
+  -tg TG                Followed by a keyword, search for codes based on the keyword
+  -pv1 PV1              Followed by a code, get the corresponding preview video of the code on DMM
+  -pv2 PV2              Follow a code, get the corresponding preview video of the code on Avgle
+  -rk1                  Get the top 25 ranking of DMM actresses
+  -rk2                  Get the top 25 ranking of AVs
   -p PROXY, --proxy PROXY
-                        Followed by a proxy server address (by default reads
-                        the value of the environment variable http_proxy)
+                        Followed by a proxy server address (by default reads the value of the environment variable http_proxy)
 ```
 
 ## DEV
@@ -90,10 +81,10 @@ Please make sure the test is okay before submitting your code~
 
 The following are some functions to be implemented, and I look forward to your contribution~ 
 
+- [ ] support db.msin.jp
 - [x] support RankUtil in CMD (Thanks: [@akynazh](https://github.com/akynazh))
 - [x] cache the successful query results locally (Thanks: [@akynazh](https://github.com/akynazh))
 - [x] support javdb.com (Thanks: [@Steven-Fake](https://github.com/Steven-Fake))
-- [ ] support db.msin.jp
 - [x] support JavDbUtil in cmd (Thanks: [@akynazh](https://github.com/akynazh))
 
 ## Thanks
