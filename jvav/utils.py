@@ -983,9 +983,12 @@ class DmmUtil(BaseUtil):
         self.base_url_search_av_monthly = (
             self.base_url + "/monthly/dream/-/list/search/=/sort=ranking/?searchstr="
         )
+        # self.base_url_search_star = (
+        #     self.base_url
+        #     + "/digital/videoa/-/list/search/=/device=tv/sort=ranking/?searchstr="
+        # )
         self.base_url_search_star = (
-            self.base_url
-            + "/digital/videoa/-/list/search/=/device=tv/sort=ranking/?searchstr="
+            self.base_url + "/mono/dvd/-/search/=/limit=120/sort=ranking/searchstr="
         )
         self.base_url_top_stars = (
             self.base_url + "/digital/videoa/-/ranking/=/type=actress"
@@ -1131,7 +1134,7 @@ class DmmUtil(BaseUtil):
             for av in av_tags:
                 try:
                     rate = av.find(class_="rate").span.span.text
-                    av_href = av.find(class_="sample").a["href"]
+                    av_href = av.find(class_="tmb").a["href"]
                     cid = self.get_cid_from_link(av_href)
                     id_0 = self.PAT_AV.findall(cid)[0]
                     id_num = re.search(r"[1-9]\d*", id_0).group()
