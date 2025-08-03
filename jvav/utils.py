@@ -983,16 +983,18 @@ class DmmUtil(BaseUtil):
         self.base_url_search_av_monthly = (
             self.base_url + "/monthly/dream/-/list/search/=/sort=ranking/?searchstr="
         )
-        # self.base_url_search_star = (
-        #     self.base_url
-        #     + "/digital/videoa/-/list/search/=/device=tv/sort=ranking/?searchstr="
-        # )
         self.base_url_search_star = (
-            self.base_url + "/mono/dvd/-/search/=/limit=120/sort=ranking/searchstr="
+            "https://www.dmm.co.jp/search/=/limit=30/sort=ranking/searchstr="
         )
         self.base_url_top_stars = (
             self.base_url + "/digital/videoa/-/ranking/=/type=actress"
         )
+
+    def get_id_by_cid(self, cid: str) -> str:
+        id_0 = self.PAT_AV.findall(cid)[0]
+        id_num = re.search(r"[1-9]\d*", id_0).group()
+        id_pre = re.sub(r"\d*$", "", id_0)
+        return f"{id_pre}-{id_num}"
 
     def get_pv_by_id(self, id: str) -> Union[Tuple[int, None], Tuple[int, Any]]:
         """根据番号从 DMM 获取预览视频地址
@@ -1128,19 +1130,24 @@ class DmmUtil(BaseUtil):
             return code, resp
         try:
             soup = self.get_soup(resp)
-            av_list = soup.find(id="list")
-            av_tags = av_list.find_all("li")
+            av_list = soup.find_all(class_="grid")[2]
+            av_tags = av_list.find_all("div", recursive=False)
             avs = []
             for av in av_tags:
                 try:
-                    rate = av.find(class_="rate").span.span.text
-                    av_href = av.find(class_="tmb").a["href"]
-                    cid = self.get_cid_from_link(av_href)
-                    id_0 = self.PAT_AV.findall(cid)[0]
-                    id_num = re.search(r"[1-9]\d*", id_0).group()
-                    id_pre = re.sub(r"\d*$", "", id_0)
-                    id = f"{id_pre}-{id_num}"
-                    avs.append({"rate": float(rate), "id": id})
+                    a_tag = av.find("a", href=True)
+                    link = a_tag["href"] if a_tag else None
+                    match = re.search(r"content=([^&]+)", link)
+                    cid = match.group(1)
+                    id = self.get_id_by_cid(cid)
+                    score_span = av.find("span", class_="text-gray-500")
+                    if score_span:
+                        score_text = score_span.get_text(strip=True)
+                        match = re.match(r"([\d.]+)", score_text)
+                        score = float(match.group(1)) if match else None
+                    else:
+                        score = None
+                    avs.append({"rate": score, "id": id})
                 except Exception:
                     pass
             if avs == []:

@@ -169,7 +169,10 @@ class JavLibUtilTest(unittest.TestCase):
 
 
 class DmmUtilTest(unittest.TestCase):
-    util = jvav.DmmUtil(proxy_addr=PROXY_ADDR, use_cache=False)
+    util = jvav.DmmUtil(
+        proxy_addr="http://brd-customer-hl_e4ac82af-zone-proxy_random-country-jp:pfeq45o2dco0@brd.superproxy.io:33335",
+        use_cache=False,
+    )
 
     def test_get_cids_by_tag(self):
         assert_code(*DmmUtilTest.util.get_cids_by_tag("ssis"))
@@ -195,7 +198,7 @@ class DmmUtilTest(unittest.TestCase):
         assert_code(*DmmUtilTest.util.get_pv_by_id("ipx-365"))
 
     def test_get_nice_avs_by_star_name(self):
-        assert_code(*DmmUtilTest.util.get_nice_avs_by_star_name("浅野こころ"))
+        assert_code(*DmmUtilTest.util.get_nice_avs_by_star_name("三上悠亜"))
 
     def test_get_score_by_id(self):
         assert_code(*DmmUtilTest.util.get_score_by_id("ipx-365"))
