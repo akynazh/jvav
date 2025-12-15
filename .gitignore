@@ -6,7 +6,7 @@ __pycache__
 
 # for jvav pkg
 /dist
-jvav.egg-info
+*.egg-info
 
 # for jvav.exe
 *.spec

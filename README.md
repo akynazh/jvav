@@ -35,7 +35,7 @@ util.get_all_top_stars()
 ## CMD
 
 ```shell
-usage: cmd.py [-h] [-v] [-av1 AV1] [-av2 AV2] [-av3 AV3] [-sg SG] [-auth AUTH] [-nc] [-uc] [-sr SR] [-srn SRN] [-tg TG] [-pv1 PV1] [-pv2 PV2] [-rk1] [-rk2] [-p PROXY]
+usage: cmd.py [-h] [-v] [-av1 AV1] [-av2 AV2] [-av3 AV3] [-auth AUTH] [-nc] [-uc] [-sr SR] [-srn SRN] [-tg TG] [-pv1 PV1] [-pv2 PV2] [-rk1] [-rk2] [-p PROXY]
 
 options:
   -h, --help            show this help message and exit
@@ -43,7 +43,6 @@ options:
   -av1 AV1              Followed by a code, search this code on JavBus
   -av2 AV2              Followed by a code, search this code on Sukebei
   -av3 AV3              Followed by a code, search this code on JavDb
-  -sg SG                Followed by a code, search the explainer video of this code
   -auth AUTH            Followed by a authentication code for JavBus, use it if you failed to search from Javbus, get the code from cookie key: bus_auth
   -nc                   Filter out high-definition subtitles magnet links
   -uc                   Filter out uncoded magnet links
