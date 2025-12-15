@@ -62,12 +62,6 @@ class JvavArgsParser:
             help="Followed by a code, search this code on JavDb",
         )
         parser.add_argument(
-            "-sg",
-            type=str,
-            default="",
-            help="Followed by a code, search the explainer video of this code",
-        )
-        parser.add_argument(
             "-auth",
             type=str,
             default="",
@@ -181,10 +175,6 @@ class JvavArgsParser:
                 *jvav.JavDbUtil(proxy_addr=args.proxy).get_av_by_id(
                     id=args.av3, is_nice=args.nc, is_uncensored=args.uc
                 )
-            )
-        elif args.sg != "":
-            self.handle_code(
-                *jvav.SgpUtil(proxy_addr=args.proxy).get_video_by_av_id(av_id=args.sg)
             )
         elif args.rk1:
             self.handle_code(*jvav.DmmUtil(proxy_addr=args.proxy).get_top_stars(1))
