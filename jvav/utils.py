@@ -32,26 +32,14 @@ class BaseUtil:
 
     @staticmethod
     def ua_mobile() -> str:
-        """返回手机端 UserAgent
-
-        :return str: 手机端 UserAgent
-        """
         return UserAgent().android
 
     @staticmethod
     def ua_desktop() -> str:
-        """返回桌面端 UserAgent
-
-        :return str: 桌面端 UserAgent
-        """
         return UserAgent(platform="windows").random
 
     @staticmethod
     def ua() -> str:
-        """随机返回 UserAgent
-
-        :return str: UserAgent
-        """
         return UserAgent().random
 
     def _inner_send_req(
@@ -79,23 +67,23 @@ class BaseUtil:
             else:
                 return 502, None
         except Exception as e:
-            self.log.error(f"BaseUtil: 访问 {url}: {e}")
+            self.log.error(f"BaseUtil: failed to access {url}: {e}")
             return 502, None
 
     def send_req(
         self, url: str, headers=None, m=0, **args
     ) -> Tuple[int, requests.Response]:
-        """发送请求
+        """send request
 
-        :param str url: 地址
-        :param dict headers: 请求头, 默认使用随机请求头
-        :param int m: 请求方法, 默认为 get(0), 其他为 post(1), delete(2), put(3)
-        :param dict args: 其他 requests 参数
-        :return tuple[int, requests.Response] 状态码和请求返回值
-        关于状态码:
-        200: 成功
-        404: 未找到
-        502: 后台/网络问题
+        :param str url: url
+        :param dict headers: headers, random headers by default
+        :param int m: request method, default: get(0), others: post(1), delete(2), put(3)
+        :param dict args: othre request parameters
+        :return tuple[int, requests.Response] status code and response
+        About status code:
+        200: success
+        404: not found
+        502: bad gateway
         """
         if self.use_cache:
             with requests_cache.CachedSession(
@@ -108,11 +96,6 @@ class BaseUtil:
 
     @staticmethod
     def get_soup(resp: requests.Response) -> BeautifulSoup:
-        """从请求结果得到 soup
-
-        :param requests.Response resp: 请求结果
-        :return BeautifulSoup
-        """
         return BeautifulSoup(resp.text, "lxml")
 
     @staticmethod
@@ -126,10 +109,6 @@ class RankUtil(BaseUtil):
     BASE_URL_STAR_RANK = ""  # DmmUtil supports
 
     def random_get_av_from_rank(self) -> Tuple[int, str]:
-        """从排行榜随机获取一个番号
-
-        :return tuple[int, str]: 状态码和番号
-        """
         code, resp = self.send_req(self.BASE_URL_AV_RANK)
         if code != 200:
             return code, None
@@ -138,10 +117,6 @@ class RankUtil(BaseUtil):
         return 200, id
 
     def get_av_250_rank(self) -> Tuple[int, list]:
-        """获取 av 排行榜
-
-        :return tuple[int, list]: 状态码和番号列表
-        """
         code, resp = self.send_req(self.BASE_URL_AV_RANK)
         if code != 200:
             return code, None
@@ -162,13 +137,13 @@ class JavDbUtil(BaseUtil):
         max_new_avs_count=8,
         base_url=BASE_URL,
     ):
-        """初始化
+        """Initialize
 
-        :param str proxy_addr: 代理服务器地址, 默认为 ''
-        :param bool use_cache: 是否使用缓存, 默认为 True
-        :param int max_home_page_count: 主页最大爬取页数, 默认为 100 页
-        :param int max_new_avs_count: 获取最新 AV 数量, 默认为 8 部
-        :param str base_url: 基础地址, 默认为 BASE_URL
+        :param str proxy_addr: proxy address, defaults to ''
+        :param bool use_cache: whether to use cache, defaults to True
+        :param int max_home_page_count: maximum home page pages to crawl, defaults to 100
+        :param int max_new_avs_count: number of newest AVs to fetch, defaults to 8
+        :param str base_url: base url, defaults to BASE_URL
         """
         super().__init__(proxy_addr, use_cache)
         self.base_url = base_url
@@ -181,10 +156,10 @@ class JavDbUtil(BaseUtil):
         self.max_new_avs_count = max_new_avs_count
 
     def get_max_page(self, url: str) -> Union[Tuple[int, None], Tuple[int, int]]:
-        """获取最大页数
+        """Get the maximum page number for a paginated resource
 
-        :param str url: 页面地址
-        :return tuple[int, int]: 状态码和最大页数
+        :param str url: page url
+        :return tuple[int, int]: status code and max page number
         """
         code, resp = self.send_req(url)
         if code != 200:
@@ -198,23 +173,23 @@ class JavDbUtil(BaseUtil):
                 return 404, None
             return 200, last_page
         except Exception as e:
-            self.log.error(f"JavDbUtil: 从 {url} 获取最大页数: {e}")
+            self.log.error(f"JavDbUtil: failed to get max page from {url}: {e}")
             return 404, None
 
     def get_new_ids(self) -> Tuple[int, any]:
-        """获取最新的番号列表
+        """Get the list of newest IDs
 
-        :return Tuple[int, list]: 状态码和番号列表
+        :return Tuple[int, list]: status code and list of IDs
         """
         return self.get_ids_from_page(self.base_url_new_av)
 
     def get_ids_from_page(
         self, url: str
     ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
-        """从页面 url 获取番号列表
+        """Get ID list from a page URL
 
-        :param str url: 首页/搜索页
-        :return Tuple[int, list]: 状态码和番号列表
+        :param str url: home/search page url
+        :return Tuple[int, list]: status code and id list
         """
         code, resp = self.send_req(url=url)
         if code != 200:
@@ -229,7 +204,7 @@ class JavDbUtil(BaseUtil):
                 return 404, None
             return 200, ids
         except Exception as e:
-            self.log.error(f"JavDbUtil: 从页面获取番号列表: {e}")
+            self.log.error(f"JavDbUtil: failed to get id list from page: {e}")
             return 404, None
 
     def get_star_page_by_star_name(
@@ -245,16 +220,16 @@ class JavDbUtil(BaseUtil):
                 return 404, None
             return 200, f"{self.base_url}{url}"
         except Exception as e:
-            self.log.error(f"JavDbUtil: 获取预览图片: {e}")
+            self.log.error(f"JavDbUtil: failed to get star page: {e}")
             return 404, None
 
     def fuzzy_search_stars(
         self, text
     ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
-        """模糊搜索演员
+        """Fuzzy search actors by name
 
-        :param str text: 演员名称
-        :return Tuple[int, list]: 状态码和演员列表
+        :param str text: actor name
+        :return Tuple[int, list]: status code and list of actor names
         """
         code, resp = self.send_req(url=self.base_url_search_star + text)
         if code != 200:
@@ -269,17 +244,17 @@ class JavDbUtil(BaseUtil):
             names = list(set(names))
             return 200, names
         except Exception as e:
-            self.log.error(f"JavDbUtil: 模糊搜索演员: {e}")
+            self.log.error(f"JavDbUtil: fuzzy searching actors failed: {e}")
             return 404, None
 
     def get_id_by_star_name(
         self, star_name: str, page=-1
     ) -> Union[Tuple[int, None], Tuple[int, Any]]:
-        """根据演员名称获取一个番号
+        """Get a single ID by actor name
 
-        :param str star_name: 演员名称
-        :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
-        :return tuple[int, str]: 状态码和番号
+        :param str star_name: actor name
+        :param int page: which page to fetch; -1 means random
+        :return tuple[int, str]: status code and ID
         """
         code, ids = self.get_ids_by_star_name(star_name, page)
         if code != 200:
@@ -289,11 +264,11 @@ class JavDbUtil(BaseUtil):
     def get_ids_by_star_name(
         self, star_name: str, page=-1
     ) -> Union[Tuple[Any, None], Tuple[int, Any], Tuple[int, None]]:
-        """根据演员名称获取一批番号
+        """Get a list of IDs by actor name
 
-        :param str star_name: 演员名称
-        :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
-        :return tuple[int, list]: 状态码和番号
+        :param str star_name: actor name
+        :param int page: which page to fetch; -1 means random
+        :return tuple[int, list]: status code and list of IDs
         """
         code, base_page_url = self.get_star_page_by_star_name(star_name)
         if code != 200:
@@ -311,16 +286,16 @@ class JavDbUtil(BaseUtil):
                 return code, None
             return 200, ids
         except Exception as e:
-            self.log.error(f"JavDbUtil: 根据演员名称获取一个番号: {e}")
+            self.log.error(f"JavDbUtil: failed to get ids by actor name: {e}")
             return 404, None
 
     def get_new_ids_by_star_name(
         self, star_name: str
     ) -> Union[Tuple[Any, None], Tuple[int, Any], Tuple[int, None]]:
-        """根据演员名字获取最新番号列表
+        """Get newest IDs for an actor
 
-        :param str star_name: 演员名称
-        :return Tuple[int, list]: 状态码和番号列表
+        :param str star_name: actor name
+        :return Tuple[int, list]: status code and list of new IDs
         """
         code, url = self.get_star_page_by_star_name(star_name)
         if code != 200:
@@ -331,7 +306,7 @@ class JavDbUtil(BaseUtil):
                 return code, None
             return 200, ids[: self.max_new_avs_count]
         except Exception as e:
-            self.log.error(f"JavDbUtil: 根据演员名字获取最新番号列表: {e}")
+            self.log.error(f"JavDbUtil: failed to get newest ids by actor name: {e}")
             return 404, None
 
     def get_nice_avs_by_star_name(
@@ -339,15 +314,15 @@ class JavDbUtil(BaseUtil):
     ) -> Union[
         Tuple[Any, None], Tuple[int, None], Tuple[int, List[Dict[str, Union[str, Any]]]]
     ]:
-        """根据演员名字获取高分番号列表(需要登录)
+        """Get high-rated AVs by actor name (login required)
 
-        :param str star_name: 演员名字
-        :param str cookie: 该方法需要登录，cookie 中的 _jdb_session 为必须值
-        :return Tuple[int, list]: 状态码和番号列表
-        番号列表单个对象结构:
+        :param str star_name: actor name
+        :param str cookie: requires login; `_jdb_session` in cookie is required
+        :return Tuple[int, list]: status code and list of rated AVs
+        Single item structure:
         {
-            'rate': rate, # 评分
-            'id': id # 番号
+            'rate': rate, # rating
+            'id': id # AV id
         }
         """
         code, base_page_url = self.get_star_page_by_star_name(star_name)
@@ -379,14 +354,14 @@ class JavDbUtil(BaseUtil):
                 return 404, None
             return 200, res
         except Exception as e:
-            self.log.error(f"JavDbUtil: 从页面获取番号列表: {e}")
+            self.log.error(f"JavDbUtil: failed to parse rated av list: {e}")
             return 404, None
 
     def get_javdb_id_by_id(self, id: str) -> Union[Tuple[int, None], Tuple[int, Any]]:
-        """通过番号获取 JavDB 内部 ID
+        """Get JavDB internal ID from public ID
 
-        :param id: 番号
-        :return: tuple[int, str] 状态码和 JavDB 内部 ID
+        :param id: public id
+        :return: tuple[int, str] status code and JavDB internal ID
         """
         code, resp = self.send_req(url=self.base_url_search + id)
         if code != 200:
@@ -399,16 +374,16 @@ class JavDbUtil(BaseUtil):
                     return 200, item.find("a")["href"].split("/")[-1]
             return 404, None  # if there is no correct result, return 404
         except Exception as e:
-            self.log.error(f"JavDbUtil: 通过番号获取JavDB内部ID: {e}")
+            self.log.error(f"JavDbUtil: failed to get JavDB internal id by id: {e}")
             return 404, None
 
     def get_javdb_ids_from_page(
         self, url: str
     ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
-        """从页面 url 获取 JavDB 的 ID 列表
+        """Get JavDB internal IDs from a page URL
 
-        :param url: 首页/搜索页
-        :return: Tuple[int, list]: 状态码和 JavDB 的 ID 列表
+        :param url: home/search page url
+        :return: Tuple[int, list]: status code and list of JavDB internal IDs
         """
         code, resp = self.send_req(url=url)
         if code != 200:
@@ -421,13 +396,13 @@ class JavDbUtil(BaseUtil):
                 return 404, None
             return 200, ids
         except Exception as e:
-            self.log.error(f"JavDbUtil: 从页面获取 JavDB 内部 ID 列表: {e}")
+            self.log.error(f"JavDbUtil: failed to get JavDB ids from page: {e}")
             return 404, None
 
     def get_id_from_home(self) -> Union[Tuple[Any, None], Tuple[int, Any]]:
-        """从主页获取一个番号(随机选取) 从首页获取 ID 或 JavDB ID
+        """Get a random ID from the homepage
 
-        :return Tuple[int, str]: 状态码和番号
+        :return Tuple[int, str]: status code and ID
         """
         code, resp = self.get_ids_from_page(url=self.base_url)
         if code != 200:
@@ -436,9 +411,9 @@ class JavDbUtil(BaseUtil):
             return 200, random.choice(resp)
 
     def get_javdb_id_from_home(self) -> Union[Tuple[Any, None], Tuple[int, Any]]:
-        """从主页获取一个 JavDB 内部 ID (随机选取)
+        """Get a random JavDB internal ID from the homepage
 
-        :return Tuple[int, str]: 状态码和 JavDB 内部 ID
+        :return Tuple[int, str]: status code and JavDB internal ID
         """
         code, resp = self.get_javdb_ids_from_page(url=self.base_url)
         if code != 200:
@@ -447,9 +422,9 @@ class JavDbUtil(BaseUtil):
             return 200, random.choice(resp)
 
     def get_ids_from_home(self) -> Union[Tuple[Any, None], Tuple[int, Any]]:
-        """从主页获取全部番号
+        """Get all IDs from the homepage
 
-        :return Tuple[int, list]: 状态码和番号列表
+        :return Tuple[int, list]: status code and list of IDs
         """
         code, resp = self.get_ids_from_page(url=self.base_url)
         if code != 200:
@@ -458,9 +433,9 @@ class JavDbUtil(BaseUtil):
             return 200, resp
 
     def get_javdb_ids_from_home(self) -> Union[Tuple[Any, None], Tuple[int, Any]]:
-        """从主页获取全部 JavDB 内部 ID
+        """Get all JavDB internal IDs from the homepage
 
-        :return Tuple[int, list]: 状态码和 JavDB 内部 ID 列表
+        :return Tuple[int, list]: status code and list of JavDB internal IDs
         """
         code, resp = self.get_javdb_ids_from_page(url=self.base_url)
         if code != 200:
@@ -469,28 +444,28 @@ class JavDbUtil(BaseUtil):
             return 200, resp
 
     def get_ids_by_tag(self, tag: str) -> Tuple[int, list]:
-        """根据标签获取番号列表
+        """Get IDs by tag
 
-        :param str tag: 标签
-        :return Tuple[int, list]: 状态码和番号列表
+        :param str tag: tag
+        :return Tuple[int, list]: status code and list of IDs
         """
         url = f"{self.base_url_search}{tag}"
         return self.get_ids_from_page(url)
 
     def get_javdb_ids_by_tag(self, tag: str) -> Tuple[int, list]:
-        """根据标签获取 JavDB 列表
+        """Get JavDB IDs by tag
 
-        :param str tag: 标签
-        :return Tuple[int, list]: 状态码和番号列表
+        :param str tag: tag
+        :return Tuple[int, list]: status code and list of JavDB IDs
         """
         url = f"{self.base_url_search}{tag}"
         return self.get_javdb_ids_from_page(url)
 
     def get_cover_by_id(self, id: str) -> Union[Tuple[int, None], Tuple[int, Any]]:
-        """根据番号获取封面
+        """Get cover image by public ID
 
-        :param str id: 番号
-        :return Tuple[int, str]: 状态码和封面
+        :param str id: public id
+        :return Tuple[int, str]: status code and cover url
         """
         code, resp = self.send_req(url=self.base_url_search + id)
         if code != 200:
@@ -504,16 +479,16 @@ class JavDbUtil(BaseUtil):
             else:
                 return 404, None
         except Exception as e:
-            self.log.error(f"JavDbUtil: 通过番号获取封面: {e}")
+            self.log.error(f"JavDbUtil: failed to get cover by id: {e}")
             return 404, None
 
     def get_cover_by_javdb_id(
         self, javdb_id: str
     ) -> Union[Tuple[int, None], Tuple[int, Union[str, Any]]]:
-        """通过 JavDB ID 获取封面
+        """Get cover image by JavDB internal ID
 
-        :param str javdb_id: JavDB 内部 ID
-        :return Tuple[int, str]: 状态码和封面
+        :param str javdb_id: JavDB internal ID
+        :return Tuple[int, str]: status code and cover url
         """
         code, resp = self.send_req(url=self.base_url_video + javdb_id)
         if code != 200:
@@ -525,7 +500,7 @@ class JavDbUtil(BaseUtil):
                 return 404, None
             return 200, cover.find("img")["src"]
         except Exception as e:
-            self.log.error(f"JavDbUtil: 通过JavDB ID获取封面: {e}")
+            self.log.error(f"JavDbUtil: failed to get cover by JavDB id: {e}")
             return 404, None
 
     def get_pv_by_id(
@@ -546,7 +521,7 @@ class JavDbUtil(BaseUtil):
                 url = f"https:{url}"
             return 200, url
         except Exception as e:
-            self.log.error(f"JavDbUtil: 获取预览视频: {e}")
+            self.log.error(f"JavDbUtil: failed to get preview video: {e}")
             return 404, None
 
     def get_samples_by_id(
@@ -565,7 +540,7 @@ class JavDbUtil(BaseUtil):
                 return 404, None
             return 200, [t.attrs["href"] for t in img_tags]
         except Exception as e:
-            self.log.error(f"JavDbUtil: 获取预览图片: {e}")
+            self.log.error(f"JavDbUtil: failed to get preview images: {e}")
             return 404, None
 
     def get_av_by_javdb_id(
@@ -576,45 +551,48 @@ class JavDbUtil(BaseUtil):
         sex_limit: bool = False,
         magnet_max_count=10,
     ) -> Tuple[int, any]:
-        """通过 JavDB ID 获取 av
+        """Get AV information by JavDB internal ID
 
-        :param javdb_id: JavDB 内部 ID
-        :param bool is_nice: 是否过滤出高清，有字幕磁链
-        :param bool is_uncensored: 是否过滤出无码磁链
-        :param bool sex_limit: 是否只获取女优信息
-        :param int magnet_max_count: 过滤后磁链的最大数目, 默认为 10
-        :return Tuple[int, any]: 状态码和 av
-        av格式:
+        :param javdb_id: JavDB internal ID
+        :param bool is_nice: whether to filter for HD and subtitled magnets
+        :param bool is_uncensored: whether to filter for uncensored magnets
+        :param bool sex_limit: whether to include only female actors
+        :param int magnet_max_count: max number of magnets after filtering (default 10)
+        :return Tuple[int, any]: status code and av dict
+
+        AV format:
         {
-            'id': '',       # 番号
-            'date': '',     # 发行日期
-            'title': '',    # 标题
-            'title_cn': '', # 中文标题
-            'img': '',      # 封面地址
-            'duration': '', # 时长(单位: 分钟)
-            'producer': '', # 片商
-            'publisher': '',# 发行商
-            'series': '',   # 系列
-            'score': '',   # 评分
-            'tags': [],     # 标签
-            'stars': [],    # 演员
-            'magnets': [],  # 磁链
-            'url': '',      # 地址
+            'id': '',       # public id
+            'date': '',     # release date
+            'title': '',    # title
+            'title_cn': '', # Chinese title
+            'img': '',      # cover url
+            'duration': '', # duration (minutes)
+            'producer': '', # producer
+            'publisher': '',# publisher
+            'series': '',   # series
+            'score': '',    # score
+            'tags': [],     # tags
+            'stars': [],    # actors
+            'magnets': [],  # magnets
+            'url': '',      # url
         }
-        磁链格式:
+
+        Magnet format:
         {
-            'link': '', # 链接
-            'size': '', # 大小
-            'hd': '0',  # 是否高清 0 否 | 1 是
-            'zm': '0',  # 是否有字幕 0 否 | 1 是
-            'uc': '0',  # 是否未经审查 0 否 | 1 是
-            'size_no_unit': 浮点值 # 去除单位后的大小值, 用于排序, 当要求过滤磁链时会存在该字段
+            'link': '', # link
+            'size': '', # size
+            'hd': '0',  # is HD 0 no | 1 yes
+            'zm': '0',  # has subtitles 0 no | 1 yes
+            'uc': '0',  # uncensored 0 no | 1 yes
+            'size_no_unit': float # size normalized (no unit) for sorting; present when filtering
         }
-        演员格式:
+
+        Actor format:
         {
-            'name': '', # 演员名称
-            'id': ''    # 演员编号
-            'sex': ''   # 演员性别
+            'name': '', # actor name
+            'id': '',   # actor id
+            'sex': ''   # actor sex
         }
         """
         code, resp = self.send_req(url=self.base_url_video + javdb_id)
@@ -638,7 +616,7 @@ class JavDbUtil(BaseUtil):
                 "url": self.base_url_video + javdb_id,
             }
             soup = self.get_soup(resp)
-            # 获取元信息
+            # get meta information
             title_cn = soup.find("strong", {"class": "current-title"})
             title = soup.find("span", {"class": "origin-title"})
             if not title:
@@ -648,11 +626,12 @@ class JavDbUtil(BaseUtil):
             av["img"] = soup.find("div", {"class": "column column-video-cover"}).find(
                 "img"
             )["src"]
-            # 由于nav栏会因为实际信息不同而导致行数不同，所以只能用循环的方式检索信息
+            # Because the nav bar structure varies depending on available info,
+            # iterate over the blocks to extract metadata
             metainfos = soup.find("nav", {"class": "panel movie-panel-info"}).find_all(
                 "div", {"class": "panel-block"}
             )
-            for info in metainfos:  # 遍历nav栏所有信息
+            for info in metainfos:  # iterate over nav bar info
                 text = unicodedata.normalize("NFKD", re.sub("[\n ]", "", info.text))
                 if re.search("番號:.+", text):
                     av["id"] = re.search("(番號: )(.+)", text).group(2).strip()
@@ -686,7 +665,7 @@ class JavDbUtil(BaseUtil):
                         }
                         if not (sex_limit and actor["sex"] == "男"):
                             av["stars"].append(actor)
-            # 获取磁链
+            # get magnet links
             magnet_list = soup.find_all(
                 "div", {"class": "item columns is-desktop"}
             ) + soup.find_all("div", {"class": "item columns is-desktop odd"})
@@ -698,11 +677,11 @@ class JavDbUtil(BaseUtil):
                     "uc": "0",
                     "size": "0",
                 }
-                # 获取大小
+                # get size
                 size = link.find("span", {"class": "meta"})
                 if size:
                     magnet["size"] = size.text.strip().split(",")[0]
-                # 检查是否为uc
+                # check if uncensored
                 title = link.find("span", {"class": "name"}).text
                 if any(
                     k in title
@@ -719,7 +698,7 @@ class JavDbUtil(BaseUtil):
                     ]
                 ):
                     magnet["uc"] = "1"
-                # 检查tag
+                # check tags
                 tags_elements = link.find("div", {"class": "tags"})
                 if tags_elements:
                     tags_contents = tags_elements.findAll("span")
@@ -737,16 +716,16 @@ class JavDbUtil(BaseUtil):
                 magnets = av["magnets"]
                 magnets = MagnetUtil.get_nice_magnets(
                     magnets, "hd", expect_val="1"
-                )  # 过滤高清
+                )  # filter HD
                 magnets = MagnetUtil.get_nice_magnets(
                     magnets, "zm", expect_val="1"
-                )  # 过滤有字幕
-                magnets = MagnetUtil.sort_magnets(magnets)  # 从大到小排序
+                )  # filter subtitles
+                magnets = MagnetUtil.sort_magnets(magnets)  # sort by size descending
                 magnets = magnets[0:magnet_max_count]
                 av["magnets"] = magnets
             return 200, av
         except Exception as e:
-            self.log.error(f"JavDbUtil: 获取av信息: {e}")
+            self.log.error(f"JavDbUtil: failed to get av info: {e}")
             return 404, None
 
     def get_av_by_id(
@@ -757,44 +736,47 @@ class JavDbUtil(BaseUtil):
         sex_limit: bool = False,
         magnet_max_count=10,
     ) -> Tuple[int, any]:
-        """通过 javdb 获取番号对应 av
+        """Get AV info for a public ID via JavDB
 
-        :param str id: 番号
-        :param bool is_nice: 是否过滤出高清，有字幕磁链
-        :param bool is_uncensored: 是否过滤出无码磁链
-        :param int magnet_max_count: 过滤后磁链的最大数目, 默认为 10
-        :return Tuple[int, dict]: 状态码和 av
-        av格式:
+        :param str id: public id
+        :param bool is_nice: filter for HD and subtitled magnets
+        :param bool is_uncensored: filter for uncensored magnets
+        :param int magnet_max_count: max magnets after filtering (default 10)
+        :return Tuple[int, dict]: status code and AV dict
+
+        AV format:
         {
-            'id': '',       # 番号
-            'date': '',     # 发行日期
-            'title': '',    # 标题
-            'title_cn': '', # 中文标题
-            'img': '',      # 封面地址
-            'duration': '', # 时长(单位: 分钟)
-            'producer': '', # 片商
-            'publisher': '',# 发行商
-            'series': '',   # 系列
-            'score': '',   # 评分
-            'tags': [],     # 标签
-            'stars': [],    # 演员
-            'magnets': [],  # 磁链
-            'url': '',      # 地址
+            'id': '',       # public id
+            'date': '',     # release date
+            'title': '',    # title
+            'title_cn': '', # Chinese title
+            'img': '',      # cover url
+            'duration': '', # duration (minutes)
+            'producer': '', # producer
+            'publisher': '',# publisher
+            'series': '',   # series
+            'score': '',    # score
+            'tags': [],     # tags
+            'stars': [],    # actors
+            'magnets': [],  # magnets
+            'url': '',      # url
         }
-        磁链格式:
+
+        Magnet format:
         {
-            'link': '', # 链接
-            'size': '', # 大小
-            'hd': '0',  # 是否高清 0 否 | 1 是
-            'zm': '0',  # 是否有字幕 0 否 | 1 是
-            'uc': '0',  # 是否未经审查 0 否 | 1 是
-            'size_no_unit': 浮点值 # 去除单位后的大小值, 用于排序, 当要求过滤磁链时会存在该字段
+            'link': '', # link
+            'size': '', # size
+            'hd': '0',  # is HD 0 no | 1 yes
+            'zm': '0',  # has subtitles 0 no | 1 yes
+            'uc': '0',  # uncensored 0 no | 1 yes
+            'size_no_unit': float # size normalized (no unit) for sorting
         }
-        演员格式:
+
+        Actor format:
         {
-            'name': '', # 演员名称
-            'id': ''    # 演员编号
-            'sex': ''   # 演员性别
+            'name': '', # actor name
+            'id': '',   # actor id
+            'sex': ''   # actor sex
         }
         """
         code, j_id = self.get_javdb_id_by_id(id)
@@ -809,7 +791,7 @@ class JavDbUtil(BaseUtil):
 
 class JavLibUtil(BaseUtil):
     BASE_URL = "https://www.javlibrary.com"
-    # 排行榜最大页数
+    # max number of ranking pages
     MAX_RANK_PAGE = 25
 
     def __init__(
@@ -818,11 +800,11 @@ class JavLibUtil(BaseUtil):
         use_cache=True,
         base_url=BASE_URL,
     ):
-        """初始化
+        """Initialize JavLibUtil
 
-        :param str proxy_addr: 代理服务器地址, 默认为 ''
-        :param bool use_cache: 是否使用缓存, 默认为 True
-        :param str base_url: 基础地址, 默认为 BASE_URL
+        :param str proxy_addr: proxy address, defaults to ''
+        :param bool use_cache: whether to use cache, defaults to True
+        :param str base_url: base url, defaults to BASE_URL
         """
         super().__init__(proxy_addr, use_cache)
         self.base_url = base_url
@@ -862,7 +844,7 @@ class JavLibUtil(BaseUtil):
         self.base_url_search_av = self.base_url + "/cn/vl_searchbyid.php?keyword="
         # comment
         self.base_url_comment = self.base_url + "/cn/videocomments.php?v="
-        # review 最佳评论
+        # review (top reviews)
         self.base_url_review = self.base_url + "/cn/videoreviews.php?v="
 
     def get_headers(self):
@@ -874,11 +856,11 @@ class JavLibUtil(BaseUtil):
     def get_random_ids_from_rank_by_page(
         self, page: int, list_type: int
     ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
-        """从排行榜某页中获取该页番号列表
+        """Get IDs from a ranking page
 
-        :param int page: 第几页
-        :param int list_type: 排行榜类型 0 nice | 1 new
-        :return Tuple[int, list]: 状态码和番号列表
+        :param int page: page number
+        :param int list_type: ranking type 0 nice | 1 new
+        :return Tuple[int, list]: status code and list of IDs
         """
         url = None
         if list_type == 0:
@@ -897,16 +879,16 @@ class JavLibUtil(BaseUtil):
             else:
                 return 404, None
         except Exception as e:
-            self.log.error(f"JavLibUtil: 从排行榜某页中获取该页番号列表: {e}")
+            self.log.error(f"JavLibUtil: failed to get ids from rank page: {e}")
             return 404, None
 
     def get_random_id_from_rank(
         self, list_type: int
     ) -> Union[Tuple[Any, None], Tuple[int, Any]]:
-        """从排行榜中随机获取番号
+        """Get a random ID from ranking lists
 
-        :param int list_type: 排行榜类型 0 nice | 1 new
-        :return Tuple[int, str]: 状态码和番号
+        :param int list_type: ranking type 0 nice | 1 new
+        :return Tuple[int, str]: status code and ID
         """
         page = random.randint(1, self.MAX_RANK_PAGE)
         code, ids = self.get_random_ids_from_rank_by_page(
@@ -920,10 +902,10 @@ class JavLibUtil(BaseUtil):
     def get_comments_by_id(
         self, id: str
     ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
-        """根据番号获取评论 (最佳评论, 最多 5 条)
+        """Get top comments for a given ID (up to 5)
 
-        :param str id: 番号
-        :return Tuple[int, list]: 状态码和评论列表
+        :param str id: public id
+        :return Tuple[int, list]: status code and list of comments
         """
         url = self.base_url_search_av + id
         code, resp = self.send_req(url=url, headers=self.get_headers())
@@ -936,7 +918,7 @@ class JavLibUtil(BaseUtil):
                 video_href = videos[0].a["href"]
                 javlib_av_id = video_href[video_href.find("v=") + 2 :]
             except Exception as e:
-                self.log.error(f"JavLibUtil: 根据番号 {id} 获取评论失败: {e}")
+                self.log.error(f"JavLibUtil: failed to get comments for {id}: {e}")
                 return 404, None
         else:
             r_url = resp.url
@@ -955,7 +937,7 @@ class JavLibUtil(BaseUtil):
                 return 404, None
             return 200, comments[:5]
         except Exception as e:
-            self.log.error(f"JavLibUtil: 根据番号 {id} 获取评论失败: {e}")
+            self.log.error(f"JavLibUtil: failed to get comments by {id}: {e}")
             return 404, None
 
 
@@ -971,11 +953,11 @@ class DmmUtil(BaseUtil):
         use_cache=True,
         base_url=BASE_URL,
     ):
-        """初始化
+        """Initialize DMM utility
 
-        :param str proxy_addr: 代理服务器地址, 默认为 ''
-        :param bool use_cache: 是否使用缓存, 默认为 True
-        :param str base_url: 基础地址, 默认为 BASE_URL
+        :param str proxy_addr: proxy server address, defaults to ''
+        :param bool use_cache: whether to use cache, defaults to True
+        :param str base_url: base URL, defaults to BASE_URL
         """
         super().__init__(proxy_addr, use_cache)
         self.base_url = base_url
@@ -997,12 +979,12 @@ class DmmUtil(BaseUtil):
         return f"{id_pre}-{id_num}"
 
     def get_pv_by_id(self, id: str) -> Union[Tuple[int, None], Tuple[int, Any]]:
-        """根据番号从 DMM 获取预览视频地址
+        """Get preview video URL from DMM by public ID
 
-        :param str id: 番号
-        :return tuple[int, str]: 状态码和预览视频地址
+        :param str id: public id
+        :return tuple[int, str]: status code and preview video URL
         """
-        # 搜索番号
+        # search for id
         url = self.base_url_search_av + id
         code, resp = self.send_req(
             url=url,
@@ -1020,7 +1002,9 @@ class DmmUtil(BaseUtil):
             res = soup.find(class_="box-sampleplay")
             return 200, res.a["href"]
         except Exception as e:
-            self.log.error(f"DmmUtil: 根据番号 {id} 从 DMM 获取预览视频地址: {e}")
+            self.log.error(
+                f"DmmUtil: failed to get preview video from DMM for {id}: {e}"
+            )
             return 404, None
 
     def get_cid_from_link(self, lk: str) -> Union[None, str]:
@@ -1036,7 +1020,7 @@ class DmmUtil(BaseUtil):
         code, resp = self.send_req(
             url=url,
             headers={
-                "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
+                "user-agent": self.ua_desktop(),  # desktop pages are easier to scrape
             },
             cookies={
                 "age_check_done": "1",
@@ -1058,7 +1042,7 @@ class DmmUtil(BaseUtil):
                     pass
             return 200, cids
         except Exception as e:
-            self.log.error(f"DmmUtil: 根据 {url} 从 DMM 获取 cid 列表: {e}")
+            self.log.error(f"DmmUtil: failed to get cid list from {url}: {e}")
             return 404, None
 
     def get_cids_monthly(
@@ -1067,7 +1051,7 @@ class DmmUtil(BaseUtil):
         code, resp = self.send_req(
             url=url,
             headers={
-                "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
+                "user-agent": self.ua_desktop(),  # desktop pages are easier to scrape
             },
             cookies={
                 "age_check_done": "1",
@@ -1089,7 +1073,7 @@ class DmmUtil(BaseUtil):
                     pass
             return 200, cids
         except Exception as e:
-            self.log.error(f"DmmUtil: 根据 {url} 从 DMM 获取 cid 列表: {e}")
+            self.log.error(f"DmmUtil: failed to get cid list from {url}: {e}")
             return 404, None
 
     def get_cids_by_tag(self, tag: str) -> Tuple[int, list]:
@@ -1105,22 +1089,22 @@ class DmmUtil(BaseUtil):
         return self.get_cids_monthly(lk)
 
     def get_nice_avs_by_star_name(self, star_name: str) -> Tuple[int, any]:
-        """根据演员名字获取高分番号列表
+        """Get high-rated AVs by actor name
 
-        :param str star_name: 演员名字
-        :return Tuple[int, list]: 状态码和番号列表
-        番号列表单个对象结构:
+        :param str star_name: actor name
+        :return Tuple[int, list]: status code and list of AVs
+        Single item structure:
         {
-            'rate': rate, # 评分
-            'id': id # 番号
+            'rate': rate, # rating
+            'id': id # AV id
         }
         """
-        # 搜索演员
+        # search actor
         url = self.base_url_search_star + star_name + "%20単体"
         code, resp = self.send_req(
             url=url,
             headers={
-                "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
+                "user-agent": self.ua_desktop(),  # desktop pages are easier to scrape
             },
             cookies={
                 "age_check_done": "1",
@@ -1157,21 +1141,23 @@ class DmmUtil(BaseUtil):
                 return 404, None
             return 200, avs
         except Exception as e:
-            self.log.error(f"DmmUtil: 根据演员名字 {star_name} 获取高分番号列表: {e}")
+            self.log.error(
+                f"DmmUtil: failed to get nice avs by star name: {star_name}: {e}"
+            )
             return 404, None
 
     def get_score_by_id(self, id: str) -> Tuple[int, any]:
-        """根据番号返回评分
+        """Get score by public ID
 
-        :param str id: 番号
-        :return tuple[int, str]: 状态码和评分
+        :param str id: public id
+        :return tuple[int, str]: status code and score
         """
-        # 搜索番号
+        # search id
         url = self.base_url_search_av + id
         code, resp = self.send_req(
             url=url,
             headers={
-                "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
+                "user-agent": self.ua_desktop(),  # desktop pages are easier to scrape
             },
             cookies={
                 "age_check_done": "1",
@@ -1184,28 +1170,28 @@ class DmmUtil(BaseUtil):
             res = soup.find(class_="rate")
             return 200, res.span.span.text
         except Exception as e:
-            self.log.error(f"DmmUtil: 根据番号 {id}返回评分: {e}")
+            self.log.error(f"DmmUtil: failed to get scroe by {id}: {e}")
             return 404, None
 
     def get_nice_pv_by_src(self, src: str) -> str:
-        """根据普通 src 获取更清晰的 src
+        """Convert a regular src to a higher-quality src
 
-        :param str src
-        :return str: nice src
+        :param str src: original src
+        :return str: nicer src
         """
         return src.replace("_sm_", "_dmb_")
 
     def get_top_stars(self, page=1) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
-        """根据页数获取明星排行榜某页中的明星列表
+        """Get the list of stars from a ranking page by page
 
-        :param int page: 页数, 共 5 页, 每页 20 位, 共 100 位,  defaults to 1
-        :return tuple[int, list]: 状态码和明星列表
+        :param int page: page number (1-5). There are 5 pages, 20 per page, 100 total. defaults to 1
+        :return tuple[int, list]: status code and list of star names
         """
         url = self.base_url_top_stars + f"/page={page}/"
         code, resp = self.send_req(
             url=url,
             headers={
-                "user-agent": self.ua_desktop(),  # 桌面端页面更方便爬取
+                "user-agent": self.ua_desktop(),  # desktop pages are easier to scrape
             },
             cookies={
                 "age_check_done": "1",
@@ -1220,21 +1206,21 @@ class DmmUtil(BaseUtil):
                 return 404, None
             return 200, [obj.p.a.text for obj in res]
         except Exception as e:
-            self.log.error(f"DmmUtil: 获取明星排行榜第 {page} 页中的明星列表: {e}")
+            self.log.error(f"DmmUtil: fail to get top stars at page:{page}: {e}")
             return 404, None
 
     def get_all_top_stars(self) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
-        """获取 DMM 排行榜前 100 名女优
+        """Get top 100 actresses from DMM ranking
 
-        :return tuple[int, list]: 状态码和女优名称列表
+        :return tuple[int, list]: status code and list of actress names
         """
         with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
-            # 爬取第一到第五页数据
+            # crawl pages 1 to 5
             futures = {
                 executor.submit(self.get_top_stars, page): page for page in range(1, 6)
             }
             results = {}
-            # 等待并获取数据
+            # wait and collect results
             for future in concurrent.futures.as_completed(futures):
                 code, res = future.result()
                 if code != 200:
@@ -1283,14 +1269,14 @@ class JavBusUtil(BaseUtil):
         max_new_avs_count=8,
         base_url=BASE_URL,
     ):
-        """初始化
+        """Initialize JavBus utility
 
-        :param str proxy_addr: 代理服务器地址, 默认为 ''
-        :param bool use_cache: 是否使用缓存
-        :param int max_home_page_count: 主页最大爬取页数, 默认为 100 页
-        :param int max_new_avs_count: 获取最新 AV 数量, 默认为 8 部
-        :param str bus_auth: cookie 需要用到的值, 默认为空串
-        :param str base_url: 基础地址, 默认为 BASE_URL
+        :param str proxy_addr: proxy server address, defaults to ''
+        :param bool use_cache: whether to use cache
+        :param int max_home_page_count: maximum pages to crawl on homepage, defaults to 100
+        :param int max_new_avs_count: number of newest AVs to fetch, defaults to 8
+        :param str bus_auth: cookie value required for requests, defaults to empty string
+        :param str base_url: base URL, defaults to BASE_URL
         """
         super().__init__(proxy_addr, use_cache)
         self.max_home_page_count = max_home_page_count
@@ -1306,9 +1292,9 @@ class JavBusUtil(BaseUtil):
     def get_all_genres(
         self,
     ) -> Union[Tuple[int, None], Tuple[int, List[Dict[Any, Any]]]]:
-        """获取所有类别
+        """Get all genres
 
-        :return Tuple[int, list]: 状态码和类别列表
+        :return Tuple[int, list]: status code and list of genres
         """
         code, resp = self.send_req(url=self.base_url_genre, headers=self.get_headers())
         if code != 200:
@@ -1325,30 +1311,30 @@ class JavBusUtil(BaseUtil):
                 return 404, None
             return 200, genres
         except Exception as e:
-            self.log.error(f"JavBusUtil: 获取所有标签失败: {e}")
+            self.log.error(f"JavBusUtil: failed to get all genres: {e}")
             return 404, None
 
     def get_id_by_genre_id(self, genre: str) -> Tuple[int, str]:
-        """通过类别编号获取一个番号
+        """Get an ID by genre id
 
-        :param str genre: 类别编号
-        :return Tuple[int, str]: 状态码和番号
+        :param str genre: genre id
+        :return Tuple[int, str]: status code and id
         """
         return self.get_id_from_page(base_page_url=f"{self.base_url_genre}/{genre}")
 
     def get_id_by_genre_name(self, genre: str) -> Tuple[int, str]:
-        """通过类别编号获取一个番号
+        """Get an ID by genre name
 
-        :param str genre: 类别名称
-        :return Tuple[int, str]: 状态码和番号
+        :param str genre: genre name
+        :return Tuple[int, str]: status code and id
         """
         return self.get_id_from_page(base_page_url=f"{self.base_url_genre}/{genre}")
 
     def get_max_page(self, url: str) -> Union[Tuple[int, None], Tuple[int, int]]:
-        """获取最大页数(只适用于不超过 10 页的页面)
+        """Get the maximum page number (only for pages <= 10)
 
-        :param str url: 页面地址
-        :return tuple[int, int]: 状态码和最大页数
+        :param str url: page url
+        :return tuple[int, int]: status code and max page number
         """
         code, resp = self.send_req(url, headers=self.get_headers())
         if code != 200:
@@ -1356,23 +1342,23 @@ class JavBusUtil(BaseUtil):
         try:
             soup = self.get_soup(resp)
             tag_pagination = soup.find(class_="pagination pagination-lg")
-            # 如果没有分页块则只有第一页
+            # if no pagination block, there is only the first page
             if not tag_pagination:
                 return 200, 1
             tags_li = tag_pagination.find_all("li")
             return 200, int(tags_li[len(tags_li) - 2].a.text)
         except Exception as e:
-            self.log.error(f"JavBusUtil: 从 {url} 获取最大页数: {e}")
+            self.log.error(f"JavBusUtil: failed to get max page from {url}: {e}")
             return 404, None
 
     def get_ids_from_page(
         self, base_page_url: str, page=1
     ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
-        """从 av 列表页面获取该页面全部番号
+        """Get all IDs from an AV list page
 
-        :param str base_page: 基础页地址, 也是第一页地址
-        :param int page: 用于指定爬取哪一页的数据, 默认值为 1, 表示获取第一页
-        :return tuple[int, str]: 状态码和番号列表
+        :param str base_page: base page url (first page)
+        :param int page: which page to fetch; defaults to 1
+        :return tuple[int, list]: status code and list of IDs
         """
         if page != -1:
             url = f"{base_page_url}/{page}"
@@ -1397,18 +1383,18 @@ class JavBusUtil(BaseUtil):
             return 200, ids
         except Exception as e:
             self.log.error(
-                f"JavBusUtil: 从 av 列表页面 {base_page_url} 获取该页面全部番号: {e}"
+                f"JavBusUtil: failed to get ids from av list page {base_page_url}: {e}"
             )
             return 404, None
 
     def get_id_from_page(
         self, base_page_url: str, page=-1
     ) -> Union[Tuple[int, None], Tuple[int, Any]]:
-        """从 av 列表页面获取一个番号
+        """Get a single ID from an AV list page
 
-        :param str base_page: 基础页地址, 也是第一页地址
-        :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
-        :return tuple[int, str]: 状态码和番号
+        :param str base_page: base page url (first page)
+        :param int page: which page to fetch; -1 means random
+        :return tuple[int, str]: status code and ID
         """
         code, ids = self.get_ids_from_page(base_page_url, page)
         if code != 200:
@@ -1416,21 +1402,21 @@ class JavBusUtil(BaseUtil):
         return 200, random.choice(ids)
 
     def get_id_from_home(self, page=-1) -> Tuple[int, str]:
-        """从 javbus 主页获取一个番号
+        """Get an ID from the javbus homepage
 
-        :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
-        :return tuple[int, str]: 状态码和番号
+        :param int page: which page to fetch; -1 means random
+        :return tuple[int, str]: status code and ID
         """
         if page == -1:
             page = random.randint(1, self.max_home_page_count)
         return self.get_id_from_page(base_page_url=self.base_url + "/page", page=page)
 
     def get_id_by_star_name(self, star_name: str, page=-1) -> Tuple[int, str]:
-        """根据演员名称获取一个番号
+        """Get an ID by actor name
 
-        :param str star_name: 演员名称
-        :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
-        :return tuple[int, str]: 状态码和番号
+        :param str star_name: actor name
+        :param int page: which page to fetch; -1 means random
+        :return tuple[int, str]: status code and ID
         """
         return self.get_id_from_page(
             base_page_url=f"{self.base_url_search_by_star_name}/{star_name}",
@@ -1438,11 +1424,11 @@ class JavBusUtil(BaseUtil):
         )
 
     def get_ids_by_star_name(self, star_name: str, page=-1) -> Tuple[int, list]:
-        """根据演员名称获取一批番号
+        """Get a list of IDs by actor name
 
-        :param str star_name: 演员名称
-        :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
-        :return tuple[int, list]: 状态码和番号
+        :param str star_name: actor name
+        :param int page: which page to fetch; -1 means random
+        :return tuple[int, list]: status code and list of IDs
         """
         return self.get_ids_from_page(
             base_page_url=f"{self.base_url_search_by_star_name}/{star_name}",
@@ -1452,10 +1438,10 @@ class JavBusUtil(BaseUtil):
     def get_new_ids_by_star_name(
         self, star_name: str
     ) -> Union[Tuple[int, None], Tuple[int, Any]]:
-        """根据演员名字获取最新番号列表
+        """Get newest IDs for an actor by name
 
-        :param str star_name: 演员名称
-        :return Tuple[int, list]: 状态码和番号列表
+        :param str star_name: actor name
+        :return Tuple[int, list]: status code and list of latest IDs
         """
         code, ids = self.get_ids_from_page(
             base_page_url=f"{self.base_url_search_by_star_name}/{star_name}",
@@ -1466,11 +1452,11 @@ class JavBusUtil(BaseUtil):
         return 200, ids[: self.max_new_avs_count]
 
     def get_id_by_star_id(self, star_id: str, page=-1) -> Tuple[int, str]:
-        """根据演员编号获取一个番号
+        """Get an ID by actor id
 
-        :param str star_id: 演员编号
-        :param int page: 用于指定爬取哪一页的数据, 默认值为 -1, 表示随机获取某一页
-        :return tuple[int, str]: 状态码和番号
+        :param str star_id: actor id
+        :param int page: which page to fetch; -1 means random
+        :return tuple[int, str]: status code and ID
         """
         return self.get_id_from_page(
             base_page_url=f"{self.base_url_search_by_star_id}/{star_id}",
@@ -1480,10 +1466,10 @@ class JavBusUtil(BaseUtil):
     def get_new_ids_by_star_id(
         self, star_id: str
     ) -> Union[Tuple[int, None], Tuple[int, list]]:
-        """根据演员编号获取最新番号
+        """Get newest IDs by actor id
 
-        :param str star_id: 演员编号
-        :return tuple[int, list]: 状态码和番号列表
+        :param str star_id: actor id
+        :return tuple[int, list]: status code and list of latest IDs
         """
         code, ids = self.get_ids_from_page(
             base_page_url=f"{self.base_url_search_by_star_id}/{star_id}", page=1
@@ -1495,10 +1481,10 @@ class JavBusUtil(BaseUtil):
     def get_samples_by_id(
         self, id: str
     ) -> Union[Tuple[int, None], Tuple[int, List[Union[str, Any]]]]:
-        """根据番号获取截图
+        """Get sample images by public ID
 
-        :param str id: 番号
-        :return tuple[int, list]: 状态码和截图列表
+        :param str id: public id
+        :return tuple[int, list]: status code and list of sample image URLs
         """
         samples = []
         url = f"{self.base_url}/{id}"
@@ -1517,17 +1503,17 @@ class JavBusUtil(BaseUtil):
                 return 404, None
             return 200, samples
         except Exception as e:
-            self.log.error(f"JavBusUtil: 根据番号 {id} 获取截图: {e}")
+            self.log.error(f"JavBusUtil: failed to get samples for {id}: {e}")
             return 404, None
 
     def check_star_exists(
         self, star_name: str
     ) -> Union[Tuple[int, None], Tuple[int, Dict[str, Union[str, Any]]]]:
-        """根据演员名称确认该演员在 javbus 是否存在, 如果存在则返回演员 id 和演员名称
+        """Check whether an actor exists on javbus; return id and name if exists
 
-        :param str star_name: 演员名称
-        :return tuple[int, dict]: 状态码, 演员 id 和演员名称
-        dict 格式:
+        :param str star_name: actor name
+        :return tuple[int, dict]: status code and dict with actor id and name
+        dict format:
         {
             "star_id": star_id,
             "star_name": star_name
@@ -1547,17 +1533,17 @@ class JavBusUtil(BaseUtil):
             return 200, {"star_id": star_id, "star_name": res_star_name}
         except Exception as e:
             self.log.error(
-                f"JavBusUtil: 根据演员名称 {star_name} 确认该演员在 javbus 是否存在: {e}"
+                f"JavBusUtil: failed to confirm actor {star_name} existence on javbus: {e}"
             )
             return 404, None
 
     def fuzzy_search_stars(
         self, text
     ) -> Union[Tuple[int, None], Tuple[int, List[Any]]]:
-        """模糊搜索演员
+        """Fuzzy search actors by name
 
-        :param str text: 演员名称
-        :return Tuple[int, list]: 状态码和演员列表
+        :param str text: actor name
+        :return Tuple[int, list]: status code and list of actor names
         """
         code, resp = self.send_req(
             url=f"{self.base_url_search_star}/{text}", headers=self.get_headers()
@@ -1573,7 +1559,7 @@ class JavBusUtil(BaseUtil):
             names = list(set(names))
             return 200, names
         except Exception as e:
-            self.log.error(f"JavDbUtil: 模糊搜索演员: {e}")
+            self.log.error(f"JavDbUtil: fuzzy search for actors failed: {e}")
             return 404, None
 
     def get_av_by_id(
@@ -1583,40 +1569,43 @@ class JavBusUtil(BaseUtil):
         is_uncensored: bool,
         magnet_max_count=10,
     ) -> Tuple[int, any]:
-        """通过 javbus 获取番号对应 av
+        """Get AV info from javbus by public ID
 
-        :param str id: 番号
-        :param bool is_nice: 是否过滤出高清, 有字幕磁链
-        :param bool is_uncensored: 是否过滤出无码磁链
-        :param int magnet_max_count: 过滤后磁链的最大数目, 默认为 10
-        :return tuple[int, dict]: 状态码和 av
-        av格式:
+        :param str id: public id
+        :param bool is_nice: filter for HD and subtitled magnets
+        :param bool is_uncensored: filter for uncensored magnets
+        :param int magnet_max_count: max magnets after filtering (default 10)
+        :return tuple[int, dict]: status code and AV dict
+
+        AV format:
         {
-            'id': '',      # 番号
-            'title': '',   # 标题
-            'img': '',     # 封面地址
-            'date': '',    # 发行日期
-            'tags': [],    # 标签
-            'stars': [],   # 演员
-            'magnets': [], # 磁链
-            'url': '',     # 地址
+            'id': '',      # public id
+            'title': '',   # title
+            'img': '',     # cover url
+            'date': '',    # release date
+            'tags': [],    # tags
+            'stars': [],   # actors
+            'magnets': [], # magnets
+            'url': '',     # url
         }
-        磁链格式:
+
+        Magnet format:
         {
-            'link': '', # 链接
-            'size': '', # 大小
-            'hd': '0',  # 是否高清 0 否 | 1 是
-            'zm': '0',  # 是否有字幕 0 否 | 1 是
-            'uc': '0',  # 是否未经审查 0 否 | 1 是
-            'size_no_unit': 浮点值 # 去除单位后的大小值, 用于排序, 当要求过滤磁链时会存在该字段
+            'link': '', # link
+            'size': '', # size
+            'hd': '0',  # is HD 0 no | 1 yes
+            'zm': '0',  # has subtitles 0 no | 1 yes
+            'uc': '0',  # uncensored 0 no | 1 yes
+            'size_no_unit': float # normalized size for sorting
         }
-        演员格式:
+
+        Actor format:
         {
-            'name': '', # 演员名称
-            'id': ''    # 演员编号
+            'name': '', # actor name
+            'id': ''    # actor id
         }
         """
-        id = id.lower()  # 部分番号要小写才能在 javbus 查找成功
+        id = id.lower()  # some IDs must be lowercase to be found on javbus
         av = {
             "id": id,
             "title": "",
@@ -1635,7 +1624,7 @@ class JavBusUtil(BaseUtil):
         soup = self.get_soup(resp)
         html = soup.prettify()
         try:
-            # 获取封面和标题
+            # get cover and title
             big_image = soup.find(class_="bigImage")
             img = None
             if big_image:
@@ -1645,21 +1634,21 @@ class JavBusUtil(BaseUtil):
                     av["title"] = big_image.img["title"]
             paras = soup.find(class_="col-md-3 info").find_all("p")
             for i, p in enumerate(paras):
-                # 获取識別碼
+                # get identifier
                 if p.text.find("識別碼:") != -1:
                     av["id"] = "".join(
                         p.text.replace("識別碼:", "").replace('"', "").split()
                     )
-                # 获取发行日期
+                # get release date
                 elif p.text.find("發行日期:") != -1:
                     av["date"] = "".join(
                         p.text.replace("發行日期:", "").replace('"', "").split()
                     )
-                # 获取标签
+                # get tags
                 elif p.text.find("類別:") != -1:
                     tags = paras[i + 1].find_all("a")
                     av["tags"] = ["".join(tag.text.split()) for tag in tags]
-                # 获取演员
+                # get actors
                 elif i == len(paras) - 1:
                     tags = p.find_all("a")
                     for tag in tags:
@@ -1668,34 +1657,34 @@ class JavBusUtil(BaseUtil):
                         star["id"] = tag["href"].split("star/")[1]
                         av["stars"].append(star)
         except Exception as e:
-            self.log.error(f"JavBusUtil: 通过 javbus 获取番号 {id} 对应 av: {e}")
-        # 获取uc
+            self.log.error(f"JavBusUtil: failed to get av {id}: {e}")
+        # get uc
         uc_pattern = re.compile(r"var uc = .+;")
         match = uc_pattern.findall(html)
         uc = None
         if match:
             uc = match[0].replace("var uc = ", "").replace(";", "")
-        # 获取gid
+        # get gid
         gid_pattern = re.compile(r"var gid = .+;")
         match = gid_pattern.findall(html)
         gid = None
         if match:
             gid = match[0].replace("var gid = ", "").replace(";", "")
-        # 如果不存在磁链则直接返回
+        # if there are no magnets, return immediately
         if not uc and not gid:
             return 200, av
-        # 得到磁链的ajax请求地址
+        # construct ajax URL to retrieve magnets
         url = f"{self.base_url_magnet}&gid={gid}&uc={uc}"
         headers = {
             "user-agent": self.ua(),
             "referer": f"{self.base_url}/{id}",
         }
-        # 发送请求获取含磁链页
+        # send request to obtain page that contains magnets
         code, resp = self.send_req(url=url, headers=headers)
-        # 如果不存在磁链或请求失败则直接返回
+        # if no magnets or request failed, return
         if code != 200:
             return 200, av
-        # 解析页面获取磁链
+        # parse page to extract magnets
         try:
             soup = self.get_soup(resp)
             trs = soup.find_all("tr")
@@ -1732,15 +1721,15 @@ class JavBusUtil(BaseUtil):
                 magnets = av["magnets"]
                 magnets = MagnetUtil.get_nice_magnets(
                     magnets, "hd", expect_val="1"
-                )  # 过滤高清
+                )  # filter HD
                 magnets = MagnetUtil.get_nice_magnets(
                     magnets, "zm", expect_val="1"
-                )  # 过滤有字幕
-                magnets = MagnetUtil.sort_magnets(magnets)  # 从大到小排序
+                )  # filter subtitles
+                magnets = MagnetUtil.sort_magnets(magnets)  # sort by size descending
                 magnets = magnets[0:magnet_max_count]
                 av["magnets"] = magnets
         except Exception as e:
-            self.log.error(f"JavBusUtil: 通过 javbus 获取番号 {id} 对应 av: {e}")
+            self.log.error(f"JavBusUtil: failed to get av {id}: {e}")
         return 200, av
 
 
@@ -1753,23 +1742,24 @@ class AvgleUtil(BaseUtil):
         use_cache=True,
         base_url=BASE_URL,
     ):
-        """初始化
+        """Initialize Avgle utility
 
-        :param str proxy_addr: 代理服务器地址, 默认为 ''
-        :param bool use_cache: 是否使用缓存, 默认为 True
-        :param str base_url: 基础地址, 默认为 BASE_URL
+        :param str proxy_addr: proxy server address, defaults to ''
+        :param bool use_cache: whether to use cache, defaults to True
+        :param str base_url: base URL, defaults to BASE_URL
         """
         super().__init__(proxy_addr, use_cache)
         self.base_url = base_url
 
     def get_video_by_id(self, id: str) -> Tuple[int, any]:
-        """根据番号从 avgle 获取视频
-        :param str id: 番号
-        :return tuple[int, dict]: 状态码, 视频链接
-        视频链接：
+        """Get video links from Avgle by public ID
+
+        :param str id: public id
+        :return tuple[int, dict]: status code and video links
+        Video links format:
         {
-            'fv': '', # 完整视频链接
-            'pv': ''  # 预览视频链接
+            'fv': '', # full video link
+            'pv': ''  # preview video link
         }
         """
         page = 0
@@ -1794,9 +1784,10 @@ class AvgleUtil(BaseUtil):
             return 404, None
 
     def get_pv_by_id(self, id: str) -> Union[Tuple[int, None], Tuple[int, str]]:
-        """根据番号从 avgle 获取预览视频
-        :param str id: 番号
-        :return tuple[int, str]: 状态码, 预览视频链接
+        """Get preview video from Avgle by public ID
+
+        :param str id: public id
+        :return tuple[int, str]: status code and preview video link
         """
         code, res = self.get_video_by_id(id)
         if code != 200:
@@ -1807,9 +1798,10 @@ class AvgleUtil(BaseUtil):
             return 404, None
 
     def get_fv_by_id(self, id: str) -> Union[Tuple[int, None], Tuple[int, str]]:
-        """根据番号从 avgle 获取完整视频
-        :param str id: 番号
-        :return tuple[int, str]: 状态码, 完整视频链接
+        """Get full video from Avgle by public ID
+
+        :param str id: public id
+        :return tuple[int, str]: status code and full video link
         """
         code, res = self.get_video_by_id(id)
         if code != 200:
@@ -1823,14 +1815,14 @@ class AvgleUtil(BaseUtil):
 class MagnetUtil:
     @staticmethod
     def get_nice_magnets(magnets: list, prop: str, expect_val: any) -> list:
-        """过滤磁链列表
+        """Filter magnet list by property
 
-        :param list magnets: 要过滤的磁链列表
-        :param str prop: 过滤属性
-        :param any expect_val: 过滤属性的期望值
-        :return list: 过滤后的磁链列表
+        :param list magnets: list of magnets to filter
+        :param str prop: property to filter on
+        :param any expect_val: expected value of the property
+        :return list: filtered list of magnets
         """
-        # 已经无法再过滤
+        # cannot filter further
         if len(magnets) == 0:
             return []
         if len(magnets) == 1:
@@ -1839,30 +1831,29 @@ class MagnetUtil:
         for magnet in magnets:
             if magnet[prop] == expect_val:
                 magnets_nice.append(magnet)
-        # 如果过滤后已经没了, 返回原来磁链列表
+        # if filtering removed all, return the original list
         if len(magnets_nice) == 0:
             return magnets
         return magnets_nice
 
     @staticmethod
     def sort_magnets(magnets: list) -> list:
-        """根据大小排列磁链列表
+        """Sort magnet list by size
 
-        :param list magnets: 磁链列表
-        :return list: 排列好的磁链列表
+        :param list magnets: list of magnets
+        :return list: sorted list of magnets
         """
-        # 统一单位为 MB
+        # normalize units to MB
         for magnet in magnets:
             magnet["size_no_unit"] = -1
             size = magnet["size"].lower().replace("gib", "gb").replace("mib", "mb")
             gb_idx = size.find("gb")
             mb_idx = size.find("mb")
-            if gb_idx != -1:  # 单位为 GB
+            if gb_idx != -1:  # unit is GB
                 magnet["size_no_unit"] = float(size[:gb_idx]) * 1024
-            elif mb_idx != -1:  # 单位为 MB
+            elif mb_idx != -1:  # unit is MB
                 magnet["size_no_unit"] = float(size[:mb_idx])
-        # magnets = list(filter(lambda m: m["size_no_unit"] != -1, magnets))
-        # 根据 size_no_unit 大小排序
+        # sort by size_no_unit descending
         magnets = sorted(magnets, key=lambda m: m["size_no_unit"], reverse=True)
         return magnets
 
@@ -1876,11 +1867,11 @@ class SukebeiUtil(BaseUtil):
         use_cache=True,
         base_url=BASE_URL,
     ):
-        """初始化
+        """Initialize Sukebei utility
 
-        :param str proxy_addr: 代理服务器地址, 默认为 ''
-        :param bool use_cache: 是否使用缓存, 默认为 True
-        :param str base_url: 基础地址, 默认为 BASE_URL
+        :param str proxy_addr: proxy server address, defaults to ''
+        :param bool use_cache: whether to use cache, defaults to True
+        :param str base_url: base URL, defaults to BASE_URL
         """
         super().__init__(proxy_addr, use_cache)
         self.base_url = base_url
@@ -1892,37 +1883,40 @@ class SukebeiUtil(BaseUtil):
         is_uncensored: bool,
         magnet_max_count=10,
     ) -> Tuple[int, any]:
-        """通过 sukebei 获取番号对应 av
+        """Fetch AV information from Sukebei by public ID
 
-        :param str id: 番号
-        :param bool is_nice: 是否过滤出高清, 有字幕磁链
-        :param bool is_uncensored: 是否过滤出无码磁链
-        :param int magnet_max_count: 过滤后磁链的最大数目, 默认为 10
-        :return tuple[int, dict]: 状态码和 av
-        av格式:
+        :param str id: public id
+        :param bool is_nice: whether to filter for HD and subtitled magnets
+        :param bool is_uncensored: whether to filter for uncensored magnets
+        :param int magnet_max_count: max number of magnets after filtering, defaults to 10
+        :return tuple[int, dict]: status code and AV dict
+
+        AV format:
         {
-            'id': '',      # 番号
-            'title': '',   # 标题
-            'img': '',     # 封面地址 | sukebei 不支持
-            'date': '',    # 发行日期 | sukebei 不支持
-            'tags': [],    # 标签 | sukebei 不支持
-            'stars': [],   # 演员 | sukebei 不支持
-            'magnets': [], # 磁链
-            'url': '',     # 地址
+            'id': '',      # public id
+            'title': '',   # title
+            'img': '',     # cover URL | sukebei does not support
+            'date': '',    # release date | sukebei does not support
+            'tags': [],    # tags | sukebei does not support
+            'stars': [],   # actors | sukebei does not support
+            'magnets': [], # magnets
+            'url': '',     # url
         }
-        磁链格式:
+
+        Magnet format:
         {
-            'link': '', # 链接
-            'size': '', # 大小
-            'hd': '0',  # 是否高清 0 否 | 1 是 | sukebei 不支持
-            'zm': '0',  # 是否有字幕 0 否 | 1 是 | sukebei 不支持
-            'uc': '0',  # 是否未经审查 0 否 | 1 是
-            'size_no_unit': 浮点值 # 去除单位后的大小值, 用于排序, 当要求过滤磁链时会存在该字段
+            'link': '', # link
+            'size': '', # size
+            'hd': '0',  # is HD 0 no | 1 yes | sukebei does not support
+            'zm': '0',  # has subtitles 0 no | 1 yes | sukebei does not support
+            'uc': '0',  # uncensored 0 no | 1 yes
+            'size_no_unit': float # normalized size without unit, used for sorting; present when filtering
         }
-        演员格式: | sukebei 不支持
+
+        Actor format: | sukebei does not support
         {
-            'name': '', # 演员名称
-            'id': ''    # 演员编号
+            'name': '', # actor name
+            'id': ''    # actor id
         }
         """
         av = {
@@ -1938,7 +1932,7 @@ class SukebeiUtil(BaseUtil):
         qid = id.lower()
         if qid.find("fc2") != -1:
             qid = qid.replace("-", " ")
-        # 查找av
+        # search for av
         url = f"{self.base_url}?q={qid}"
         code, resp = self.send_req(url=url)
         if code != 200:
@@ -1951,14 +1945,14 @@ class SukebeiUtil(BaseUtil):
             for i, tr in enumerate(trs):
                 tds = tr.find_all("td")
                 magnet = {
-                    "link": "",  # 链接
-                    "size": "",  # 大小
-                    "hd": "0",  # 是否高清 0 否 | 1 是
-                    "zm": "0",  # 是否有字幕 0 否 | 1 是
-                    "uc": "0",  # 是否未经审查 0 否 | 1 是
+                    "link": "",  # link
+                    "size": "",  # size
+                    "hd": "0",  # is HD 0 no | 1 yes
+                    "zm": "0",  # has subtitles 0 no | 1 yes
+                    "uc": "0",  # uncensored 0 no | 1 yes
                 }
                 for j, td in enumerate(tds):
-                    if j == 1:  # 获取标题
+                    if j == 1:  # get title
                         title = td.a.text
                         if (
                             "uncensor" in title
@@ -1969,12 +1963,12 @@ class SukebeiUtil(BaseUtil):
                             magnet["uc"] = "1"
                         if i == 0:
                             av["title"] = title
-                    if j == 2:  # 获取磁链
+                    if j == 2:  # get magnet link
                         magnet["link"] = td.find_all("a")[-1]["href"]
-                    if j == 3:  # 获取大小
+                    if j == 3:  # get size
                         magnet["size"] = td.text
                 av["magnets"].append(magnet)
-            # 过滤番号
+            # filter magnets
             if is_uncensored:
                 av["magnets"] = MagnetUtil.get_nice_magnets(
                     av["magnets"], "uc", expect_val="1"
@@ -1986,16 +1980,16 @@ class SukebeiUtil(BaseUtil):
                 av["magnets"] = magnets
 
         except Exception as e:
-            self.log.error(f"SukebeiUtil: 通过 sukebei 获取番号 {id} 对应 av: {e}")
+            self.log.error(f"SukebeiUtil: failed to get av {id}: {e}")
             return 404, None
         return 200, av
 
     def search_av_by_tag(self, tag: str) -> Tuple[int, any]:
-        """根据关键字搜索影片
+        """Search videos by keyword
 
-        :param str tag: 关键字
-        :return Tuple[int, list]: 状态码和影片列表
-        影片列表单位结构:
+        :param str tag: keyword
+        :return Tuple[int, list]: status code and list of videos
+        Video item format:
         {
             "title": "",
             "loc": "", # /view/{num}
@@ -2023,15 +2017,15 @@ class SukebeiUtil(BaseUtil):
                 return 404, None
             return 200, avs
         except Exception as e:
-            self.log.error(f"SukebeiUtil: 根据关键字{tag}搜索影片: {e}")
+            self.log.error(f"SukebeiUtil: search av by {tag}: {e}")
             return 404, None
 
     def get_av_by_url(self, url: str) -> Tuple[int, any]:
-        """根据地址获取 av
+        """Get AV by URL
 
-        :param str url: 地址
-        :return Tuple[int, dict]: 状态码和资源
-        资源结构:
+        :param str url: URL
+        :return Tuple[int, dict]: status code and resource
+        Resource format:
         {
             "url": "",
             "title": "",
@@ -2057,7 +2051,7 @@ class SukebeiUtil(BaseUtil):
             av["img"] = [img for img in imgs]
             return 200, av
         except Exception as e:
-            self.log.error(f"SukebeiUtil: 根据地址 {url} 获取 av: {e}")
+            self.log.error(f"SukebeiUtil: get av by {url}: {e}")
             return 404, None
 
 
@@ -2069,16 +2063,19 @@ class WikiUtil(BaseUtil):
     def get_wiki_page_by_lang(
         self, topic: str, from_lang: str, to_lang: str
     ) -> Union[dict, None]:
-        """根据搜索词和原来语言码返回指定语言维基页, 如果搜索不到结果则返回空, 如果搜索到结果但找不到指定语言维基页则返回原页
+        """Return a Wikipedia page in the requested language given a topic and source language.
 
-        :param str topic: 搜索词
-        :param str from_lang: 原来语言码
-        :param str to_lang: 目标语言码
-        :return dict: 结果集
+        If no page is found, return None. If a page is found but the requested language is not available,
+        return the original page info.
+
+        :param str topic: search topic
+        :param str from_lang: source language code
+        :param str to_lang: target language code
+        :return dict: result with keys:
         {
-            'title': '', # 标题
-            'url': '', # 地址
-            'lang': '' # 语言码
+            'title': '', # title
+            'url': '',   # URL
+            'lang': ''   # language code
         }
         """
         try:
@@ -2100,23 +2097,23 @@ class WikiUtil(BaseUtil):
                 return {"title": page.title, "url": page.fullurl, "lang": from_lang}
         except Exception as e:
             self.log.error(
-                f"WikiUtil: 根据搜索词 {topic} 和原来语言码 {from_lang} 返回指定语言 {to_lang} 维基页: {e}"
+                f"WikiUtil: get wiki page by {topic} - {from_lang} - {to_lang}: {e}"
             )
             return None
 
 
 class TransUtil(BaseUtil):
     def trans(self, text: str, from_lang="auto", to_lang="zh-CN") -> str:
-        """翻译
+        """Translate text using GoogleTranslator
 
-        :param str text: 要翻译的文本
-        :param str from_lang: 原文语言码, defaults to 'auto'
-        :param str to_lang: 目标语言码, defaults to 'zh-CN'
-        :return str: 翻译结果，如果失败则为 None
+        :param str text: text to translate
+        :param str from_lang: source language code, defaults to 'auto'
+        :param str to_lang: target language code, defaults to 'zh-CN'
+        :return str: translated text; returns None on failure
         """
         try:
             return GoogleTranslator(
                 source=from_lang, target=to_lang, proxies=self.proxy_json
             ).translate(text)
         except Exception as e:
-            self.log.error(f"TransUtil: 翻译: {e}")
+            self.log.error(f"TransUtil: {e}")

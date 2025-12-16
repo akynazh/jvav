@@ -6,11 +6,6 @@ PROXY_ADDR = ""
 
 
 def assert_code(code: int, res):
-    """确认状态码是否为 200, 如果是则打印结果
-
-    :param int code: 状态码
-    :param any res: 结果
-    """
     assert code == 200, f"code={code}"
     print(res)
 
@@ -299,26 +294,26 @@ class MagnetUtilTest(unittest.TestCase):
     util = jvav.MagnetUtil()
     magnets = [
         {
-            "link": "#",  # 链接
-            "size": "1.2GB",  # 大小
-            "hd": "1",  # 是否高清 0 否 | 1 是
-            "zm": "0",  # 是否有字幕 0 否 | 1 是
-            "uc": "1",  # 是否未经审查 0 否 | 1 是
+            "link": "#",
+            "size": "1.2GB",
+            "hd": "1",
+            "zm": "0",
+            "uc": "1",
         },
         {
-            "link": "#",  # 链接
-            "size": "998MB",  # 大小
-            "hd": "0",  # 是否高清 0 否 | 1 是
-            "zm": "0",  # 是否有字幕 0 否 | 1 是
-            "uc": "1",  # 是否未经审查 0 否 | 1 是
+            "link": "#",
+            "size": "998MB",
+            "hd": "0",
+            "zm": "0",
+            "uc": "1",
         },
         {
-            "link": "#",  # 链接
-            "size": "3.2GiB",  # 大小
-            "hd": "0",  # 是否高清 0 否 | 1 是
-            "zm": "0",  # 是否有字幕 0 否 | 1 是
-            "uc": "1",  # 是否未经审查 0 否 | 1 是
-            "size_no_unit": 1055.324,  # 去除单位后的大小值, 用于排序, 当要求过滤磁链时会存在该字段
+            "link": "#",
+            "size": "3.2GiB",
+            "hd": "0",
+            "zm": "0",
+            "uc": "1",
+            "size_no_unit": 1055.324,
         },
     ]
 

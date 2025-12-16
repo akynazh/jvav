@@ -14,11 +14,6 @@ if not os.path.exists(PATH_ROOT):
 
 class Logger:
     def __init__(self, log_level: int, path_log_file: str):
-        """初始化日志记录器
-
-        :param int log_level: 记录级别
-        :param str path_log_file: 日志文件位置
-        """
         self.logger = logging.getLogger()
         self.logger.addHandler(self.get_file_handler(path_log_file))
         self.logger.addHandler(logging.StreamHandler(sys.stdout))
@@ -128,23 +123,16 @@ class JvavArgsParser:
         self.args = None
 
     def handle_code(self, code: int, res):
-        """处理结果
-
-        :param int code: 状态码
-        :param any res: 结果
-        """
         if code != 200:
             LOG.error(code)
             return
         LOG.info(json.dumps(res, indent=4, ensure_ascii=False))
 
     def parse(self):
-        """解析命令行参数"""
         parser = self.parser
         self.args = parser.parse_args()
 
     def exec(self):
-        """根据参数表自行相应操作"""
         if not self.args:
             self.parser.print_help()
             return
@@ -156,9 +144,6 @@ class JvavArgsParser:
         if args.proxy == "" and env_proxy:
             args.proxy = env_proxy
         if args.av1 != "":
-            # if args.auth == "":
-            #     print("Please specify the authentication code for JavBus by '-auth', get it from cookie key: bus_auth")
-            #     return
             self.handle_code(
                 *jvav.JavBusUtil(
                     bus_auth=args.auth, proxy_addr=args.proxy
