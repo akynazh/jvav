@@ -1,6 +1,6 @@
 # Jvav
 
-Useful tools for crawling study resources. Supports Python library operations and command-line usage, with additional proxy options and cache support.
+[NSFW] Useful tools for crawling adult learning resources. Supports Python library operations and command-line usage, with additional proxy options and cache support.
 
 ## INSTALL
 
